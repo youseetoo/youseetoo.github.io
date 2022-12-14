@@ -1,0 +1,13 @@
+{
+  "name": "UC2-ESP32",
+  "version": "2022.12.12",
+  "home_assistant_domain": "esphome",
+  "funding_url": "https://github.com/youseetoo/uc2-esp32",
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [{ "path": "esp32_uc2_2
+      .bin", "offset": 0 }]
+    }
+  ]
+}
