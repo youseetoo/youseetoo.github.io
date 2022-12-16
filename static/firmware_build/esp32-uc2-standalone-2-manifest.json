@@ -6,8 +6,7 @@
   "builds": [
     {
       "chipFamily": "ESP32",
-      "parts": [{ "path": "esp32_uc2_2
-      .bin", "offset": 0 }]
+      "parts": [{ "path": "esp32_uc2_2.bin", "offset": 0 }]
     }
   ]
 }
