@@ -12,8 +12,6 @@
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <link href="editor.css" rel="stylesheet">
-    <script src="_libraries/serial.js"></script>
-
 </head>
 
 <body data-new-gr-c-s-check-loaded="14.1093.0" data-gr-ext-installed="" data-new-gr-c-s-loaded="14.1093.0">
@@ -39,7 +37,7 @@
         <div class="jumbotron">
             <h1 class="display-3">Try UC2 online</h1>
             <p class="lead">This is to use the Web Serial interface to control a UC2 ESP device</p>
-            <p><a class="btn btn-lg btn-success" id="btn-connect" onclick="onButtonConnectToSerialDevice()" role="button">Connect to ESP32</a></p>
+            <p><a class="btn btn-lg btn-success" id="openclose_port" role="button">Connect to ESP32</a></p>
         </div>
 
         <div id="text-interface">
@@ -59,13 +57,31 @@
                 <h4>LED Array</h4>
                 <p><button type="button" onclick="ledOn()" class="btn btn-info" style=""> Primary </button></p>
                 <p><button type="button" onclick="ledOff()" class="btn btn-warning" style="">Off</button></p>
+                
+                <div>
+                    <span>Baud Rate: </span>
+                    <select id="baud_rate">
+                        <option value="9600">9600</option>
+                        <option value="19200">19200</option>
+                        <option value="38400">38400</option>
+                        <option value="57600">57600</option>
+                        <option value="115200">115200</option>
+                    </select><button id="change" disabled>Change</button>
+                </div>
+                <span id="port_info">Disconnected</span>
 
                 <h4>Motor X</h4>
-                <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet
-                    fermentum.</p>
 
-                <h4>Subheading</h4>
-                <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+                <h4>Serial Terminal X</h4>
+                <div id="outDiv">
+                    <textarea id="term_window" readonly>Hellorld!</textarea>
+                </div>
+                <div id="inDiv">
+                    <textarea id="term_input"></textarea>
+                    <button id="send" disabled>Send</button>
+                    <button id="clear" disabled>Clear</button>
+                </div>
+                
             </div>
 
 
@@ -76,100 +92,15 @@
         </footer>
 
     </div> <!-- /container -->
-
+    <script src="js/script.js"></script>
     <script>
-        const inputText = document.querySelector('input');
-        const outputText = document.getElementById('output-text');
-        const rcvdText = document.getElementById('received-text');
-
-        inputText.addEventListener('input', updateOutputText);
-
         function ledOn() {
             cmd='{"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":0, "r":255, "g":255, "b":255}]}}'
-            serialWriteTextData(cmd);
+            sendCMD(cmd)
         }
-
         function ledOff() {
-            cmd='{"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":0, "r":0, "g":0, "b":0}]}}'
-            serialWriteTextData(cmd);
-        }
-
-        function updateOutputText(e) {
-            outputText.textContent = e.target.value;
-            serialWriteTextData(e.target.value);
-        }
-
-        // Setup Web Serial using serial.js
-        const serial = new Serial({ baudRate: 115200 });
-        serial.on(SerialEvents.CONNECTION_OPENED, onSerialConnectionOpened);
-        serial.on(SerialEvents.CONNECTION_CLOSED, onSerialConnectionClosed);
-        serial.on(SerialEvents.DATA_RECEIVED, onSerialDataReceived);
-        serial.on(SerialEvents.ERROR_OCCURRED, onSerialErrorOccurred);
-
-        /**
-         * Callback function for when the connect button is pressed
-         */
-        async function onButtonConnectToSerialDevice() {
-            console.log("onButtonConnectToSerialDevice");
-            if (!serial.isOpen()) {
-                await serial.connectAndOpen();
-            }
-        }
-
-        /**
-         * Send data over serial
-         */
-        async function serialWriteTextData(textData) {
-
-            if (serial.isOpen()) {
-                console.log("Writing to serial: ", textData);
-                serial.writeLine(textData);
-            }
-        }
-
-        /**
-         * Callback function by serial.js when there is an error on web serial
-         * 
-         * @param {} eventSender 
-         */
-        function onSerialErrorOccurred(eventSender, error) {
-            console.log("onSerialErrorOccurred", error);
-        }
-
-        /**
-         * Callback function by serial.js when web serial connection is opened
-         * 
-         * @param {} eventSender 
-         */
-        function onSerialConnectionOpened(eventSender) {
-            console.log("onSerialConnectionOpened");
-            document.getElementById("connect-button").style.display = "none";
-            document.getElementById("text-interface").style.display = "block";
-        }
-
-        /**
-         * Callback function by serial.js when web serial connection is closed
-         * 
-         * @param {} eventSender 
-         */
-        function onSerialConnectionClosed(eventSender) {
-            console.log("onSerialConnectionClosed");
-            document.getElementById("connect-button").style.display = "block";
-            document.getElementById("text-interface").style.display = "none";
-        }
-
-        /**
-         * Callback function serial.js when new web serial data is received
-         * 
-         * @param {*} eventSender 
-         * @param {String} newData new data received over serial
-         */
-        function onSerialDataReceived(eventSender, newData) {
-            console.log("onSerialDataReceived", newData);
-            rcvdText.textContent = newData;
+            cmd='{"task":"/ledarr_act", "led":{"LEDArrMode":0, "led_array":[{"id":0, "r":0, "g":0, "b":0}]}}'
+            sendCMD(cmd);
         }
     </script>
-
-</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration>
-
 </html>
