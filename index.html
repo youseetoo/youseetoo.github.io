@@ -3,15 +3,15 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>ESPHome Bluetooth Proxy</title>
+    <title>Matchboxscope/Anglerfish Flashing Tool</title>
     <meta
       name="description"
-      content="Expand the Bluetooth range of your smart home using ESPHome devices."
+      content="Use this tool to flash the ESP32 in order to use it with the Matchboxscope/Anglerfish."
     />
     <meta name="viewport" content="width=device-width" />
     <meta name="color-scheme" content="dark light" />
-    <meta property="og:title" content="ESPHome Bluetooth Proxies" />
-    <meta property="og:site_name" content="ESPHome Bluetooth Proxies" />
+    <meta property="og:title" content="Matchboxscope/Anglerfish Firmware" />
+    <meta property="og:site_name" content="Matchboxscope/Anglerfish Firmware" />
 
     <style>
       body {
@@ -125,27 +125,21 @@
             src="https://raw.githubusercontent.com/openUC2/openUC2.github.io/master/static/img/Artboard4%404x.png"
             width="105" height="121" alt="" />&nbsp; &nbsp;OpenUC2</h1>
         <div class="content">
-      <h1>UC2 ESP32 Flashing Tool</h1>
+      <h1>Matchboxscope/Anglerfish (ESP32) Flashing Tool</h1>
       <p></p>
       <p>
-        User-friendly tools to flash/upload the firmware for the openUC2 ESP32 device in the browser:
+        User-friendly tool to flash/upload the firmware for the Matchboxscope/Anglerfish device in the browser:
       </p>
       <ul>
         <li>Install &amp; update firmware</li>
-        <li>Connect device to the Wi-Fi network (work in progress)</li>
+        <li>Connect device to the WEB-USB Serial interface (work in progress)</li>
         <li>Visit the device's hosted web interface (work in progress)</li>
         <li>Access logs and send terminal commands (work in progress)</li>
       </ul>
       <p>
-        Pick your UC2 PCB and flash the software using the browser! No programming or other software required.
+        Pick your ESP32 PCB and flash the software using the browser! No programming or other software required. 
       </p>
-      <h2 id="test">Test the Firmware</h2>
-      <p>An online Tool will enable you to connect to the ESP and control certain hardware elements. Follow <a href="https://youseetoo.github.io/indexWebSerialTest.html">this link</a>, select the ESP32 and hit e.g. the LED on button.</p>
-      <h2 id="demo">Flash the Firmware</h2>
-      <p>This webpage will install <a href="https://github.com/youseetoo/uc2-esp32/">UC2-ESP</a>. To get started, connect
-        an ESP device to your computer and hit the button (we assume you installed the CH340 or CP2102 driver; The links to the drivers
-         will be suggested if no Serial device is found by the browser.).</p>
-      <p><strong>Note: </strong>This is only available on Chrome or Microsoft Edge.&nbsp;</p>
+      <p><strong>Note: </strong>Ensure you have installed the CH340 driver and set the board into boot mode (press first reset => hold it and then reset at the same time).&nbsp;</p>
       
       <div class="radios">
         <label>
