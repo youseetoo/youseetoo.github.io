@@ -458,28 +458,11 @@
 
 
   function startup() {
-    motionjpeg = document.getElementById('motionjpeg');
+    motionjpeg = document.getElementById('mImage');
     //motionjpeg.crossOrigin = "Anonymous";
     canvas = document.getElementById('canvas');
     curve = document.getElementById('curve');
-
-
-
     startbutton = document.getElementById('startbutton');
-
-
-
-    /*navigator.mediaDevices.getUserMedia({motionjpeg: true, audio: false})
-    .then(function(stream) {
-      motionjpeg.srcObject = stream;
-      motionjpeg.play();
-    })
-    .catch(function(err) {
-      console.log("An error occurred: " + err);
-    });
-    //http://192.168.2.191:8123/mjpeg
-    //motionjpeg.src = "http://192.168.4.1:81/stream.mjpeg"
-    */
 
     height = motionjpeg.height
     // Firefox currently has a bug where the height can't be read from

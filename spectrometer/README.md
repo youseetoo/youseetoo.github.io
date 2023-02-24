@@ -56,13 +56,28 @@
 							<div class="row">
 
 
+								<p><a class="btn btn-lg btn-success" id="openclose_port" role="button">Connect to ESP32</a></p>
 
 								<h3>Video Image</h3>
 								<div class="camera">
-
+									<div class="row marketing">
+										<div class="col-lg-6">
+											<canvas id="mImage" width="200" height="100"></canvas>
+											<div>
+												<span>Baud Rate: </span>
+												<select id="baud_rate">
+													<option value="2000000">2000000</option>
+													<option value="115200">115200</option>
+													<option value="9600">9600</option>
+													<option value="19200">19200</option>
+													<option value="38400">38400</option>
+													<option value="57600">57600</option>
+												</select><button id="change" disabled>Change</button>
+											</div>                
+										</div>
+									</div>
 									<h1>ipCam</h1>
-									<img id="motionjpeg" src="http://192.168.2.198:81/stream.mjpeg" crossorigin="anonymous"/>
-
+									
 								</div>
 								<canvas id="canvas">
 								</canvas>
@@ -238,6 +253,7 @@
 		<script src="assets/js/jquery.waypoints.min.js"></script>
 		<script src="assets/js/jquery.mCustomScrollbar.concat.min.js"></script>
 		<script src="assets/js/scripts.js"></script>
+		<script src="assets/script.js"></script>
 
 </body>
 
