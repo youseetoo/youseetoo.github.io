@@ -68,24 +68,29 @@ void cameraInit() {
   }
 
   sensor_t * s = esp_camera_sensor_get();
-  s->set_hmirror(s, 1);
-  s->set_vflip(s, 1);
+  //s->set_hmirror(s, 1);
+  //s->set_vflip(s, 1);
 }
 
 void grabImage() {
 
+
+
+
   camera_fb_t* fb = esp_camera_fb_get();
   if (!fb || fb->format != PIXFORMAT_JPEG) {
   } else {
-    delay(40);
-    digitalWrite(4, HIGH);
 
-    String encoded = base64::encode(fb->buf, fb->len);
+    //digitalWrite(4, HIGH);
 
     Serial.print("+++++");
+    String encoded = base64::encode(fb->buf, fb->len);
+    delay(40);
     Serial.write(encoded.c_str(), encoded.length());
     Serial.println("-----");
+    
   }
-  digitalWrite(4, LOW);
+  //digitalWrite(4, LOW);
   esp_camera_fb_return(fb);
+  delay(40);
 }

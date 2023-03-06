@@ -1,11 +1,17 @@
 
 #include "images.h"
 #define BAUD_RATE 2000000
+#include "BluetoothSerial.h"
+
+
+BluetoothSerial SerialBT;
 
 void setup()
 {
   Serial.begin(BAUD_RATE);
   Serial.println("Start the programm");
+  SerialBT.begin("ESP32test"); //Bluetooth device name
+
 }
 
 int iindex = 1;
@@ -17,10 +23,16 @@ void loop() {
 
 void grabImage(int iindex) {
   delay(40);
-  Serial.print("+++++");
+  //Serial.print("+++++");
   String tmpImage = laodImage(iindex % 10);
-  Serial.write(tmpImage.c_str(), tmpImage.length());
-  Serial.println("-----");
+  //Serial.write(tmpImage.c_str(), tmpImage.length());
+    String a = "page1ok";
+  //uint8_t buf[a.length()];
+  //memcpy(buf,a.c_str(),a.length());
+  //SerialBT.write(buf,a.length());
+  SerialBT.println(tmpImage); 
+  //SerialBT.write( tmpImage, tmpImage.length());
+  //Serial.println("-----");
 }
 
 
