@@ -1,0 +1,23 @@
+{
+  "unversionedId": "Matchboxscope",
+  "id": "Matchboxscope",
+  "title": "Matchboxscope",
+  "description": "This device is not much larger than a matchbox (hence its name - surprise..). Besides the ESP32-CAM it only needs 3D printed components, screws, aluminium foil and a couple of magnets (or optional springs).",
+  "source": "@site/docs/Matchboxscope.md",
+  "sourceDirName": ".",
+  "slug": "/Matchboxscope",
+  "permalink": "/docs/Matchboxscope",
+  "draft": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "ESPectrometer",
+    "permalink": "/docs/ESPectrometer"
+  },
+  "next": {
+    "title": "WebSERIAL",
+    "permalink": "/docs/WebSERIAL"
+  }
+}

@@ -10,7 +10,7 @@ h1, h2 { margin-top: 10px; font-size: 38px; font-weight: 100; color: #555; line-
 h3 { font-size: 22px; font-weight: 300; color: #555; line-height: 30px; }
 h4 { font-size: 18px; font-weight: 300; color: #555; line-height: 26px; }
 
-img { max-width: 100%; }
+img { max-width: 60%; }
 
 .medium-paragraph { font-size: 18px; line-height: 34px; }
 

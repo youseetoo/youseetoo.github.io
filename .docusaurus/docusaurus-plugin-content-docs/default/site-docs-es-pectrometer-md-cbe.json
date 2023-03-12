@@ -1,0 +1,19 @@
+{
+  "unversionedId": "ESPectrometer",
+  "id": "ESPectrometer",
+  "title": "ESPectrometer",
+  "description": "",
+  "source": "@site/docs/ESPectrometer.md",
+  "sourceDirName": ".",
+  "slug": "/ESPectrometer",
+  "permalink": "/docs/ESPectrometer",
+  "draft": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "next": {
+    "title": "Matchboxscope",
+    "permalink": "/docs/Matchboxscope"
+  }
+}
