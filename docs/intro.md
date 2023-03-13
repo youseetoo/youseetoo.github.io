@@ -8,12 +8,11 @@ However, we wanted to make the microscope a bit more practical and created some 
 
 **The Anglerfish**: This device is well preserved in your beloved jars and hence watertight. Why? Throw it in your nearby pond and collect data how microfilm grows on the jars' surface. Fun! Follow the [**BLUE PILL 🔵**](Anglerfish.md)
 
-<img src="IMAGES/Capture.PNG" width="500"/> 
-
+![](IMAGES/matchboxscope/Capture.PNG)
 
 **The Matchboxscope**: This is a simple self-contained microscope e.g. for tacking snapshots of your microfluidic chips, your parasite containing slides or just for fun. It comes with a minimum number of parts, but offers a spring-loaded z-stage. Also idea for your incubator-contained microscopy experiments! Follow the [**RED PILL 🔴**](Matchboxscope.md)
 
-<img src="IMAGES/explosion.jpeg" width="500"/> 
+![](IMAGES/matchboxscope/explosion.jpeg)
 
 **The Z-Stacker**: It adds an automatic focussing unit to the *Matchboxscope* in order to create temporal Z-stacks of your beloved cell cultures. It needs more electronics, but still relies on the ESP32-CAM only. Lots of fun, too.  Follow the [**GREEN PILL 🟢**](Matchboxscope.md)
 
@@ -86,19 +85,11 @@ In deep-sleep setting it consumes virtually no power.
 
 That's the software for the Matchboxscope:
 
-<img src="IMAGES/SVID_20220607_114724_1.gif" width="300"/> 
+![](IMAGES/matchboxscope/SVID_20220607_114724_1.gif)
 
 And a more in-detail tutorial on how to use the software:
 
-<img src="IMAGES/screenshotYT.png" width="500"/> 
-[Youtube LINK](https://youtu.be/Gy-_bQiS_Xs)
-
-
-
-
-
-
-
+![https://youtu.be/Gy-_bQiS_Xs](IMAGES/matchboxscope/screenshotYT.png)
 
 ## Get Involved
 

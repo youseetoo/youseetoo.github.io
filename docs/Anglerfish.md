@@ -27,7 +27,7 @@ We will give you a step-by-step guide how to assemble the hole microscope. If an
 
 This you will need for your device in order to work:
 
-![Explosion](IMAGES/explosion.jpeg)
+![Explosion](IMAGES/anglerfish/explosion.jpeg)
 
 ### Bill of material
 
@@ -144,5 +144,5 @@ Mount the LED with hotglue (use a lot)
 
 Comming soon
 
-![](IMAGES/Screenshot_20220419_184943_com.android.chrome.jpg)
+![](IMAGES/anglerfish/Screenshot_20220419_184943_com.android.chrome.jpg)
 
