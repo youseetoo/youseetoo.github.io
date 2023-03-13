@@ -12,6 +12,10 @@
   "version": "current",
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Anglerfish",
+    "permalink": "/docs/Anglerfish"
+  },
   "next": {
     "title": "Matchboxscope",
     "permalink": "/docs/Matchboxscope"

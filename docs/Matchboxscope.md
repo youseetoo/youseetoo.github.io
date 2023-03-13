@@ -1,6 +1,4 @@
 
-
-
 # Matchboxscope
 
 This device is not much larger than a matchbox (hence its name - surprise..). Besides the ESP32-CAM it only needs 3D printed components, screws, aluminium foil and a couple of magnets (or optional springs).

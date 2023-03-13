@@ -59,8 +59,14 @@ export default [
   },
   {
     path: '/docs',
-    component: ComponentCreator('/docs', 'a88'),
+    component: ComponentCreator('/docs', 'a4c'),
     routes: [
+      {
+        path: '/docs/Anglerfish',
+        component: ComponentCreator('/docs/Anglerfish', '9c9'),
+        exact: true,
+        sidebar: "tutorialSidebar"
+      },
       {
         path: '/docs/ESPectrometer',
         component: ComponentCreator('/docs/ESPectrometer', 'ef2'),

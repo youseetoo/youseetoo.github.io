@@ -8,8 +8,13 @@
           "label": "Next",
           "isLast": true,
           "path": "/docs",
-          "mainDocId": "ESPectrometer",
+          "mainDocId": "Anglerfish",
           "docs": [
+            {
+              "id": "Anglerfish",
+              "path": "/docs/Anglerfish",
+              "sidebar": "tutorialSidebar"
+            },
             {
               "id": "ESPectrometer",
               "path": "/docs/ESPectrometer",
@@ -35,8 +40,8 @@
           "sidebars": {
             "tutorialSidebar": {
               "link": {
-                "path": "/docs/ESPectrometer",
-                "label": "ESPectrometer"
+                "path": "/docs/Anglerfish",
+                "label": "Anglerfish"
               }
             }
           }

@@ -136,12 +136,16 @@
     "sidebar": "814f3328",
     "content": "d9f32620"
   },
-  "/docs-a88": {
+  "/docs-a4c": {
     "__comp": "1be78505",
     "__context": {
       "plugin": "47d6f203"
     },
     "versionMetadata": "935f2afb"
+  },
+  "/docs/Anglerfish-9c9": {
+    "__comp": "17896441",
+    "content": "efea9a8f"
   },
   "/docs/ESPectrometer-ef2": {
     "__comp": "17896441",

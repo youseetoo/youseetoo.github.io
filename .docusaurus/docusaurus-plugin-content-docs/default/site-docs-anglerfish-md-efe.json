@@ -12,12 +12,8 @@
   "version": "current",
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
-  "previous": {
-    "title": "Documentation Intro",
-    "permalink": "/docs/intro"
-  },
   "next": {
-    "title": "Matchboxscope",
-    "permalink": "/docs/Matchboxscope"
+    "title": "ESPectrometer",
+    "permalink": "/docs/ESPectrometer"
   }
 }
