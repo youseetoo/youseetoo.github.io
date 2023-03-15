@@ -58,8 +58,13 @@ export default [
     exact: true
   },
   {
+    path: '/markdown-page',
+    component: ComponentCreator('/markdown-page', '20b'),
+    exact: true
+  },
+  {
     path: '/docs',
-    component: ComponentCreator('/docs', 'a4c'),
+    component: ComponentCreator('/docs', '11e'),
     routes: [
       {
         path: '/docs/Anglerfish',
@@ -70,6 +75,18 @@ export default [
       {
         path: '/docs/ESPectrometer',
         component: ComponentCreator('/docs/ESPectrometer', 'ef2'),
+        exact: true,
+        sidebar: "tutorialSidebar"
+      },
+      {
+        path: '/docs/FlashTheCode',
+        component: ComponentCreator('/docs/FlashTheCode', '74f'),
+        exact: true,
+        sidebar: "tutorialSidebar"
+      },
+      {
+        path: '/docs/Fluidiscope',
+        component: ComponentCreator('/docs/Fluidiscope', '302'),
         exact: true,
         sidebar: "tutorialSidebar"
       },
@@ -92,6 +109,11 @@ export default [
         sidebar: "tutorialSidebar"
       }
     ]
+  },
+  {
+    path: '/',
+    component: ComponentCreator('/', '1ed'),
+    exact: true
   },
   {
     path: '*',

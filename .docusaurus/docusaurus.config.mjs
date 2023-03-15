@@ -28,10 +28,7 @@ export default {
         "docs": {
           "sidebarPath": "/Users/bene/Dropbox/Dokumente/Promotion/PROJECTS/matchboxscope.github.io/sidebars.js"
         },
-        "blog": {
-          "showReadingTime": true,
-          "editUrl": "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/"
-        },
+        "blog": {},
         "theme": {
           "customCss": "/Users/bene/Dropbox/Dokumente/Promotion/PROJECTS/matchboxscope.github.io/src/css/custom.css"
         }
@@ -54,7 +51,7 @@ export default {
         },
         {
           "to": "/blog",
-          "label": "Blog",
+          "label": "Software",
           "position": "left"
         },
         {
@@ -94,7 +91,7 @@ export default {
           "title": "More",
           "items": [
             {
-              "label": "Blog",
+              "label": "Software",
               "to": "/blog"
             },
             {

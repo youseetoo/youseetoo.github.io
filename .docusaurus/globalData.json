@@ -21,6 +21,16 @@
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "FlashTheCode",
+              "path": "/docs/FlashTheCode",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "Fluidiscope",
+              "path": "/docs/Fluidiscope",
+              "sidebar": "tutorialSidebar"
+            },
+            {
               "id": "intro",
               "path": "/docs/intro",
               "sidebar": "tutorialSidebar"

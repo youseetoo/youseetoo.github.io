@@ -1,6 +1,6 @@
 # Anglerfish
 
-The **Angleffish** is a derivative from the **Matchboxscope**. It has a "Angel" (German: fishing-rod) for hunting microbes, fishes, bacteria, algae...that can grow on a surface - under water! Yes! We want to capture the biofilm that will grow on transparent surfaces over time under water to get an idea what's happening. The core idea is to build an ESP32-based microscope, which fits into a watertight container. You focus it once to see the furface of the container sharp and release it into the wild, where it will capture images periodically.
+The **Anglerfish** is a derivative from the **Matchboxscope**. It has a "Angel" (German: fishing-rod) for hunting microbes, fishes, bacteria, algae...that can grow on a surface - under water! Yes! We want to capture the biofilm that will grow on transparent surfaces over time under water to get an idea what's happening. The core idea is to build an ESP32-based microscope, which fits into a watertight container. You focus it once to see the furface of the container sharp and release it into the wild, where it will capture images periodically.
 
 While designing the Anglerfish - which actually looks like an anglerfish considering the "Angle" - we experimented with many different design configurations and consdierations.
 
@@ -145,4 +145,3 @@ Mount the LED with hotglue (use a lot)
 Comming soon
 
 ![](IMAGES/anglerfish/Screenshot_20220419_184943_com.android.chrome.jpg)
-

@@ -161,7 +161,7 @@ and here you go. Enjoy your new tiny scope.
 
 ## Assembly of the illumination unit
 
-Some additional information for the assembly process can be found in the [Anglerfish](Angleffish.md)-documentation.
+Some additional information for the assembly process can be found in the [Anglerfish](Anglerfish.md)-documentation.
 
 The idea of the illumination unit is to re-use the LED torch that is mounted on the ESP32-CAM and can be controlled through GPIO4. Don't look directly into the LED. As said, it's bright!
 
