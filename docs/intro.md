@@ -1,6 +1,7 @@
 # ESP32-Based Microscopy
-
-![](IMAGES/matchboxscope/intro_img.png)
+<p align="center">
+  <img width="400" height="400" src="IMAGES/matchboxscope/intro_img.png">
+</p>
 
 
 This is the hub for the smallest standalone low-cost open-source DIY microscope system that can be used for a gazillion different applications. Sounds interesting? Continue reading!
@@ -20,10 +21,10 @@ Why raise the lens, and what is a finite corrected microscope, you ask?
 `1/f'=1/a' - 1/a`;
 
 You can easily display your phone's screen's ~100µm sized pixels. By tuning the distance, you can play with the field of view, resolution (since the imaging NA changes), and magnification. We don't care about sampling right now, since we do not have much influence on it anyway...
-
-![](IMAGES/matchboxscope/image1.png)
-
-![](IMAGES/matchboxscope/image2.png)
+<p align="center">
+  <img width="640" height="400" src="IMAGES/matchboxscope/image1.png">
+  <img width="640" height="400" src="IMAGES/matchboxscope/image2.png">
+</p>
 
 Essentially, this configuration is also known as a finite-corrected microscopy arrangement. It comes with many problems, but we want to keep it simple. Hence we will stick to the basic optical setup here.
 
@@ -35,9 +36,10 @@ The other important part of any microscope is the illumination setup. And also i
 
 This is how the first periscope illumination looked like. Like an Anglerfish...
 
-![](IMAGES/matchboxscope/IMG_20220326_185946.jpg)
-
-![](IMAGES/matchboxscope/IMG_20220326_190242.jpg)
+<p align="center">
+  <img width="600" height="450" src="IMAGES/matchboxscope/IMG_20220326_185946.jpg">
+  <img width="500" height="600" src="IMAGES/matchboxscope/IMG_20220326_190242.jpg">
+</p>
 
 And using those two simple tricks (lens distance from the sensor, and illumination), we developed multiple unbelievably cost-effective open hardware microscopes.  
 
@@ -48,6 +50,11 @@ This project is open-source and is released under the CERN open hardware license
 You're free to fork the project and enhance it. If you have any suggestions to improve it or add additional functions make a pull request or file an issue.
 
 
-
 ## Collaborating
 If you find this project useful, please like this repository, follow us on Twitter, and cite the webpage! :-)
+
+
+
+
+
+*Intro image done using DALL-E2
