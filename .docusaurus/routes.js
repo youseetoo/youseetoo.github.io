@@ -4,7 +4,7 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/blog',
-    component: ComponentCreator('/blog', '32b'),
+    component: ComponentCreator('/blog', '080'),
     exact: true
   },
   {
@@ -13,18 +13,8 @@ export default [
     exact: true
   },
   {
-    path: '/blog/first-blog-post',
-    component: ComponentCreator('/blog/first-blog-post', '4ba'),
-    exact: true
-  },
-  {
-    path: '/blog/long-blog-post',
-    component: ComponentCreator('/blog/long-blog-post', '813'),
-    exact: true
-  },
-  {
-    path: '/blog/mdx-blog-post',
-    component: ComponentCreator('/blog/mdx-blog-post', '66e'),
+    path: '/blog/Flashing',
+    component: ComponentCreator('/blog/Flashing', 'dd3'),
     exact: true
   },
   {
@@ -33,28 +23,13 @@ export default [
     exact: true
   },
   {
-    path: '/blog/tags/docusaurus',
-    component: ComponentCreator('/blog/tags/docusaurus', '21f'),
+    path: '/blog/tags/esp-32-cam',
+    component: ComponentCreator('/blog/tags/esp-32-cam', '5f6'),
     exact: true
   },
   {
-    path: '/blog/tags/facebook',
-    component: ComponentCreator('/blog/tags/facebook', '0b6'),
-    exact: true
-  },
-  {
-    path: '/blog/tags/hello',
-    component: ComponentCreator('/blog/tags/hello', '214'),
-    exact: true
-  },
-  {
-    path: '/blog/tags/hola',
-    component: ComponentCreator('/blog/tags/hola', '0c7'),
-    exact: true
-  },
-  {
-    path: '/blog/welcome',
-    component: ComponentCreator('/blog/welcome', '04c'),
+    path: '/blog/tags/web-serial',
+    component: ComponentCreator('/blog/tags/web-serial', 'a41'),
     exact: true
   },
   {

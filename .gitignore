@@ -31,7 +31,7 @@ build/*
 /yarn-debug.log*
 /yarn-error.log*
 
-.docusaurus/docusaurus-plugin-content-blog/default/site-blog-2021-08-01-mdx-blog-post-mdx-593.json
+
 build/assets/css/styles.79c44d75.css
 build/blog/archive/index.html
 docs/IMAGES/.DS_Store
