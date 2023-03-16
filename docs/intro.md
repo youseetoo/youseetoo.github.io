@@ -1,6 +1,6 @@
 # ESP32-Based Microscopy
 <p align="center">
-  <img width=400 height=400 src=IMAGES/matchboxscope/intro_img.png>
+  <img width="400" height="400" src=IMAGES/matchboxscope/intro_img.png>
 </p>
 
 
