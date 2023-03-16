@@ -1,6 +1,7 @@
 
 # Flash the Firmware
 
-This page is under maintenance. 
 
-You can access the online-flashing tool [here](FLASH.html)
+![](../static/img/firmware-update-1.png)
+
+You can access the online-flashing tool [here](https://matchboxscope.github.io/FLASH.html)

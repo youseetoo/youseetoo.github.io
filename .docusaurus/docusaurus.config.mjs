@@ -26,7 +26,10 @@ export default {
       "classic",
       {
         "docs": {
-          "sidebarPath": "/Users/bene/Dropbox/Dokumente/Promotion/PROJECTS/matchboxscope.github.io/sidebars.js"
+          "sidebarPath": "/Users/bene/Dropbox/Dokumente/Promotion/PROJECTS/matchboxscope.github.io/sidebars.js",
+          "exclude": [
+            "**/any/dir/**"
+          ]
         },
         "blog": {},
         "theme": {
