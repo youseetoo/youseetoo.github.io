@@ -1,8 +1,8 @@
 {
   "unversionedId": "Introduction",
   "id": "Introduction",
-  "title": "ESP32-based Microscopy",
-  "description": "This is a repository for the smallest standalone low-cost open-source DIY incubator-contained microscope that can be used for a gazilion different applications. Sounds interesting? Continue reading!",
+  "title": "ESP32-Based Microscopy",
+  "description": "This is the hub for the smallest standalone low-cost open-source DIY microscope system that can be used for a gazillion different applications. Sounds interesting? Continue reading!",
   "source": "@site/docs/Introduction.md",
   "sourceDirName": ".",
   "slug": "/Introduction",
@@ -13,8 +13,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "ESPectrometer",
-    "permalink": "/docs/ESPectrometer"
+    "title": "Fluidiscope",
+    "permalink": "/docs/Fluidiscope"
   },
   "next": {
     "title": "Matchboxscope",

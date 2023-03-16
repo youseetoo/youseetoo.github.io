@@ -1,3 +1,4 @@
+build*
 dist
 node_modules
 ./build*
@@ -12,7 +13,8 @@ build/*
 
 # Dependencies
 /node_modules
-
+/node_modules/*
+mode_modules/
 # Production
 /build
 
@@ -39,3 +41,4 @@ docs/IMAGES/.DS_Store
 docs/.DS_Store
 .DS_Store
 docs/.DS_Store
+

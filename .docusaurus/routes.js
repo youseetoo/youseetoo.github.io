@@ -39,7 +39,7 @@ export default [
   },
   {
     path: '/docs',
-    component: ComponentCreator('/docs', '11e'),
+    component: ComponentCreator('/docs', 'bd8'),
     routes: [
       {
         path: '/docs/Anglerfish',
@@ -66,8 +66,8 @@ export default [
         sidebar: "tutorialSidebar"
       },
       {
-        path: '/docs/intro',
-        component: ComponentCreator('/docs/intro', 'aed'),
+        path: '/docs/Introduction',
+        component: ComponentCreator('/docs/Introduction', 'de5'),
         exact: true,
         sidebar: "tutorialSidebar"
       },

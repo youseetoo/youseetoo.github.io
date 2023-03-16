@@ -1,6 +1,5 @@
 export default {
   '01a85c17': [() => import(/* webpackChunkName: '01a85c17' */ '@theme/BlogTagsListPage'), '@theme/BlogTagsListPage', require.resolveWeak('@theme/BlogTagsListPage')],
-  '0e384e19': [() => import(/* webpackChunkName: '0e384e19' */ '@site/docs/intro.md'), '@site/docs/intro.md', require.resolveWeak('@site/docs/intro.md')],
   '17896441': [() => import(/* webpackChunkName: '17896441' */ '@theme/DocItem'), '@theme/DocItem', require.resolveWeak('@theme/DocItem')],
   '1b8b07d9': [() => import(/* webpackChunkName: '1b8b07d9' */ '~blog/default/blog-tags-web-serial-fe9.json'), '~blog/default/blog-tags-web-serial-fe9.json', require.resolveWeak('~blog/default/blog-tags-web-serial-fe9.json')],
   '1be78505': [() => import(/* webpackChunkName: '1be78505' */ '@theme/DocPage'), '@theme/DocPage', require.resolveWeak('@theme/DocPage')],
@@ -28,6 +27,7 @@ export default {
   'cbe7c7f5': [() => import(/* webpackChunkName: 'cbe7c7f5' */ '@site/docs/ESPectrometer.md'), '@site/docs/ESPectrometer.md', require.resolveWeak('@site/docs/ESPectrometer.md')],
   'ccc49370': [() => import(/* webpackChunkName: 'ccc49370' */ '@theme/BlogPostPage'), '@theme/BlogPostPage', require.resolveWeak('@theme/BlogPostPage')],
   'dd904a2f': [() => import(/* webpackChunkName: 'dd904a2f' */ '@site/blog/Software.md?truncated=true'), '@site/blog/Software.md?truncated=true', require.resolveWeak('@site/blog/Software.md?truncated=true')],
+  'e0a19902': [() => import(/* webpackChunkName: 'e0a19902' */ '@site/docs/Introduction.md'), '@site/docs/Introduction.md', require.resolveWeak('@site/docs/Introduction.md')],
   'efea9a8f': [() => import(/* webpackChunkName: 'efea9a8f' */ '@site/docs/Anglerfish.md'), '@site/docs/Anglerfish.md', require.resolveWeak('@site/docs/Anglerfish.md')],
   'f1981d9e': [() => import(/* webpackChunkName: 'f1981d9e' */ '~blog/default/blog-tags-web-serial-fe9-list.json'), '~blog/default/blog-tags-web-serial-fe9-list.json', require.resolveWeak('~blog/default/blog-tags-web-serial-fe9-list.json')],
   'ff80261c': [() => import(/* webpackChunkName: 'ff80261c' */ '/Users/bene/Dropbox/Dokumente/Promotion/PROJECTS/matchboxscope.github.io/.docusaurus/docusaurus-plugin-content-blog/default/plugin-route-context-module-100.json'), '/Users/bene/Dropbox/Dokumente/Promotion/PROJECTS/matchboxscope.github.io/.docusaurus/docusaurus-plugin-content-blog/default/plugin-route-context-module-100.json', require.resolveWeak('/Users/bene/Dropbox/Dokumente/Promotion/PROJECTS/matchboxscope.github.io/.docusaurus/docusaurus-plugin-content-blog/default/plugin-route-context-module-100.json')],};

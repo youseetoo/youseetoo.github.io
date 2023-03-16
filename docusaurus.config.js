@@ -34,7 +34,7 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          exclude: ['**/any/dir/**'],
+          exclude: ['./static/firmware'],
         },
         blog: {
         },

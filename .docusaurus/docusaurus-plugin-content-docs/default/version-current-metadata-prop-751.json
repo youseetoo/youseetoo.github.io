@@ -35,6 +35,12 @@
       },
       {
         "type": "link",
+        "label": "ESP32-Based Microscopy",
+        "href": "/docs/Introduction",
+        "docId": "Introduction"
+      },
+      {
+        "type": "link",
         "label": "Matchboxscope",
         "href": "/docs/Matchboxscope",
         "docId": "Matchboxscope"
@@ -44,12 +50,6 @@
         "label": "WebSERIAL",
         "href": "/docs/WebSERIAL",
         "docId": "WebSERIAL"
-      },
-      {
-        "type": "link",
-        "label": "ESP32-based Microscopy",
-        "href": "/docs/intro",
-        "docId": "intro"
       }
     ]
   },
@@ -69,7 +69,7 @@
     "FlashTheCode": {
       "id": "FlashTheCode",
       "title": "Flash the Firmware",
-      "description": "This page is under maintenance.",
+      "description": "You can access the online-flashing tool here",
       "sidebar": "tutorialSidebar"
     },
     "Fluidiscope": {
@@ -78,16 +78,16 @@
       "description": "Microscopy is a key tool in many scientific fields, including medical research, environmental monitoring, and materials science. However, current microscopy techniques often have limitations in terms of accessibility, flexibility, and high-throughput sample monitoring. To address these challenges, we developed an ESP32-based microscope with a peristaltic pump module for continuous or controlled flow. It can be used for microplastics, yeast, plankton... find it out! :)",
       "sidebar": "tutorialSidebar"
     },
-    "intro": {
-      "id": "intro",
-      "title": "ESP32-based Microscopy",
-      "description": "This is a repository for the smallest standalone low-cost open-source DIY incubator-contained microscope that can be used for a gazilion different applications. Sounds interesting? Continue reading!",
+    "Introduction": {
+      "id": "Introduction",
+      "title": "ESP32-Based Microscopy",
+      "description": "This is the hub for the smallest standalone low-cost open-source DIY microscope system that can be used for a gazillion different applications. Sounds interesting? Continue reading!",
       "sidebar": "tutorialSidebar"
     },
     "Matchboxscope": {
       "id": "Matchboxscope",
       "title": "Matchboxscope",
-      "description": "This device is not much larger than a matchbox (hence its name - surprise..). Besides the ESP32-CAM it only needs 3D printed components, screws, aluminium foil and a couple of magnets (or optional springs).",
+      "description": "[//] 1)",
       "sidebar": "tutorialSidebar"
     },
     "WebSERIAL": {

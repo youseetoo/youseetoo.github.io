@@ -48,7 +48,7 @@ export default {
       "items": [
         {
           "type": "doc",
-          "docId": "intro",
+          "docId": "Introduction",
           "position": "left",
           "label": "Tutorial"
         },
@@ -73,7 +73,7 @@ export default {
           "items": [
             {
               "label": "Tutorial",
-              "to": "/docs/intro"
+              "to": "/docs/Introduction"
             }
           ]
         },
