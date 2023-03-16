@@ -1,6 +1,6 @@
 # ESP32-Based Microscopy
 <p align="center">
-  <img width="400" height="400" src=IMAGES/matchboxscope/intro_img.png>
+  <img width="400" height="400" src="IMAGES/matchboxscope/intro_img.png">
 </p>
 
 
@@ -22,8 +22,8 @@ Why raise the lens, and what is a finite corrected microscope, you ask?
 
 You can easily display your phone's screen's ~100µm sized pixels. By tuning the distance, you can play with the field of view, resolution (since the imaging NA changes), and magnification. We don't care about sampling right now, since we do not have much influence on it anyway...
 <p align="center">
-  <img width=640 height=400 src=IMAGES/matchboxscope/image1.png>
-  <img width=640 height=400 src=IMAGES/matchboxscope/image2.png>
+  <img width="640" height="400" src="IMAGES/matchboxscope/image1.png">
+  <img width="640" height="400" src="IMAGES/matchboxscope/image2.png">
 </p>
 
 Essentially, this configuration is also known as a finite-corrected microscopy arrangement. It comes with many problems, but we want to keep it simple. Hence we will stick to the basic optical setup here.
@@ -37,8 +37,8 @@ The other important part of any microscope is the illumination setup. And also i
 This is how the first periscope illumination looked like. Like an Anglerfish...
 
 <p align="center">
-  <img width=600 height=450 src=IMAGES/matchboxscope/IMG_20220326_185946.jpg>
-  <img width=500 height=600 src=IMAGES/matchboxscope/IMG_20220326_190242.jpg>
+  <img width="600" height="450" src="IMAGES/matchboxscope/IMG_20220326_185946.jpg">
+  <img width="500" height="600" src="IMAGES/matchboxscope/IMG_20220326_190242.jpg">
 </p>
 
 And using those two simple tricks (lens distance from the sensor, and illumination), we developed multiple unbelievably cost-effective open hardware microscopes.  
