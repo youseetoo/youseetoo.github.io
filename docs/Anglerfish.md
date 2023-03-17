@@ -17,11 +17,25 @@ The **Anglerfish** shares many aspects with the **Matchboxscope**, hence it may 
 
 ***NEW !!!!*** We have a Youtube Video hat guides you through the process of building your own Anglerfish: https://www.youtube.com/watch?v=XuOOWYZesqA&feature=youtu.be
 
+![https://img.youtube.com/vi/XuOOWYZesqA/mqdefault.jpg ](https://img.youtube.com/vi/XuOOWYZesqA/maxresdefault.jpg)
 
 
 # Assembly
 
 We will give you a step-by-step guide how to assemble the hole microscope. If anything fails or doesn't match as expected (most likely), please file an issue immediately. We will be there for you. Most of the steps below are very similar to the [Matchboxscope](Matchboxscope.md). only the way the screws for focusing the sample are oriented differently.
+
+## Making it watertight
+
+The jar is fun and all nice, but what if the glass shatters? Instead, we used one of these boxes [EMSA Clip & Close Frischhaltedosen 3-teiliges Set](https://www.hygi.de/emsa-clip-close-frischhaltedosen-3-teiliges-set-set-besteht-aus-3-x-550-ml-dosen-pd-65696?mcid=5&gclid=Cj0KCQjwn9CgBhDjARIsAD15h0AR1kv-CK-d5B0NS87yTNlyONGaPSpytpoQoar5avWwBswPgikKLVAaAgFZEALw_wcB). They have been proven to be 100% waterproof! Yay!
+
+In order to observe biofilm growth on the surface, we need to add the "angel" or the illumination. For this the 3D printed holder that adapts the toslink fiber has to be added to the lid of the enclosure. We use hot glue, but need to make sure the surface is roughened in order to be sticky. For this we use sandpaper:
+
+![](IMG_20230129_163437.jpg)
+
+Once, done, the assembly, with the ESP32-based microscope inside the lunchbox looks like this:
+![](IMG_20230129_164006.jpg)
+
+
 
 ## Components
 
