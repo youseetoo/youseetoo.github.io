@@ -30,10 +30,10 @@ The jar is fun and all nice, but what if the glass shatters? Instead, we used on
 
 In order to observe biofilm growth on the surface, we need to add the "angel" or the illumination. For this the 3D printed holder that adapts the toslink fiber has to be added to the lid of the enclosure. We use hot glue, but need to make sure the surface is roughened in order to be sticky. For this we use sandpaper:
 
-![](IMG_20230129_163437.jpg)
+![](IMAGES/anglerfish/IMG_20230129_163437.jpg)
 
 Once, done, the assembly, with the ESP32-based microscope inside the lunchbox looks like this:
-![](IMG_20230129_164006.jpg)
+![](IMAGES/anglerfish/IMG_20230129_164006.jpg)
 
 
 
