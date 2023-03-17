@@ -6,7 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
-
+permissions:
+  contents: write
+  id-token: write
+  pages: write
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -19,6 +22,16 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Check out repo
         uses: actions/checkout@v2
+      # check out matchboxscope gallery
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        with:
+          repository: Matchboxscope/matchboxscope-gallery
+          path: ./static/gallery/gallery
+          persist-credentials: false
+      # build gallery
+      - name: Build Gallery 🔧
+        run: docker run -v "$(pwd):/work" thumbsupgallery/thumbsup /bin/sh -c "cd /work/ && thumbsup --input ./static/gallery/gallery --output ./static/gallery/matchboxgallery"
       # Node is required for npm
       - name: Set up Node
         uses: actions/setup-node@v2
