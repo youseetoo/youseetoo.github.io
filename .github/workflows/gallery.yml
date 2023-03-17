@@ -1,12 +1,9 @@
 name: Publish Gallery
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - master
   pull_request:
-    branches:
-      - master
+  workflow_dispatch:
+  
 permissions:
   contents: write
   id-token: write
@@ -32,4 +29,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
           folder: ./static/matchboxgallery
-          target-folder: ./gallery
+          TARGET_FOLDER: ./gallery
