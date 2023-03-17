@@ -14,7 +14,6 @@ permissions:
 jobs:
   test:
     name: Publish Gallery to Github Pages
-    if: ${{ github.repository != 'gautamkrishnar/github-pages-gallery' && github.event.head_commit.message != '' && github.event.head_commit.message != 'Initial commit' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
