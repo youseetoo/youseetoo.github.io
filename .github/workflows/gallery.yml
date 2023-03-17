@@ -25,7 +25,7 @@ jobs:
       - name: List folder contents
         run: ls ./static/gallery/gallery 
       - name: Build Gallery 🔧
-        run: docker run -v "$(pwd):/work" thumbsupgallery/thumbsup /bin/sh -c "cd /work/ && thumbsup --config galleryconfig.json"
+        run: docker run -v "$(pwd):/work" thumbsupgallery/thumbsup /bin/sh -c "cd /work/ && thumbsup --input ./static/gallery/gallery --output ./static/matchboxgallery"
       - name: Package and upload artifact 📦
         uses: actions/upload-pages-artifact@v1.0.7
         with:
