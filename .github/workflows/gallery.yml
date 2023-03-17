@@ -26,17 +26,10 @@ jobs:
         run: ls ./static/gallery/gallery 
       - name: Build Gallery 🔧
         run: docker run -v "$(pwd):/work" thumbsupgallery/thumbsup /bin/sh -c "cd /work/ && thumbsup --input ./static/gallery/gallery --output ./static/matchboxgallery"
-      - name: Package and upload artifact 📦
-        uses: actions/upload-pages-artifact@v1.0.7
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
-          path: 'build_output'
-          name: gh-pages
-      - name: Deploy to Github Pages 🚀
-        uses: actions/deploy-pages@v1
-        with:
-          artifact_name: gh-pages
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Delete artifact 🗑️
-        uses: geekyeggo/delete-artifact@v2
-        with:
-          name: gh-pages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          folder: ./static/matchboxgallery
+          target-folder: ./gallery
