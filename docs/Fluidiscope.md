@@ -173,7 +173,22 @@ Add the tube and make sure the wires are leaving the assembly like this:
 
 ![Start](IMAGES/fluidicscope/fluidiscope_9.jpg)
 
-Done!!!
+### Some thoughts on the Ikea Lamp
+
+This is inspired by the https://www.thingiverse.com/thing:5167475 design, where Dupont cable were added to a 3D printed assembly in order to mimic a female USB plug. To be honest, it's much more straightforward to simply by a female adapter and solder it to the board using some wires - but: I didn't have one, so I created this layer for the lamp. It wasn't straightforward to add the ikea lamp - so: **WARNING** Better buy one of these and solder it to the ESP 5V/GND :)
+
+
+![Start](IMAGES/fluidicscope/IMG_20221221_113751.jpg)
+
+![Start](IMAGES/fluidicscope/IMG_20221221_113755.jpg)
+
+And all mounted together:
+
+![Start](IMAGES/fluidicscope/IMG_20221221_114443.jpg)
+
+
+
+**Done!!!**
 
 
 
