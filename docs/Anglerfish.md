@@ -58,6 +58,11 @@ Bonne Maman glass (empty) ||| 0€
 TP5400 USB/LiIon Adapter | For charging the battery/powering the ESP|  [Ebay](https://www.ebay.de/itm/143958030411?mkcid=16&mkevt=1&mkrid=707-127634-2357-0&ssspo=tg9hdLAtSmS&sssrc=204
 
 
+[20:48, 19/03/2023] Béné: e.g. https://www.ebay.de/itm/324749044039?chn=ps&norover=1&mkevt=1&mkrid=707-159967-267642-0&mkcid=2&mkscid=101&itemid=324749044039&targetid=1325693166479&device=c&mktype=pla&googleloc=9042960&poi=&campaignid=12876320283&mkgroupid=125994436481&rlsatarget=pla-1325693166479&abcId=9300534&merchantid=7364532&gclid=CjwKCAjw5dqgBhBNEiwA7PryaPRjxD7U3CpUKItc_oP3fbxZbc0xvlxemE4Nx35z96mbkj4LcBbQ1xoCLX8QAvD_BwE
+[20:49, 19/03/2023] Béné: will need to update this I gues..
+[20:49, 19/03/2023] Béné: https://matchboxscope.github.io/docs/Anglerfish#bill-of-material
+[20:50, 19/03/2023] Béné: https://www.ebay.de/itm/182447564721?chn=ps&norover=1&mkevt=1&mkrid=707-134425-41852-0&mkcid=2&mkscid=101&itemid=182447564721&targetid=1404115578933&device=c&mktype=pla&googleloc=9042960&poi=&campaignid=17935704717&mkgroupid=139162549385&rlsatarget=pla-1404115578933&abcId=9301059&merchantid=112404474&gclid=CjwKCAjw5dqgBhBNEiwA7PryaPoy3WizWYFivmCYP5YPe8AC5FrwA42xULsq8vTyBEQsmordf_AhMRoCrP0QAvD_BwE
+
 ## 3D printing files
 
 All design files can be found in the folder [INVENTOR](./INVENTOR).
@@ -118,7 +123,87 @@ Add the baseplate to the JAR. This should be "press-fit"; if it doesn't work out
 
 ### Assembling the electronics (optional)
 
-Alternatively you can use a small powerbank that fits into the assembly.
+
+#### Autofocus
+
+*What ou need:*
+
+- M12 CCTV Lens voice coil motor ([Aliexpress Link](https://de.aliexpress.com/item/1005003268036027.html), ca. 5-25€)
+- BD809 or any NPN transistor that can run 100mA
+- soldering skills
+- some wires
+
+
+For the CCTV lens that can displace the objective lens, we create a simple electronic curcuit. It's task is to amplify the current from the GPIO12 that is limited to ~20-30mA. For this you can use any NPN transistor. Here we use the BD809. The 5V from USB are connected to the lens pin (solder it, be careful to not rip it apart). The lens- goes to the collector of the transistor. The base is connected to the singalling/PWM pin GPIO12. Emitter goes to GND:
+
+![](IMAGES/anglerfish/CircuitAnglerfish.png)
+
+
+##### *Assembly:*
+
+0. unscrew the lens
+![](IMAGES/anglerfish/anglerfish_0_15.jpg)
+
+1. Insert the lens from the ESP32 camera into the 3d printed M12 adapter
+![](IMAGES/anglerfish/anglerfish_0_27.jpg)
+
+2. Add the wires to the 3d printed assembly
+![](IMAGES/anglerfish/anglerfish_0_24.jpg)
+
+3. Organize the wires and make sure no blank wires (also transistor) are visible
+![](IMAGES/anglerfish/anglerfish_0_25.jpg)
+
+
+![](IMAGES/anglerfish/anglerfish_0_0.gif)
+
+![](IMAGES/anglerfish/anglerfish_0_1.gif)
+
+
+###### *Full Assembly in the Jar with Lens:*
+
+![](IMAGES/anglerfish/anglerfish_0_15.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_14.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_19.jpg)
+
+Don't get confused. The green board is just a holder for the NPN transistor that matches the shape of the ESP32. The circuit diagramm stays the same.
+
+![](IMAGES/anglerfish/anglerfish_0_18.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_17.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_16.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_13.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_12.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_11.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_15.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_10.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_9.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_8.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_7.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_6.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_5.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_4.jpg)
+
+![](IMAGES/anglerfish/anglerfish_0_3.jpg)
+
+#### Powersupply
+
+In one older design we used a home-made USB powerbank so that the full assembly fits into a jar. Alternatively you can use any powerbank that fits into your water tight assembly. The more mAh the better.  
+
+*Assembly:*
 
 ![](IMAGES/anglerfish/anglerfish_18.jpg)
 
