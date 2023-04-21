@@ -95,13 +95,39 @@ async function openClose() {
         // Serial read loop. We'll stay here until the serial connection is ended externally or reader.cancel() is called
         // It's OK to sit in a while(true) loop because this is an async function and it will not block while it's await-ing
         // When reader.cancel() is called by another function, reader will be forced to return done=true and break the loop
+        imgValue = "";
         while (true) {
           const { value, done } = await reader.read();
           if (done) {
             reader.releaseLock(); // release the lock on the reader so the owner port can be closed
             break;
           }
+
           document.getElementById("term_window").value += value; // write the incoming string to the term_window textarea
+
+          // check if string contains line break and start a new line
+          if (value.includes("-----")) {
+            // convert the string to an base64 encoded image and display it
+            var mCanvas = document.getElementById("mImage");
+            imgValue += value.split('-----')[0];
+            imgValue = imgValue.split('+++++')[imgValue.split('+++++').length-1]
+            showFrame(mCanvas, imgValue);
+            
+            console.log(imgValue);
+            imgValue = value.split('-----')[1];
+          }
+          else{
+            imgValue += value;
+          }
+
+          
+          
+
+          /*var image = new Image();
+          image.src = "data:image/jpg;base64," + value);
+          document.body.appendChild(image);
+          */
+          
           console.log(value);
         }
 
@@ -135,6 +161,8 @@ async function openClose() {
   return;
 }
 
+
+
 // Change settings that require a connection reset.
 // Currently this only applies to the baud rate
 async function changeSettings() {
@@ -145,6 +173,22 @@ async function changeSettings() {
   await portPromise; // wait for the port to be closed
   console.log("port closed, opening with new settings...");
   openClose(); // open the port again (it will grab the new settings while opening the port)
+}
+
+async function showFrame(canvas, data) {
+  // Make an image bitmap from the data
+  const decoded = atob(data);
+  const array = new Uint8Array(decoded.length);
+  for (var i = 0; i < decoded.length; i++) {
+    array[i] = decoded.charCodeAt(i);
+  }
+  const bitmap = await createImageBitmap(
+    new Blob([array], { type: 'image/jpeg' }),
+  );
+  // Show the image in a canvas
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  canvas.getContext('2d').drawImage(bitmap, 0, 0);
 }
 
 // Send a string over the serial port.

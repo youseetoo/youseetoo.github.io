@@ -7,7 +7,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../../../favicon.ico">
 
-    <title>Narrow Jumbotron Template for Bootstrap</title>
+    <title>openUC2 WebSERIAL Demonstration</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
@@ -31,25 +31,17 @@
                     </li>
                 </ul>
             </nav>
-            <h3 class="text-muted">Project name</h3>
+            <h3 class="text-muted">openUC2 WebSERIAL Demonstration</h3>
         </div>
 
         <div class="jumbotron">
-            <h1 class="display-3">Try UC2 online</h1>
+            <h1 class="content"><img
+                src="https://raw.githubusercontent.com/openUC2/openUC2.github.io/master/static/img/Artboard4%404x.png"
+                width="105" height="121" alt="" />&nbsp; &nbsp;OpenUC2 Online Tool</h1>
             <p class="lead">This is to use the Web Serial interface to control a UC2 ESP device</p>
             <p><a class="btn btn-lg btn-success" id="openclose_port" role="button">Connect to ESP32</a></p>
         </div>
 
-        <div id="text-interface">
-            <h3>Enter text:</h3>
-            <input placeholder="Enter some text" name="input-text" />
-      
-            <h3>Display text:</h3>
-            <p id="output-text"></p>
-      
-            <h3>Received from Arduino:</h3>
-            <p id="received-text"></p>
-          </div>
 
           
         <div class="row marketing">
@@ -98,6 +90,7 @@
                         <option value="19200">19200</option>
                         <option value="38400">38400</option>
                         <option value="57600">57600</option>
+                        <option value="2000000">2000000</option>
                     </select><button id="change" disabled>Change</button>
                 </div>
                 <span id="port_info">Disconnected</span>
@@ -106,17 +99,14 @@
 
                 <h4>Serial Terminal X</h4>
                 <div id="outDiv">
-                    <textarea id="term_window" readonly>Hellorld!</textarea>
+                    <textarea id="term_window" style="width:600px; height:150px;"  readonly>!</textarea>
                 </div>
                 <div id="inDiv">
-                    <textarea id="term_input"></textarea>
+                    <textarea id="term_input" style="width:600px; height:150px;" ></textarea>
                     <button id="send" disabled>Send</button>
                     <button id="clear" disabled>Clear</button>
                 </div>
-                
             </div>
-
-
         </div>
 
         <footer class="footer">
