@@ -76,6 +76,14 @@
                 <p><button type="button" onclick="ledOn()" class="btn btn-info" style="">On</button></p>
                 <p><button type="button" onclick="ledOff()" class="btn btn-warning" style="">Off</button></p>
                 
+                <h4>Motor (X)</h4>
+                <p><button type="button" onclick="axisXplus()" class="btn btn-info" style="">Motor X (+)</button></p>
+                <p><button type="button" onclick="axisXminus()" class="btn btn-warning" style="">Motor X (-)</button></p>
+                
+                <h4>Motor (Y)</h4>
+                <p><button type="button" onclick="axisYplus()" class="btn btn-info" style="">Motor Y (+)</button></p>
+                <p><button type="button" onclick="axisYminus()" class="btn btn-warning" style="">Motor Y (-)</button></p>
+                
                 <h4>Motor (Z)</h4>
                 <p><button type="button" onclick="axisZplus()" class="btn btn-info" style="">Motor Z (+)</button></p>
                 <p><button type="button" onclick="axisZminus()" class="btn btn-warning" style="">Motor Z (-)</button></p>
@@ -128,6 +136,22 @@
             cmd='{"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":0, "r":0, "g":0, "b":0}]}}'
             sendCMD(cmd);
         }
+        function axisXplus() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 1, "position": 1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function axisXminus() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 1, "position": -1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd);
+        }
+        function axisYplus() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 2, "position": 1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function axisYminus() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 2, "position": -1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd);
+        }
         function axisZplus() {
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 3, "position": 100, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd)
@@ -135,7 +159,7 @@
         function axisZminus() {
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 3, "position": -100, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
-        }
+        }        
     </script>
 </html>
 
