@@ -145,10 +145,27 @@ And a video recorded from the Matchboxscope is [here](https://www.youtube.com/wa
 
 # Updates 
 
-*update Feb 2023 - You can 3D print a spacer for the camera on the board. This spacer will alleviate the cable stress. You can find the file in the stl folder. 
+________________________
+*update April 2023 - we are testing external (battery-powered) LED. These LEDs are usually used for decorations, can be on for 2 weeks, and are quite cheap. See for example ["LIHAO mini LED"](https://www.amazon.nl/LIHAO-mini-ledlampjes-lantaarns-batterijen-waterdicht/dp/B01FF07XFE). 
+Using these LEDs we have obtained a bit more contrast than the standard periscope, and we don't heat the ESP32 using the onboard LED. The clear glass can be scratched with some sandpaper to make the light more homogeneous. 
+The STL file can be downloaded from [the STL folder in the repository](https://github.com/Matchboxscope/Matchboxscope/blob/master/STL/Matchboxscope/Matchboxscope_VCM_v1_Matchboxscope_Lightperiscope_externalLED12mm_v3.stl).
+
+
+the matchboxscope with the external LED:
+![](IMAGES/matchboxscope/extLED.jpg)
+
+Image taken with the periscope: 
+![](IMAGES/matchboxscope/extLED1.JPG)
+
+Image taken with the external LED:
+![](IMAGES/matchboxscope/extLED2.JPG)
+
+________________________
+*update Feb 2023 - You can 3D print a spacer for the camera on the board. This spacer will alleviate the cable stress. You can find the file in the STL folder. 
 
 ![](IMAGES/matchboxscope/guidev1003_b.jpeg)
 
+________________________
 *update March 2023 - We have found these M3x30 screw with a flat part. Being in contact with the 3D-Printed top part for the Z focussing, they work better because of less friction.
 
 ![](IMAGES/matchboxscope/guidev_update01.jpeg)
