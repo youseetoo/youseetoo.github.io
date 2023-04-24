@@ -155,10 +155,10 @@ the matchboxscope with the external LED:
 ![](IMAGES/matchboxscope/extLED.jpg)
 
 Image taken with the periscope: 
-![](IMAGES/matchboxscope/extLED1.jpg)
+![](IMAGES/matchboxscope/extLED1.JPG)
 
 Image taken with the external LED:
-![](IMAGES/matchboxscope/extLED2.jpg)
+![](IMAGES/matchboxscope/extLED2.JPG)
 
 ________________________
 *update Feb 2023 - You can 3D print a spacer for the camera on the board. This spacer will alleviate the cable stress. You can find the file in the STL folder. 
