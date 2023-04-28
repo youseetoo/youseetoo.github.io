@@ -54,6 +54,7 @@ The Matchboxscope is composed of three parts:
 The bottom part, a case for the ESP32 board
 
 The middle part, which acts as a spacer between the lens and the camera sensor
+(**this should be printed in black**)
 
 The top part (the sample part) holds the glass slide and the illumination periscope.
 
