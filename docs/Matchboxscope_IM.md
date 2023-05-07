@@ -2,17 +2,13 @@
 
 This is a simplified version of the matchboxscope that can be produced using a desktop injection molding machine.
 
-## todo
-- disconnect usb
-- short screw lens
-- safely unplug the lens
-- add sticky something to lens holder
-- correct screw sizes
-- spring mechanism
 
-## improvements
-- hole for led holder larger
-- really threaded inserts?
+## Improvements
+This device is a work-in-progress instrument. Not everything is perfectly working yet. Bare with us. If you find something sneaky, please feel free to file an issue or start a discussion here: https://github.com/matchboxscope/Matchboxscope
+
+**Known Issues:**
+- Hole for led holder larger
+- Do we really want threaded inserts?
 
 
 
@@ -113,6 +109,7 @@ Possible causes:
 
 #### Stream stops
 - lower the resolution (e.g. VGA)
+- reflash the firmware
 
 ## Assembly
 
@@ -128,12 +125,15 @@ These are the parts you need to build a Matchboxscope:
 - 1x lens holder (printed)
 - 1x led lamp
 - 3x Springs
-- 8x M3x20 Cylindrical Headed Screws (DIN912)
+- 8x M3x20 Cylindrical Headed Screws (DIN912, 2x M3x6mm, 4x M3x12mm, 3x M3x24mm)
 - 6x M3 threaded inserts (4x6mm)
 - 1x USB micro cable
 
+:::warning
+***WARNING:*** It is advisable to have the USB cable disconnected from the camera board. This way the USB connector won't rip off the PCB and you won't induce any electro static discharges which may ultimatively destroy the board
+:::
 
-1. Add the threaded inserts to the base using a hot iron - don't burn yourself! Hint: You can have 3 inserts on the top and three on the bottom. A hot iron with a fine tip is better than one with a flat one.
+1. Add the threaded inserts to the base using a hot iron - don't burn yourself! Hint: You can have 3 inserts on the top and three on the bottom. A hot iron with a fine tip is better than one with a flat one. (**HINT:** This mechanism may change back to a non-threaded insert based version for better operatibility)
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding3.jpg)
 
 2. Repeat this for all 6 slots (or 5 if you only use 2 on the bottom)
@@ -142,42 +142,77 @@ These are the parts you need to build a Matchboxscope:
 3. Remove the lens from the camera module using pliers
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding4.jpg)
 
-**HINT:**
+**HINT/Warning:** Be careful while removing the lens. The flex cable is sensitive to tension. It may be easier to first remove the camera module using the snap-bar mechanism and then later add it again.
 ![](IMAGES/injectionmold/VID_20230504_104920.gif)
 
-4. Add the lens to the holder and remove the sticky tape
+4. Add the lens to the holder and remove the sticky tape (**Note**: This part looks a little different now since the screw has to move closoer to the base board)
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding11.jpg)
 
 **HINT:**
 ![](IMAGES/injectionmold/VID_20230504_105826.gif)
 
-5. Fix the lens on the base using M3 screws
+5. Fix the lens on the base using M3x6mm screws (**Note**: The screws should not touch the PCB later when everything is fully assembled!)
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding12.jpg)
 
-6. Add the camera holder to the board and fix the camera in place
+6. Add the camera holder to the board and fix the camera in place (**Hint**: If the Camera is not holding properly, you could use blutek or double sided sticky tape to fix it temporally. **WARNING:** be careful with the flex-pcb (copper one) since this easily breaks if not handled with care)
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding14.jpg)
 
-7. Add the esp32 board to the base
+7. Add the ESP32 board to the base so that the camera tube fits into the hole in the base
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding15.jpg)
 
-8. Close the lid using M3 screws
+8. Close the base with the lid from below using M3x12mm screws (not using too long screws)
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding16.jpg)
 
-9. Add the springs to the screws and mount the sample plate using m3 screws + add teh lamp holder
+9. Add the springs to the screws and mount the sample plate using M3x24mm screws;  Add the lamp holder using the M3x12 screw.
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding17.jpg)
 
-**HINT:** ![](IMAGES/injectionmold/VID_20230504_111346.gif)
+**HINT:** This is a bit tricky. Start with one screw+spring combination, fix it and continue with all others. In motion:
+![](IMAGES/injectionmold/VID_20230504_111346.gif)
 
 
 10. Add the lamp - done!
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding18.jpg)
 
 
-
-
 ## Done
 
 ![](IMAGES/injectionmold/matchboxscope_injectionmolding19.jpg)
+
+## Operation
+
+### Find the focus
+
+Turn on the light. Take a piece of paper and first try if you can sense any contrast variation in the camera stream. Try to turn the 3 spring-loaded screws such that the stage z-position becomes coincident with the position of best contrast with the piece of paper. Try to keep the stage parallel to the base.
+
+## Software
+
+### Browser-based operation
+
+You can connect to the ESP32 using a wifi-enabled device that runs a browser (mostly tested with Chrome). Find the device's IP address (e.g. by observing the Serial output) and enter this address into the browser's address bar. The UI comes in `simple` and `advanced` mode. Open `advanced`. Play around with the settings. You can tweak it to be fully manual, however, the image data will always be JPEG compressed (sorry).
+
+#### ImJoy/ImageJ.js
+
+When the stream is running, you can send an image to the in-built ImJoy/ImageJ.js plugin. There you can do all kinds of image processing tasks as you know from Fiji. **Note** This will only work if the stream is running. Once you hit the `send to ImJoy` button, the stream will pause. For another image, you have to restart the stream first.
+
+#### GitHub upload
+
+Similar to the ImageJ.js functionality, the ESP32 can trigger a `git push` of the latest frame from the camera stream to a gallery repository available here https://github.com/matchboxscope/Matchboxscope-gallery. The image resolution will be altered to a much smaller value, (320x240 pixels^2) so that the upload won't timeout (unknown reason??). This change in resolution leads to an over exposed image with previously adjusted settings.
+
+The uploaded images get compiled into a JS-based gallery daily, available here: https://matchboxscope.github.io/gallery/matchboxgallery
+
+### Autonomous operation
+
+If a FAT formated SD micro card is inserted, you can record timelapse image series with the previously entered settings. Two modes are available. One, where the network operatibility is still available, the other when it'S in deep-sleep mode (e.g. under water).
+
+#### Non-deepsleep timelapse
+
+Adjust the value in the timelapse slider to something between 0-600s. The image gets stored on the SD card.
+
+#### Deep-sleep timelapse
+
+To enter this setting, you have to move the slider for Anglerfishmode all the way to the very right. A link appears that will activate the deep-sleep time lapse feature. It will use the previously set period in the timelapse slider. All settings that have been entered through the GUI will be used for imaging + an exposure series of 1,5,10,50,100,500ms will be acquired. Images get stored on the SD card. To exit the "boot loop", you simply remove the SD card and it will turn back to normal mode,where it tries to connect to the previously set wifi connection.
+
+
 
 
 ## Showcase
