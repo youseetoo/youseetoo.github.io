@@ -43,7 +43,7 @@
         </div>
 
 
-          
+
         <div class="row marketing">
             <div class="col-lg-6">
                 <h4>Microscope Webcam Livestream</h4>
@@ -69,26 +69,26 @@
                         <video id="video" playsinline autoplay></video>
                     </div>
                 </p>
-                
+
                 <h4>Hardware Control</h4>
-                
+
                 <table border="0">
                     <tr>
                         <th><b>Laser</b></th>
                     </tr>
                     <tr>
                         <th><p><button type="button" onclick="laser1On()" class="btn btn-info" style="">Laser 1 (on)</button></p></th>
-                        <th><p><button type="button" onclick="laser1Off()" class="btn btn-warning" style="">Laser 1 (off)</button></p></th>              
+                        <th><p><button type="button" onclick="laser1Off()" class="btn btn-warning" style="">Laser 1 (off)</button></p></th>
                     </tr>
                     <tr>
                         <th><p><button type="button" onclick="laser2On()" class="btn btn-info" style="">Laser 2 (on)</button></p></th>
-                        <th><p><button type="button" onclick="laser2Off()" class="btn btn-warning" style="">Laser 2 (off)</button></p></th>              
+                        <th><p><button type="button" onclick="laser2Off()" class="btn btn-warning" style="">Laser 2 (off)</button></p></th>
                     </tr>
                     <tr>
                         <th><p><button type="button" onclick="laser3On()" class="btn btn-info" style="">Laser 3 (on)</button></p></th>
-                        <th><p><button type="button" onclick="laser3Off()" class="btn btn-warning" style="">Laser 3 (off)</button></p></th>              
+                        <th><p><button type="button" onclick="laser3Off()" class="btn btn-warning" style="">Laser 3 (off)</button></p></th>
                     </tr>
-                    
+
                     <tr>
                         <th><b>Motor</b></th>
                     </tr>
@@ -96,7 +96,7 @@
                         <th><p><button type="button" onclick="axisXplus()" class="btn btn-info" style="">Motor X (+)</button></p></th>
                         <th><p><button type="button" onclick="axisXminus()" class="btn btn-warning" style="">Motor X (-)</button></p></th>
                     </tr>
-                    
+
                     <tr>
                         <th><p><button type="button" onclick="axisYplus()" class="btn btn-info" style="">Motor Y (+)</button></p></th>
                         <th><p><button type="button" onclick="axisYminus()" class="btn btn-warning" style="">Motor Y (-)</button></p></th>
@@ -119,7 +119,15 @@
                         <th><p><button type="button" onclick="ledOn()" class="btn btn-info" style="">LED (on)</button></p></th>
                         <th><p><button type="button" onclick="ledOff()" class="btn btn-warning" style="">LED (off)</button></p></th>
                     </tr>
-    
+
+                    <tr>
+                        <th><b>Enable</b>
+                    </tr>
+                    <tr>
+                        <th><p><button type="button" onclick="autoEnableOn()" class="btn btn-info" style="">Auto Enable (on)</button></p></th>
+                        <th><p><button type="button" onclick="autoEnableOff()" class="btn btn-warning" style="">Auto Enable (off)</button></p></th>
+                    </tr>
+
 
 
                 </table>
@@ -156,15 +164,18 @@
 
         <h2 class="text-center">Code Examples</h2>
         <pre><code height: auto; width: 600px; class="json">
+
+          # enable
+          {"task":"/motor_act", "isen":1, "isenauto":1}
         # modules
-    
+
     {"task":"/modules_get"}
     {"task":"/modules_set", "modules" : {"led" : 1, "motor": 1, "slm" : 0, "home":1, "analogin" : 0, "pid" : 0, "laser" : 1, "dac" : 0, "analogout" : 0, "digitalout" : 0, "digitalin" : 1, "scanner" : 0}}
     {"task":"/modules_set", "modules" : {"led" : 0, "motor": 1, "slm" : 0, "home":0, "analogin" : 0, "pid" : 0, "laser" : 0, "dac" : 0, "analogout" : 0, "digitalout" : 0, "digitalin" : 1, "scanner" : 0}}
     {"task":"/state_get"}
     # DAC
     {"task":"/dac_act_fct", "dac_channel":1, "frequency":1000, "offset":0, "amplitude":1}
-    
+
     # MOTOR
     # X,Y,Z,A => 1,2,3,0
     {"task":"/motor_set",
@@ -205,28 +216,28 @@
             ]
         }
     }
-    
-    
-    
-    # DIGITAL OUT 
-    // trigger 
+
+
+
+    # DIGITAL OUT
+    // trigger
     {"task":"/digitalout_set", "digitaloutid":1, "digitaloutpin":4}
     {"task":"/digitalout_act", "digitalout1TriggerDelayOn":100, "digitalout1TriggerDelayOff":10, "digitalout1IsTrigger":1,  "digitalout2TriggerDelayOn":10, "digitalout2TriggerDelayOff":100, "digitalout2IsTrigger":1}
     {"task":"/digitalout_act", "digitaloutistriggerreset":1}
-    
-    
+
+
     # DIGITAL IN
     {"task": "/digitalin_set", "digitalinid":1, "digitalinpin":13}
     {"task": "/digitalin_set", "digitalinid":2, "digitalinpin":5}
     {"task": "/digitalin_set", "digitalinid":3, "digitalinpin":23}
     {"task": "/digitalin_get", "digitalinid":1}
-    
+
     {"task": "/digitalin_set", "digitalinid":3, "digitalinpin":34}
     {"task": "/laser_set", "LASERid":1, "LASERpin":18}
     {"task": "/laser_set", "LASERid":2, "LASERpin":19}
     {"task": "/ledarr_set", "led":{"ledArrPin":32, "ledArrNum":64}}
-    
-    
+
+
     # LASER
     {"task": "/laser_act", "LASERid":2, "LASERpin":19}
     payload = {
@@ -238,32 +249,32 @@
     }
     {"task": "/laser_act", "LASERid":1, "LASERval": 1024}
     {"task": "/laser_get"}
-    
+
     # HOME
     {"task": "/home_get"}
     {"task": "/home_set"}
     {"task":"/home_act", "home": {"steppers": [{"stepperid":1, "timeout": 20000, "speed": 15000, "direction":-1, "endposrelease":3000}]}}
     {"task":"/home_act", "home": {"steppers": [{"stepperid":2, "timeout": 20000, "speed": 15000, "direction":-1, "endposrelease":3000}]}}
     {"task":"/home_act", "home": {"steppers": [{"stepperid":3, "timeout": 2000, "speed": 15000, "direction":-1, "endposrelease":3000}]}}
-    
-    
+
+
     {"task":"/home_act", "home": {"steppers": [{"stepperid":1, "timeout": 20000, "speed": 15000, "direction":1, "endposrelease":3000}
     {"stepperid":2, "timeout": 20000, "speed": 15000, "direction":1, "endposrelease":3000}]}}
-    
-    
-    
-    
-    
+
+
+
+
+
     {"task":"/wifi/scan"}
     {"task":"/wifi/connect","ssid":"Test","PW":"12345678", "AP":false}
     {"task":"/bt_connect", "mac":"1a:2b:3c:01:01:01", "psx":2}
-    
-    
+
+
     {"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":0, "r":0, "g":5, "b":0}]}}
     {"task":"/ledarr_act", "led":{"LEDArrMode":0, "led_array":[{"id":0, "r":0, "g":5, "b":0}]}}
-    
+
     {"task": "/motor_get"}
-    
+
     # HOLISHEET
     {"task":"/modules_set", "modules" : {"dac" : 1}}
     {"task": "/laser_act", "LASERid":1, "LASERval": 512}
@@ -277,10 +288,10 @@
             ]
         }
     }
-    
-    
-    
-    
+
+
+
+
     {"task":"/motor_act",
         "motor":
         {
@@ -290,21 +301,21 @@
             ]
         }
     }
-    
+
     {"task":"/motor_act",
         "motor":
         {
             "steppers": [
                 { "stepperid": 1, "position": -10000, "speed": 15000, "isabs": 0, "isaccel":0, "isen":1}
         ]}}
-    
+
     {"task":"/motor_act",     "motor":     {         "steppers": [             { "stepperid": 1, "position": -1000, "speed": 2000, "isabs": 0, "isaccel":1, "isen":0, "accel":20000}     ]}}
-    
-    
-    
+
+
+
     {"task":"/home_act", "setpos":1, "home": {"steppers": [{"stepperid":1, "posval": 20000}]}}
     </code></pre>
-    
+
 
         <footer class="footer">
             <p>© openUC2 2023</p>
@@ -372,10 +383,17 @@
         function axisZminus() {
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 3, "position": -100, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
-        }        
+        }
+        function autoEnableOn() {
+            cmd='{"task":"/motor_act", "isen":1, "isenauto":1}'
+            sendCMD(cmd)
+        }
+        function autoEnableOff() {
+            cmd='{"task":"/motor_act", "isen":1, "isenauto":0}'
+            sendCMD(cmd);
+        }
+
     </script>
 
 
     </html>
-
-
