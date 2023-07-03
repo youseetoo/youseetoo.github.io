@@ -113,6 +113,29 @@
                     </tr>
 
                     <tr>
+                        <th><b>Rotator</b></th>
+                    </tr>
+                    <tr>
+                        <th><p><button type="button" onclick="rotatorXplus()" class="btn btn-info" style="">Rotator X (+)</button></p></th>
+                        <th><p><button type="button" onclick="rotatorXminus()" class="btn btn-warning" style="">Rotator X (-)</button></p></th>
+                    </tr>
+
+                    <tr>
+                        <th><p><button type="button" onclick="rotatorYplus()" class="btn btn-info" style="">Rotator Y (+)</button></p></th>
+                        <th><p><button type="button" onclick="rotatorYminus()" class="btn btn-warning" style="">Rotator Y (-)</button></p></th>
+                    </tr>
+
+                    <tr>
+                        <th><p><button type="button" onclick="rotatorZplus()" class="btn btn-info" style="">Rotator Z (+)</button></p></th>
+                        <th><p><button type="button" onclick="rotatorZminus()" class="btn btn-warning" style="">Rotator Z (-)</button></p></th>
+                    </tr>
+
+                    <tr>
+                        <th><p><button type="button" onclick="rotatorAplus()" class="btn btn-info" style="">Rotator A (+)</button></p></th>
+                        <th><p><button type="button" onclick="rotatorAminus()" class="btn btn-warning" style="">Rotator A (-)</button></p></th>
+                    </tr>
+
+                    <tr>
                         <th><b>LED</b>
                     </tr>
                     <tr>
@@ -388,6 +411,32 @@
             cmd='{"task":"/motor_act", "isen":1, "isenauto":1}'
             sendCMD(cmd)
         }
+        function rotatorXplus() {
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 1, "position": 1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function rotatorXminus() {
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 1, "position": -1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd);
+        }
+        function rotatorYplus() {
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 2, "position": 1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function rotatorYminus() {
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 2, "position": -1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd);
+        }
+        function rotatorZplus() {
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 3, "position": 100, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function rotatorZminus() {
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 3, "position": -100, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd);
+        }
+
+        
         function autoEnableOff() {
             cmd='{"task":"/motor_act", "isen":1, "isenauto":0}'
             sendCMD(cmd);
