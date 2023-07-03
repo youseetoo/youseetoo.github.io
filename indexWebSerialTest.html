@@ -412,29 +412,38 @@
             sendCMD(cmd)
         }
         function rotatorXplus() {
-            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 1, "position": 1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 1, "position": 1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd)
         }
         function rotatorXminus() {
-            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 1, "position": -1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 1, "position": -1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
         }
         function rotatorYplus() {
-            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 2, "position": 1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 2, "position": 1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd)
         }
         function rotatorYminus() {
-            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 2, "position": -1000, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 2, "position": -1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
         }
         function rotatorZplus() {
-            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 3, "position": 100, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 3, "position": 1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd)
         }
         function rotatorZminus() {
-            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 3, "position": -100, "speed": 5000, "isabs": 0, "isaccel":0}]}}'
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 3, "position": -1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
         }
+        function rotatorAplus() {
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 0, "position": 1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function rotatorAminus() {
+            cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 0, "position": -1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd);
+        }
+
 
         
         function autoEnableOff() {
