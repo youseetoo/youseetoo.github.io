@@ -151,6 +151,12 @@
                         <th><p><button type="button" onclick="autoEnableOff()" class="btn btn-warning" style="">Auto Enable (off)</button></p></th>
                     </tr>
 
+                </tr>
+                <th><b>Connect to PS4 Controller</b></th>
+                <tr>
+                    <th><p><button type="button" onclick="btPairing()" class="btn btn-info" style="">BT Pairing</button></p></th>
+                </tr>
+
 
 
                 </table>
@@ -166,6 +172,7 @@
                         <option value="19200">19200</option>
                         <option value="38400">38400</option>
                         <option value="57600">57600</option>
+                        <option value="1000000">1000000</option>
                         <option value="2000000">2000000</option>
                     </select><button id="change" disabled>Change</button>
                 </div>
@@ -443,7 +450,10 @@
             cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 0, "position": -1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
         }
-
+        function btPairing() {
+            cmd='{"task":"/bt_scan"}'
+            sendCMD(cmd);
+        }
 
         
         function autoEnableOff() {
