@@ -144,6 +144,31 @@
                     </tr>
 
                     <tr>
+                        <th><b>Outer Ring</b>
+                    </tr>
+                    <tr>
+                            <th><p><button type="button" onclick="turnOnOuterRing()" class="btn btn-info" style="">LED outer ring (on)</button></p></th>
+                            <th><p><button type="button" onclick="turnOffOuterRing()" class="btn btn-warning" style="">LED outer ring (off)</button></p></th>
+                    </tr>
+
+                    <tr>
+                        <th><b>Middle Ring</b>
+                    </tr>
+                    <tr>
+                            <th><p><button type="button" onclick="turnOnMiddleRing()" class="btn btn-info" style="">LED middle ring (on)</button></p></th>
+                            <th><p><button type="button" onclick="turnOffMiddleRing()" class="btn btn-warning" style="">LED middle ring (off)</button></p></th>
+                    </tr>
+                    
+                    <tr>
+                        <th><b>Inner Ring</b>
+                    </tr>
+                    <tr>
+                            <th><p><button type="button" onclick="turnOnCenterRing()" class="btn btn-info" style="">LED inner ring (on)</button></p></th>
+                            <th><p><button type="button" onclick="turnOffCenterRing()" class="btn btn-warning" style="">LED inner ring (off)</button></p></th>
+                    </tr>
+
+
+                    <tr>
                         <th><b>Enable</b>
                     </tr>
                     <tr>
@@ -458,6 +483,65 @@
             cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 0, "position": -1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
         }
+
+        function turnOnOuterRing(){
+            // construct a JSON string in the following format for all ids from 9-24 in a for loop
+            // {"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":9, "r":255, "g":255, "b":255}]}}
+            cmd = createJSON(9, 24, 255);
+            sendCMD(cmd);
+        }
+
+        function turnOffOuterRing(){
+            // construct a JSON string in the following format for all ids from 9-24 in a for loop
+            // {"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":9, "r":0, "g":0, "b":0}]}}
+            cmd = createJSON(9, 24, 0);
+            sendCMD(cmd);   
+        }
+
+        function turnOnMiddleRing(){
+            cmd = createJSON(1, 8, 255);
+            sendCMD(cmd);
+        }
+
+        function turnOffMiddleRing(){
+            cmd = createJSON(1, 8, 0);
+            sendCMD(cmd);   
+        }
+
+        function turnOnCenterRing(){
+            cmd = createJSON(0, 1, 255);
+            sendCMD(cmd);
+        }
+
+        function turnOffCenterRing(){
+            cmd = createJSON(0, 1, 0);
+            sendCMD(cmd);   
+        }
+
+
+        function createJSON(startID, endID, state) {
+            const ledArray = [];
+          
+            for (let i = startID; i <= endID; i++) {
+              ledArray.push({
+                id: i,
+                r: state,
+                g: state,
+                b: state
+              });
+            }
+          
+            const jsonString = JSON.stringify({
+              task: "/ledarr_act",
+              led: {
+                LEDArrMode: 8,
+                led_array: ledArray
+              }
+            });
+          
+            return jsonString;
+          }
+
         function btPairing() {
             cmd='{"task":"/bt_scan"}'
             sendCMD(cmd);
