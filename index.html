@@ -182,11 +182,12 @@
         </label>
         <label>
           <input type="radio" name="type" value="esp32-uc2-standalone-2" />
-          <img
-            src="./esp32-uc2-standalone-2.png"
-            alt="Olimex ESP32 Power-over-Ethernet ISO"
-          />
+          <img src="./esp32-uc2-standalone-2.png" />
         </label>
+        <label>
+          <input type="radio" name="type" value="esp32-uc2-standalone-3" />
+          <img src="./esp32-uc2-standalone-3.png" />
+        </label>        
       </div>
 
       <p class="button-row" align="center">
@@ -406,6 +407,83 @@
           More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
         </p>
       </div>
+
+      <div class="hidden info esp32-uc2-standalone-3">
+        <h3>ESP32 DEV-based UC2 standalone board V3</h3>
+        Design files can be found  <a href="https://github.com/openUC2/UC2-SUES/">here</a>
+        <h3>Pin Layout</h3>
+        <pre>
+        <code class="language-pascal">
+          // UC2 STandalone V3
+          const char * pindefName = "UC2_3";
+     
+          int8_t MOTOR_A_STEP = GPIO_NUM_15;
+          int8_t MOTOR_X_STEP = GPIO_NUM_16;
+          int8_t MOTOR_Y_STEP = GPIO_NUM_14;
+          int8_t MOTOR_Z_STEP = GPIO_NUM_0;
+     
+          bool MOTOR_ENABLE_INVERTED = true;
+          bool MOTOR_AUTOENABLE = true;
+          bool useFastAccelStepper = true;
+          int8_t AccelStepperMotorType = 1;
+     
+          int8_t LASER_1 = GPIO_NUM_12;
+          int8_t LASER_2 = GPIO_NUM_4;
+          int8_t LASER_3 = GPIO_NUM_2;
+     
+          int8_t LED_PIN = GPIO_NUM_13;
+          int8_t LED_COUNT = 64;
+     
+          // FIXME: Is this redudant?!
+          int8_t PIN_DEF_END_X = disabled;
+          int8_t PIN_DEF_END_Y = disabled;
+          int8_t PIN_DEF_END_Z = disabled;
+          int8_t DIGITAL_IN_1 = PIN_DEF_END_X;
+          int8_t DIGITAL_IN_2 = PIN_DEF_END_Y;
+          int8_t DIGITAL_IN_3 = PIN_DEF_END_Z;
+     
+          // const char * PSX_MAC = "1a:2b:3c:01:01:04";
+          // int8_t PSX_CONTROLLER_TYPE = 2; // 1: PS3, 2: PS4
+          bool enableBlueTooth = true;
+          bool useBtHID = true;
+     
+          int8_t JOYSTICK_SPEED_MULTIPLIER = 30;
+          int8_t JOYSTICK_MAX_ILLU = 100;
+          int8_t JOYSTICK_SPEED_MULTIPLIER_Z = 30;
+     
+          // for caliper
+          int8_t X_CAL_DATA = GPIO_NUM_32;
+          int8_t Y_CAL_DATA = GPIO_NUM_34;
+          int8_t Z_CAL_DATA = GPIO_NUM_36;
+          int8_t X_CAL_CLK = GPIO_NUM_33;
+          int8_t Y_CAL_CLK = GPIO_NUM_35;
+          int8_t Z_CAL_CLK = GPIO_NUM_17;
+          
+          // I2c
+          int8_t I2C_SCL = GPIO_NUM_22;
+          int8_t I2C_SDA = GPIO_NUM_21;
+          int8_t I2C_ADD = 0x27;
+          gpio_num_t  I2C_INT = GPIO_NUM_27;
+     
+          // SPI
+          int8_t SPI_MOSI = GPIO_NUM_23;
+          int8_t SPI_MISO = GPIO_NUM_19;
+          int8_t SPI_SCK = GPIO_NUM_18;
+          int8_t SPI_CS = GPIO_NUM_5;
+     
+          // WiFI
+          bool enableWifi = false;
+          </code>
+      </pre>
+        <p>
+          This board is the updated version of the V2 with additional transistors to control High Power LEDs and a 
+          port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of 
+          linear encoders that are used in callipers. 
+          It also features an updated pin layout to access more functionalities of the ESP32. 
+          More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
+        </p>
+      </div>
+
 
       <h3>Advanced Users</h3>
       We provide two firmware versions: V1 (deprecated) and V2. The latter is implemented in the Platform.io standard. 
