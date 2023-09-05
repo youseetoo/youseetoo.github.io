@@ -74,6 +74,12 @@
 
                 <table border="0">
                     <tr>
+                        <th><b>Status</b></th>
+                    </tr>
+                    <tr>
+                        <th><p><button type="button" onclick="getState()" class="btn btn-info" style="">Get Board info</button></p></th>
+                    </tr>
+                    <tr>
                         <th><b>Laser</b></th>
                     </tr>
                     <tr>
@@ -383,6 +389,10 @@
     <script src="../../../js/lib/ga.js"></script>
 
     <script>
+        function getState() {
+            cmd='{"task":"/state_get"}'
+            sendCMD(cmd)
+        }
         function laser1On() {
             cmd='{"task": "/laser_act", "LASERid":1, "LASERval": 1024}'
             sendCMD(cmd)
