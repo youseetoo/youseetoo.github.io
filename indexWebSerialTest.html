@@ -101,21 +101,25 @@
                     <tr>
                         <th><p><button type="button" onclick="axisXplus()" class="btn btn-info" style="">Motor X (+)</button></p></th>
                         <th><p><button type="button" onclick="axisXminus()" class="btn btn-warning" style="">Motor X (-)</button></p></th>
+                        <th><p><button type="button" onclick="stopX()" class="btn btn-warning" style="">Stop Motor X (-)</button></p></th>
                     </tr>
 
                     <tr>
                         <th><p><button type="button" onclick="axisYplus()" class="btn btn-info" style="">Motor Y (+)</button></p></th>
                         <th><p><button type="button" onclick="axisYminus()" class="btn btn-warning" style="">Motor Y (-)</button></p></th>
+                        <th><p><button type="button" onclick="stopY()" class="btn btn-warning" style="">Stop Motor Y (-)</button></p></th>
                     </tr>
 
                     <tr>
                         <th><p><button type="button" onclick="axisZplus()" class="btn btn-info" style="">Motor Z (+)</button></p></th>
                         <th><p><button type="button" onclick="axisZminus()" class="btn btn-warning" style="">Motor Z (-)</button></p></th>
+                        <th><p><button type="button" onclick="stopZ()" class="btn btn-warning" style="">Stop Motor Z (-)</button></p></th>
                     </tr>
 
                     <tr>
                         <th><p><button type="button" onclick="axisAplus()" class="btn btn-info" style="">Motor A (+)</button></p></th>
                         <th><p><button type="button" onclick="axisAminus()" class="btn btn-warning" style="">Motor A (-)</button></p></th>
+                        <th><p><button type="button" onclick="stopA()" class="btn btn-warning" style="">Stop Motor A (-)</button></p></th>
                     </tr>
 
                     <tr>
@@ -164,7 +168,7 @@
                             <th><p><button type="button" onclick="turnOnMiddleRing()" class="btn btn-info" style="">LED middle ring (on)</button></p></th>
                             <th><p><button type="button" onclick="turnOffMiddleRing()" class="btn btn-warning" style="">LED middle ring (off)</button></p></th>
                     </tr>
-                    
+
                     <tr>
                         <th><b>Inner Ring</b>
                     </tr>
@@ -429,6 +433,10 @@
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 1, "position": 1000, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd)
         }
+        function stopX() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 1, "isstop": 1}]}}'
+            sendCMD(cmd)
+        }
         function axisXminus() {
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 1, "position": -1000, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
@@ -440,6 +448,10 @@
         function axisYminus() {
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 2, "position": -1000, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
+        }
+        function stopY() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 2, "isstop": 1}]}}'
+            sendCMD(cmd)
         }
         function axisZplus() {
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 3, "position": 100, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
@@ -453,16 +465,24 @@
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 0, "position": 1000, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd)
         }
+        function stopZ() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 3, "isstop": 1}]}}'
+            sendCMD(cmd)
+        }
         function axisAminus() {
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 0, "position": -1000, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd);
-        }        
+        }
         function autoEnableOn() {
             cmd='{"task":"/motor_act", "isen":1, "isenauto":1}'
             sendCMD(cmd)
         }
         function rotatorXplus() {
             cmd='{"task":"/rotator_act","motor":{"steppers": [{ "stepperid": 1, "position": 1000, "speed": 500, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function stopA() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 0, "isstop": 1}]}}'
             sendCMD(cmd)
         }
         function rotatorXminus() {
@@ -505,7 +525,7 @@
             // construct a JSON string in the following format for all ids from 9-24 in a for loop
             // {"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":9, "r":0, "g":0, "b":0}]}}
             cmd = createJSON(9, 24, 0);
-            sendCMD(cmd);   
+            sendCMD(cmd);
         }
 
         function turnOnMiddleRing(){
@@ -515,7 +535,7 @@
 
         function turnOffMiddleRing(){
             cmd = createJSON(1, 8, 0);
-            sendCMD(cmd);   
+            sendCMD(cmd);
         }
 
         function turnOnCenterRing(){
@@ -525,13 +545,13 @@
 
         function turnOffCenterRing(){
             cmd = createJSON(0, 1, 0);
-            sendCMD(cmd);   
+            sendCMD(cmd);
         }
 
 
         function createJSON(startID, endID, state) {
             const ledArray = [];
-          
+
             for (let i = startID; i <= endID; i++) {
               ledArray.push({
                 id: i,
@@ -540,7 +560,7 @@
                 b: state
               });
             }
-          
+
             const jsonString = JSON.stringify({
               task: "/ledarr_act",
               led: {
@@ -548,7 +568,7 @@
                 led_array: ledArray
               }
             });
-          
+
             return jsonString;
           }
 
@@ -557,7 +577,7 @@
             sendCMD(cmd);
         }
 
-        
+
         function autoEnableOff() {
             cmd='{"task":"/motor_act", "isen":1, "isenauto":0}'
             sendCMD(cmd);
