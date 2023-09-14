@@ -101,13 +101,17 @@
                     <tr>
                         <th><p><button type="button" onclick="axisXplus()" class="btn btn-info" style="">Motor X (+)</button></p></th>
                         <th><p><button type="button" onclick="axisXminus()" class="btn btn-warning" style="">Motor X (-)</button></p></th>
-                        <th><p><button type="button" onclick="stopX()" class="btn btn-warning" style="">Stop Motor X (-)</button></p></th>
+                        <th><p><button type="button" onclick="axisXForverplus()" class="btn btn-info" style="">Motor X forever (+)</button></p></th>
+                        <th><p><button type="button" onclick="axisXForverminus()" class="btn btn-info" style="">Motor X forver (-)</button></p></th>
+                        <th><p><button type="button" onclick="stopX()" class="btn btn-error" style="">Stop Motor X</button></p></th>
                     </tr>
 
                     <tr>
                         <th><p><button type="button" onclick="axisYplus()" class="btn btn-info" style="">Motor Y (+)</button></p></th>
                         <th><p><button type="button" onclick="axisYminus()" class="btn btn-warning" style="">Motor Y (-)</button></p></th>
-                        <th><p><button type="button" onclick="stopY()" class="btn btn-warning" style="">Stop Motor Y (-)</button></p></th>
+                        <th><p><button type="button" onclick="axisYForverplus()" class="btn btn-info" style="">Motor Y forever (+)</button></p></th>
+                        <th><p><button type="button" onclick="axisYForverminus()" class="btn btn-info" style="">Motor Y forver (-)</button></p></th>
+                        <th><p><button type="button" onclick="stopY()" class="btn btn-error" style="">Stop Motor Y</button></p></th>
                     </tr>
 
                     <tr>
@@ -443,6 +447,22 @@
         }
         function axisYplus() {
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 2, "position": 1000, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function axisXForverminus() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 1, "isforever":1, "speed": -1500, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd);
+        }
+        function axisXForverplus() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 1, "isforever":1, "speed": 1500, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd);
+        }
+        function axisYForverminus() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 2, "isforever":1, "speed": -1500, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function axisYForverplus() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 2, "isforever":1, "speed": 1500, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd)
         }
         function axisYminus() {
