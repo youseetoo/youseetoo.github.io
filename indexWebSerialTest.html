@@ -649,18 +649,27 @@
             document.getElementById('stopTimelapseBtn').disabled = true;
         }
 
+        const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
 
         
         function captureAndBufferImage() {
             const canvas = document.createElement('canvas');
             const video = document.getElementById('video');
-        
+
+            // turn on illumination 
+            ledOn();
+            // delay for 100ms 
+            sleep(100);
+
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
         
             timelapseImages.push(canvas.toDataURL("image/jpeg"));
             snapCounter++;
+
+            // turn off illumination
+            ledOff();
         
             if (snapCounter >= downloadImagesInterval) {
                 downloadImagesAsZip();
