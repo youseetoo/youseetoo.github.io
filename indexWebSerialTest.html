@@ -12,6 +12,10 @@
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <link href="editor.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
+
+
 </head>
 
 <body data-new-gr-c-s-check-loaded="14.1093.0" data-gr-ext-installed="" data-new-gr-c-s-loaded="14.1093.0">
@@ -69,6 +73,18 @@
                         <video id="video" playsinline autoplay></video>
                     </div>
                 </p>
+                
+                <h4>Timelapse Settings </h4>
+                <p>Set the interval (in milliseconds) and control the timelapse.</p>
+                <label for="timelapseInterval">Interval (ms): </label>
+                <input type="number" id="timelapseInterval" value="5000">
+                <p><label for="downloadImagesInterval">Download Images (N-times): </label>  
+                <input type="number" id="downloadImagesInterval" value="500">  </p>
+                <p>Snaps Taken: <span id="snapCounter">0</span></p>
+                <p><button type="button" id="startTimelapseBtn" class="btn btn-info">Start Timelapse</button></p>
+                <p><button type="button" id="stopTimelapseBtn" class="btn btn-warning" disabled>Stop Timelapse</button></p>
+
+
 
                 <h4>Hardware Control</h4>
 
@@ -605,6 +621,74 @@
             sendCMD(cmd);
         }
 
+
+        let timelapseIntervalID;
+        let snapCounter = 0;
+        let timelapseImages = [];
+        let downloadImagesInterval;
+
+        document.getElementById('startTimelapseBtn').addEventListener('click', startTimelapse);
+        document.getElementById('stopTimelapseBtn').addEventListener('click', stopTimelapse);
+
+        function startTimelapse() {
+            let interval = parseInt(document.getElementById('timelapseInterval').value);
+            downloadImagesInterval = parseInt(document.getElementById('downloadImagesInterval').value);
+            if (isNaN(interval) || interval <= 0) {
+                alert('Please enter a valid interval in milliseconds.');
+                return;
+            }
+
+            timelapseIntervalID = setInterval(captureAndBufferImage, interval);
+            document.getElementById('startTimelapseBtn').disabled = true;
+            document.getElementById('stopTimelapseBtn').disabled = false;
+        }
+
+        function stopTimelapse() {
+            clearInterval(timelapseIntervalID);
+            document.getElementById('startTimelapseBtn').disabled = false;
+            document.getElementById('stopTimelapseBtn').disabled = true;
+        }
+
+
+        
+        function captureAndBufferImage() {
+            const canvas = document.createElement('canvas');
+            const video = document.getElementById('video');
+        
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+        
+            timelapseImages.push(canvas.toDataURL("image/jpeg"));
+            snapCounter++;
+        
+            if (snapCounter >= downloadImagesInterval) {
+                downloadImagesAsZip();
+                timelapseImages = []; // Reset the buffer
+                snapCounter = 0; // Reset the counter
+            }
+        
+            updateSnapCounter();
+        }
+        
+        function downloadImagesAsZip() {
+            const zip = new JSZip();
+        
+            for (let i = 0; i < timelapseImages.length; i++) {
+                const imgData = timelapseImages[i].split(',')[1]; // Split the data URL at the base64 part
+                zip.file('timelapse-snap-' + (i + 1) + '.jpg', imgData, {base64: true});
+            }
+        
+            zip.generateAsync({type:"blob"})
+                .then(function(content) {
+                    saveAs(content, "timelapse.zip");
+                });
+        }
+        
+        function updateSnapCounter() {
+            document.getElementById('snapCounter').innerText = snapCounter;
+        }
+        
     </script>
 
 
