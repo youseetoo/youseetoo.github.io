@@ -101,14 +101,17 @@
                     <tr>
                         <th><p><button type="button" onclick="laser1On()" class="btn btn-info" style="">Laser 1 (on)</button></p></th>
                         <th><p><button type="button" onclick="laser1Off()" class="btn btn-warning" style="">Laser 1 (off)</button></p></th>
+                        <th><p><input type="range" min="0" max="4095" value="0" class="slider" id="laser1Slider" onchange="setLaser1(1, this.value)"></p><p>Value: <span id="laser1Value">0</span></p></th>
                     </tr>
                     <tr>
                         <th><p><button type="button" onclick="laser2On()" class="btn btn-info" style="">Laser 2 (on)</button></p></th>
                         <th><p><button type="button" onclick="laser2Off()" class="btn btn-warning" style="">Laser 2 (off)</button></p></th>
+                        <th><p><input type="range" min="0" max="4095" value="0" class="slider" id="laser2Slider" onchange="setLaser2(2, this.value)"></p><p>Value: <span id="laser2Value">0</span></p></th>
                     </tr>
                     <tr>
                         <th><p><button type="button" onclick="laser3On()" class="btn btn-info" style="">Laser 3 (on)</button></p></th>
                         <th><p><button type="button" onclick="laser3Off()" class="btn btn-warning" style="">Laser 3 (off)</button></p></th>
+                        <th><p><input type="range" min="0" max="4095" value="0" class="slider" id="laser3Slider" onchange="setLaser3(3, this.value)"></p><p>Value: <span id="laser3Value">0</span></p></th>
                     </tr>
 
                     <tr>
@@ -415,6 +418,44 @@
     <script src="../../../js/lib/ga.js"></script>
 
     <script>
+
+        function setLaser1(index, value) {
+            // Your implementation for setLaser
+            document.getElementById("laser1Value").innerText = value;
+            cmd='{"task": "/laser_act", "LASERid":1, "LASERval": ' + value + '}'
+            sendCMD(cmd)
+        }
+        
+        // Initialize the slider
+        document.getElementById("laser1Slider").addEventListener("input", function() {
+            setLaser1(1, this.value);
+        });
+
+        function setLaser2(index, value) {
+            // Your implementation for setLaser
+            document.getElementById("laser2Value").innerText = value;
+            cmd='{"task": "/laser_act", "LASERid":2, "LASERval": ' + value + '}'
+            sendCMD(cmd)
+        }
+
+        // Initialize the slider
+        document.getElementById("laser2Slider").addEventListener("input", function() {
+            setLaser2(2, this.value);
+        });
+
+        function setLaser3(index, value) {
+            // Your implementation for setLaser
+            document.getElementById("laser3Value").innerText = value;
+            cmd='{"task": "/laser_act", "LASERid":3, "LASERval": ' + value + '}'
+            sendCMD(cmd)
+        }
+
+        // Initialize the slider
+        document.getElementById("laser3Slider").addEventListener("input", function() {
+            setLaser3(3, this.value);
+        });
+
+
         function getState() {
             cmd='{"task":"/state_get"}'
             sendCMD(cmd)
