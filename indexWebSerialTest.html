@@ -47,17 +47,16 @@
         </div>
 
 
+        <!-- Have a red  box that indicates that the default baudrate has changed -->
+        <div class="alert alert-warning" role="alert">
+            <strong>Warning!</strong> The default baudrate has changed to 115200. Please change the baudrate to 115200 in the dropdown and click on the change button.
+        </div>
+        
 
         <div class="row marketing">
             <div class="col-lg-6">
                 <h4>Microscope Webcam Livestream</h4>
                     <div id="container">
-
-
-                        <p>Get available audio, video sources and audio output devices from <code>mediaDevices.enumerateDevices()</code>
-                            then set the source for <code>getUserMedia()</code> using a <code>deviceId</code> constraint.</p>
-                        <p><b>Note:</b> without permission, the browser will restrict the available devices to at most one per type.</p>
-
                         <div class="select">
                             <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
                         </div>
@@ -84,6 +83,7 @@
                 <p><button type="button" id="startTimelapseBtn" class="btn btn-info">Start Timelapse</button></p>
                 <p><button type="button" id="stopTimelapseBtn" class="btn btn-warning" disabled>Stop Timelapse</button></p>
 
+                
 
 
                 <h4>Hardware Control</h4>
@@ -225,8 +225,8 @@
                 <div>
                     <span>Baud Rate: </span>
                     <select id="baud_rate">
-                        <option value="115200">115200</option>
                         <option value="500000">500000</option>
+                        <option value="115200">115200</option>
                         <option value="128000">128000</option>
                         <option value="9600">9600</option>
                         <option value="19200">19200</option>
