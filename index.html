@@ -1,1 +1,540 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"/><link rel="icon" href="/imswitch/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="Web site created using create-react-app"/><link rel="apple-touch-icon" href="/imswitch/logo192.png"/><link rel="manifest" href="/imswitch/manifest.json"/><title>React App</title><script defer="defer" src="/imswitch/static/js/main.5a22a5ce.js"></script><link href="/imswitch/static/css/main.137a04f5.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ESPHome Bluetooth Proxy</title>
+    <meta
+      name="description"
+      content="Expand the Bluetooth range of your smart home using ESPHome devices."
+    />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="color-scheme" content="dark light" />
+    <meta property="og:title" content="ESPHome Bluetooth Proxies" />
+    <meta property="og:site_name" content="ESPHome Bluetooth Proxies" />
+    <meta
+      property="og:url"
+      content="https://esphome.github.io/bluetooth-proxies/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:description"
+      content="Expand the Bluetooth range of your smart home using ESPHome devices."
+    />
+    <meta
+      property="og:image"
+      content="https://esphome.github.io/bluetooth-proxies/header.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@esphome_" />
+    <meta name="twitter:title" content="ESPHome Bluetooth Proxies" />
+    <meta
+      name="twitter:description"
+      content="Expand the Bluetooth range of your smart home using ESPHome devices."
+    />
+    <meta
+      name="twitter:image"
+      content="https://esphome.github.io/bluetooth-proxies/header.png"
+    />
+
+    <style>
+      body {
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Ubuntu, sans-serif;
+        padding: 0;
+        margin: 0;
+        line-height: 1.4;
+      }
+      .content {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 12px;
+      }
+      .header {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1200 / 675;
+        border-radius: 12px;
+      }
+      h3 {
+        margin-top: 1.5em;
+      }
+      a {
+        color: #03a9f4;
+      }
+      .hidden {
+        display: none;
+      }
+      li {
+        padding: 4px 0;
+      }
+      .footer {
+        margin-top: 24px;
+        border-top: 1px solid #ccc;
+        padding-top: 24px;
+        text-align: center;
+      }
+      .footer .initiative {
+        font-style: italic;
+        margin-top: 16px;
+      }
+      .radios {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .radios label {
+        padding: 4px;
+        cursor: pointer;
+        width: calc(33.3% - 16px);
+        display: block;
+        position: relative;
+      }
+      .radios input {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+      }
+      .radios img {
+        display: block;
+        width: calc(100% - 8px);
+        border: 4px solid rgba(0, 0, 0, 0);
+        aspect-ratio: 1;
+      }
+      input:checked + img {
+        border-color: #58a6ff;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #333;
+          color: #fff;
+        }
+        a {
+          color: #58a6ff;
+        }
+      }
+      @media only screen and (max-width: 450px) {
+        .radios label {
+          width: calc(50% - 16px);
+          max-width: initial;
+        }
+      }
+      .diy::after {
+        content: "DIY";
+        background-color: #f44336;
+        color: #fff;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+      }
+      body .diy {
+        display: none;
+      }
+      body.show-diy .diy {
+        display: initial;
+      }
+    </style>
+    <script
+      type="module"
+      src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"
+    ></script>
+  </head>
+  <body>
+    <div class="content">
+        <h1 class="content"><img
+            src="https://raw.githubusercontent.com/openUC2/openUC2.github.io/master/static/img/Artboard4%404x.png"
+            width="105" height="121" alt="" />&nbsp; &nbsp;OpenUC2</h1>
+        <div class="content">
+      <h1>UC2 ESP32 Flashing Tool</h1>
+      <p></p>
+      <p>
+        User-friendly tools to flash/upload the firmware for the openUC2 ESP32 device in the browser:
+      </p>
+      <ul>
+        <li>Install &amp; update firmware</li>
+        <li>Connect device to the Wi-Fi network (work in progress)</li>
+        <li>Visit the device's hosted web interface (work in progress)</li>
+        <li>Access logs and send terminal commands (work in progress)</li>
+      </ul>
+      <p>
+        Pick your UC2 PCB and flash the software using the browser! No programming or other software required.
+      </p>
+      <h2 id="test">Test the Firmware</h2>
+      <p>An online Tool will enable you to connect to the ESP and control certain hardware elements. Follow <a href="https://youseetoo.github.io/indexWebSerialTest.html">this link</a>, select the ESP32 and hit e.g. the LED on button.</p>
+      <h2 id="demo">Flash the Firmware</h2>
+      <p>This webpage will install <a href="https://github.com/youseetoo/uc2-esp32/">UC2-ESP</a>. To get started, connect
+        an ESP device to your computer and hit the button (we assume you installed the CH340 or CP2102 driver; The links to the drivers
+         will be suggested if no Serial device is found by the browser.).</p>
+      <p><strong>Note: </strong>This is only available on Chrome or Microsoft Edge.&nbsp;</p>
+      
+      <div class="radios">
+        <label>
+          <input type="radio" name="type" value="esp32-uc2-wemos" checked />
+          <img src="./esp32-uc2-wemos.jpg" alt="ESP32 Generic" />
+        </label>
+        <label>
+          <input type="radio" name="type" value="esp32-uc2-standalone-1" />
+          <img src="./esp32-uc2-standalone-1.png" alt="M5Stack Atom Lite" />
+        </label>
+        <label>
+          <input type="radio" name="type" value="esp32-uc2-standalone-2" />
+          <img src="./esp32-uc2-standalone-2.png" />
+        </label>
+        <label>
+          <input type="radio" name="type" value="esp32-uc2-standalone-3" />
+          <img src="./esp32-uc2-standalone-3.png" />
+        </label>        
+      </div>
+
+      <p class="button-row" align="center">
+        <esp-web-install-button></esp-web-install-button>
+      </p>
+
+      <div class="hidden info esp32-generic">
+        <h3>Generic ESP32</h3>
+        <p>
+          Turn any ESP32 into a Bluetooth proxy for Home Assistant. This option
+          only works for "plain" ESP32 and not for ESP32-C3 or other variants.
+        </p>
+        <p>Buy</p>
+        <ul>
+          <li>
+            <a
+              href="https://www.amazon.com/ESP-WROOM-32-Development-Microcontroller-Integrated-Compatible/dp/B08D5ZD528/?&_encoding=UTF8&tag=homeassista0e-20&linkCode=ur2&linkId=f9087b654cd5735f0761ae5db99e1e1a&camp=1789&creative=9325"
+              >Amazon</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div class="hidden info esp32-uc2-wemos">
+        <h3>ESP32 WEMOS D1 R32-based UC2 board</h3>
+        <p>
+          This is an off-the-shelf board that can - in conjuction with the CNC Shield v3 - 
+          be used for most of the microscopy tasks we use in the lab every day. The serious 
+          disadvantage is the inability to quickly add new devices since the pins do not really allow this.
+          More information can be found  <a href="https://github.com/openUC2/UC2-REST#hardware"> here.</a>
+        </p>
+        
+        <h3>Pin Layout</h3>
+        <pre>
+        <code class="language-pascal">
+          // ESP32-WEMOS D1 R32
+          const int PIN_DEF_MOTOR_DIR_A = 0;
+          const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_16; 
+          const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_27;
+          const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
+          const int PIN_DEF_MOTOR_STP_A = 0;
+          const int PIN_DEF_MOTOR_STP_X = GPIO_NUM_26;
+          const int PIN_DEF_MOTOR_STP_Y = GPIO_NUM_25;
+          const int PIN_DEF_MOTOR_STP_Z = GPIO_NUM_17;
+          const int PIN_DEF_MOTOR_EN_A = GPIO_NUM_12;
+          const int PIN_DEF_MOTOR_EN_X = GPIO_NUM_12;
+          const int PIN_DEF_MOTOR_EN_Y = GPIO_NUM_12;
+          const int PIN_DEF_MOTOR_EN_Z = GPIO_NUM_12;
+          const bool PIN_DEF_MOTOR_EN_A_INVERTED = true;
+          const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
+          const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
+          const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
+
+          const int PIN_DEF_LASER_1 = GPIO_NUM_18;
+          const int PIN_DEF_LASER_2 = GPIO_NUM_19;
+          const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21 
+
+          const int PIN_DEF_LED = GPIO_NUM_4;
+          const int PIN_DEF_LED_NUM = 64;
+
+          const int PIN_DEF_END_X = GPIO_NUM_13;
+          const int PIN_DEF_END_Y = GPIO_NUM_5;
+          const int PIN_DEF_END_Z = GPIO_NUM_23; 
+
+          const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
+          const int PIN_PS4_ENUM_DEF = 2;
+
+
+          #define WEMOS_D1_R32_BOARD_NAME "ESPDUINO-32 Wemos D1 R32"
+
+          // timer definitions
+          #define WEMOS_D1_R32_STEP_TIMER_GROUP TIMER_GROUP_0
+          #define WEMOS_D1_R32_STEP_TIMER_INDEX TIMER_0
+
+          // Define step pulse output pins.
+          #define WEMOS_D1_R32_X_STEP_PIN          GPIO_NUM_26
+          #define WEMOS_D1_R32_Y_STEP_PIN          GPIO_NUM_25
+          #define WEMOS_D1_R32_Z_STEP_PIN          GPIO_NUM_17
+          #define WEMOS_D1_R32_A_STEP_PIN          GPIO_NUM_19
+
+          // Define step direction output pins. NOTE: All direction pins must be on the same port.
+          #define WEMOS_D1_R32_X_DIRECTION_PIN     GPIO_NUM_16
+          #define WEMOS_D1_R32_Y_DIRECTION_PIN     GPIO_NUM_27
+          #define WEMOS_D1_R32_Z_DIRECTION_PIN     GPIO_NUM_14
+          #define WEMOS_D1_R32_A_DIRECTION_PIN     GPIO_NUM_18
+
+          #define WEMOS_D1_R32_X_END_STOP          GPIO_NUM_13 // arduino 9
+          #define WEMOS_D1_R32_X_END_STOP          GPIO_NUM_5  // arduino 10
+          #define WEMOS_D1_R32_X_END_STOP          GPIO_NUM_23  // arduino 11
+
+
+          // Define stepper driver enable/disable output pin(s).
+          #define WEMOS_D1_R32_STEPPERS_ENABLE_PIN GPIO_NUM_12
+
+          // Define homing/hard limit switch input pins and limit interrupt vectors.
+          #define WEMOS_D1_R32_X_LIMIT_PIN         GPIO_NUM_13
+          #define WEMOS_D1_R32_Y_LIMIT_PIN         GPIO_NUM_5
+          #define WEMOS_D1_R32_Z_LIMIT_PIN         GPIO_NUM_23
+
+          // Define spindle enable and spindle direction output pins.
+          #define WEMOS_D1_R32_SPINDLE_ENABLE_PIN  GPIO_NUM_18
+          #define WEMOS_D1_R32_SPINDLEPWMPIN       GPIO_NUM_19
+
+          // Define flood enable output pin.
+          #define WEMOS_D1_R32_COOLANT_FLOOD_PIN   GPIO_NUM_32
+
+          // Define user-control CONTROLs (cycle start, reset, feed hold) input pins.
+          #define WEMOS_D1_R32_RESET_PIN           GPIO_NUM_2
+          #define WEMOS_D1_R32_FEED_HOLD_PIN       GPIO_NUM_4
+          #define WEMOS_D1_R32_CYCLE_START_PIN     GPIO_NUM_35
+
+          // Define probe switch input pin.
+          #define WEMOS_D1_R32_PROBE_PIN           GPIO_NUM_39
+
+          #define WEMOS_D1_R32_UART2_RX_PIN            GPIO_NUM_33
+          #define WEMOS_D1_R32_UART2_TX_PIN            GPIO_NUM_32
+          #define WEMOS_D1_R32_MODBUS_DIRECTION_PIN    GPIO_NUM_15
+          #define WEMOS_D1_R32_MODBUS_BAUD             19200
+
+
+          // Pin mapping when using SPI mode.
+          // With this mapping, SD card can be used both in SPI and 1-line SD mode.
+          // Note that a pull-up on CS line is required in SD mode.
+          #define WEMOS_D1_R32_PIN_NUM_MISO        GPIO_NUM_19
+          #define WEMOS_D1_R32_PIN_NUM_MOSI        GPIO_NUM_23
+          #define WEMOS_D1_R32_PIN_NUM_CLK         GPIO_NUM_18
+          #define WEMOS_D1_R32_PIN_NUM_CS          GPIO_NUM_5
+        </code>
+      </pre>
+      </div>
+
+      <div class="hidden info esp32-uc2-standalone-1">
+        <h3>ESP32 DEV-based UC2 standalone board V1 (deprecated)</h3>
+        Design files can be found  <a href="https://github.com/openUC2/UC2-SUES/">here</a>
+        <p>Lays out all the necessary pins to control steppers, LEDs, Lasers, etc.</p>
+
+        <h3>Pin Layout</h3>
+        <pre>
+        <code class="language-pascal">
+          // UC2 STandalone V1
+          const int PIN_DEF_MOTOR_DIR_A = GPIO_NUM_21;
+          const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33; 
+          const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_16;
+          const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
+          const int PIN_DEF_MOTOR_STP_A = GPIO_NUM_22;
+          const int PIN_DEF_MOTOR_STP_X = GPIO_NUM_2;
+          const int PIN_DEF_MOTOR_STP_Y = GPIO_NUM_27;
+          const int PIN_DEF_MOTOR_STP_Z = GPIO_NUM_12;
+          const int PIN_DEF_MOTOR_EN_A = GPIO_NUM_13;
+          const int PIN_DEF_MOTOR_EN_X = GPIO_NUM_13;
+          const int PIN_DEF_MOTOR_EN_Y = GPIO_NUM_13;
+          const int PIN_DEF_MOTOR_EN_Z = GPIO_NUM_13;
+          const bool PIN_DEF_MOTOR_EN_A_INVERTED = true;
+          const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
+          const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
+          const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
+
+          const int PIN_DEF_LASER_1 = GPIO_NUM_4;
+          const int PIN_DEF_LASER_2 = GPIO_NUM_15;
+          const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21 
+
+          const int PIN_DEF_LED = GPIO_NUM_17;
+          const int PIN_DEF_LED_NUM = 25;
+
+          const int PIN_DEF_END_X = GPIO_NUM_10;
+          const int PIN_DEF_END_Y = GPIO_NUM_11;
+          const int PIN_DEF_END_Z = 0; 
+
+          const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
+          const int PIN_PS4_ENUM_DEF = 2;
+        </code>
+      </pre>
+      </div>
+
+      <div class="hidden info esp32-uc2-standalone-2">
+        <h3>ESP32 DEV-based UC2 standalone board V2</h3>
+        Design files can be found  <a href="https://github.com/openUC2/UC2-SUES/">here</a>
+        <h3>Pin Layout</h3>
+        <pre>
+        <code class="language-pascal">
+          // UC2 STandalone V2
+          const int PIN_DEF_MOTOR_DIR_A = GPIO_NUM_21;
+          const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33; 
+          const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_16;
+          const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
+          const int PIN_DEF_MOTOR_STP_A = GPIO_NUM_22;
+          const int PIN_DEF_MOTOR_STP_X = GPIO_NUM_2;
+          const int PIN_DEF_MOTOR_STP_Y = GPIO_NUM_27;
+          const int PIN_DEF_MOTOR_STP_Z = GPIO_NUM_12;
+          const int PIN_DEF_MOTOR_EN_A = GPIO_NUM_13;
+          const int PIN_DEF_MOTOR_EN_X = GPIO_NUM_13;
+          const int PIN_DEF_MOTOR_EN_Y = GPIO_NUM_13;
+          const int PIN_DEF_MOTOR_EN_Z = GPIO_NUM_13;
+          const bool PIN_DEF_MOTOR_EN_A_INVERTED = true;
+          const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
+          const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
+          const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
+          
+          const int PIN_DEF_LASER_1 = GPIO_NUM_17;
+          const int PIN_DEF_LASER_2 = GPIO_NUM_4;
+          const int PIN_DEF_LASER_3 = GPIO_NUM_15; 
+          
+          const int PIN_DEF_LED = GPIO_NUM_32;
+          const int PIN_DEF_LED_NUM = 25;
+          
+          const int PIN_DEF_END_X = GPIO_NUM_34;
+          const int PIN_DEF_END_Y = GPIO_NUM_35;
+          const int PIN_DEF_END_Z = 0; 
+          
+          const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
+          const int PIN_PS4_ENUM_DEF = 2;
+          </code>
+      </pre>
+        <p>
+          This board is the updated version of the V1 with additional transistors to control High Power LEDs. 
+          It also features an updated pin layout to access more functionalities of the ESP32. 
+          More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
+        </p>
+      </div>
+
+      <div class="hidden info esp32-uc2-standalone-3">
+        <h3>ESP32 DEV-based UC2 standalone board V3</h3>
+        Design files can be found  <a href="https://github.com/openUC2/UC2-SUES/">here</a>
+        <h3>Pin Layout</h3>
+        <pre>
+        <code class="language-pascal">
+          // UC2 STandalone V3
+          const char * pindefName = "UC2_3";
+     
+          int8_t MOTOR_A_STEP = GPIO_NUM_15;
+          int8_t MOTOR_X_STEP = GPIO_NUM_16;
+          int8_t MOTOR_Y_STEP = GPIO_NUM_14;
+          int8_t MOTOR_Z_STEP = GPIO_NUM_0;
+     
+          bool MOTOR_ENABLE_INVERTED = true;
+          bool MOTOR_AUTOENABLE = true;
+          bool useFastAccelStepper = true;
+          int8_t AccelStepperMotorType = 1;
+     
+          int8_t LASER_1 = GPIO_NUM_12;
+          int8_t LASER_2 = GPIO_NUM_4;
+          int8_t LASER_3 = GPIO_NUM_2;
+     
+          int8_t LED_PIN = GPIO_NUM_13;
+          int8_t LED_COUNT = 64;
+     
+          // FIXME: Is this redudant?!
+          int8_t PIN_DEF_END_X = disabled;
+          int8_t PIN_DEF_END_Y = disabled;
+          int8_t PIN_DEF_END_Z = disabled;
+          int8_t DIGITAL_IN_1 = PIN_DEF_END_X;
+          int8_t DIGITAL_IN_2 = PIN_DEF_END_Y;
+          int8_t DIGITAL_IN_3 = PIN_DEF_END_Z;
+     
+          // const char * PSX_MAC = "1a:2b:3c:01:01:04";
+          // int8_t PSX_CONTROLLER_TYPE = 2; // 1: PS3, 2: PS4
+          bool enableBlueTooth = true;
+          bool useBtHID = true;
+     
+          int8_t JOYSTICK_SPEED_MULTIPLIER = 30;
+          int8_t JOYSTICK_MAX_ILLU = 100;
+          int8_t JOYSTICK_SPEED_MULTIPLIER_Z = 30;
+     
+          // for caliper
+          int8_t X_CAL_DATA = GPIO_NUM_32;
+          int8_t Y_CAL_DATA = GPIO_NUM_34;
+          int8_t Z_CAL_DATA = GPIO_NUM_36;
+          int8_t X_CAL_CLK = GPIO_NUM_33;
+          int8_t Y_CAL_CLK = GPIO_NUM_35;
+          int8_t Z_CAL_CLK = GPIO_NUM_17;
+          
+          // I2c
+          int8_t I2C_SCL = GPIO_NUM_22;
+          int8_t I2C_SDA = GPIO_NUM_21;
+          int8_t I2C_ADD = 0x27;
+          gpio_num_t  I2C_INT = GPIO_NUM_27;
+     
+          // SPI
+          int8_t SPI_MOSI = GPIO_NUM_23;
+          int8_t SPI_MISO = GPIO_NUM_19;
+          int8_t SPI_SCK = GPIO_NUM_18;
+          int8_t SPI_CS = GPIO_NUM_5;
+     
+          // WiFI
+          bool enableWifi = false;
+          </code>
+      </pre>
+        <p>
+          This board is the updated version of the V2 with additional transistors to control High Power LEDs and a 
+          port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of 
+          linear encoders that are used in callipers. 
+          It also features an updated pin layout to access more functionalities of the ESP32. 
+          More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
+        </p>
+      </div>
+
+
+      <h3>Advanced Users</h3>
+      We provide two firmware versions: V1 (deprecated) and V2. The latter is implemented in the Platform.io standard. 
+      You can find more information on their dedicated github repositories:
+      <ul>
+        <li>
+          UC2-REST is entirely implemented in the Arduino IDE framework. More information can be found can be found:
+          <a
+            href="https://github.com/openUC2/UC2-REST/tree/master/ESP32"
+            >here</a
+          >
+        </li>
+        <li>
+          An updated version called UC2-ESP is implemented in the Platform.io framework. More information can be found:
+          <a href="https://github.com/youseetoo/uc2-esp32/">here</a>
+        </li>
+      </ul>
+
+      <h3></h3>
+      <h3 id="logs">Viewing logs &amp; sending commands</h3>
+      <p>ESP Web Tools allows users to open a serial console to see the logs and send commands.</p>
+      <p class="screenshot"><img src="static/screenshots/logs.png"
+          alt="Screenshot showing ESP Web Tools dialog with a console showing ESPHome logs and a terminal prompt to sent commands." />
+      </p>
+      <i>Screenshot showing the ESP Web Tools logs &amp; console</i>
+      <i>Based on the <a href="https://github.com/esphome/esp-web-tools">ESPHome Web-Tool</a>. </i>
+
+      
+    </div>
+    <script>
+      document.querySelectorAll('input[name="type"]').forEach((radio) =>
+        radio.addEventListener("change", () => {
+          const button = document.querySelector("esp-web-install-button");
+          button.manifest = `./static/firmware_build/${radio.value}-manifest.json`;
+
+          document.querySelectorAll(".info").forEach((info) => {
+            info.classList.add("hidden");
+          });
+          document
+            .querySelector(`.info.${radio.value}`)
+            .classList.remove("hidden");
+        })
+      );
+      document
+        .querySelector('input[name="type"]:checked')
+        .dispatchEvent(new Event("change"));
+      if (new URLSearchParams(document.location.search).has("diy")) {
+        document.body.classList.add("show-diy");
+      }
+
+      
+    </script>
+  </body>
+</html>
