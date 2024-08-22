@@ -164,7 +164,8 @@
         Pick your UC2 PCB and flash the software using the browser! No programming or other software required.
       </p>
       <h2 id="test">Test the Firmware</h2>
-      <p>An online Tool will enable you to connect to the ESP and control certain hardware elements. Follow <a href="https://youseetoo.github.io/indexWebSerialTest.html">this link</a>, select the ESP32 and hit e.g. the LED on button.</p>
+      <p>An online Tool will enable you to connect to the ESP and control certain hardware elements. Follow <a href="./indexWebSerialTest.html">this link</a>, select the ESP32 and hit e.g. the LED on button.</p>
+      <a href=./indexWebSerialTest.html><img src="./IMAGES/processor.png" width=100 alt="UC2 Logo" /></a>
       <h2 id="demo">Flash the Firmware</h2>
       <p>This webpage will install <a href="https://github.com/youseetoo/uc2-esp32/">UC2-ESP</a>. To get started, connect
         an ESP device to your computer and hit the button (we assume you installed the CH340 or CP2102 driver; The links to the drivers
@@ -174,20 +175,24 @@
       <div class="radios">
         <label>
           <input type="radio" name="type" value="esp32-uc2-wemos" checked />
-          <img src="./esp32-uc2-wemos.jpg" alt="ESP32 Generic" />
+          <img src="./IMAGES/esp32-uc2-wemos.jpg" alt="ESP32 Generic" />
         </label>
         <label>
           <input type="radio" name="type" value="esp32-uc2-standalone-1" />
-          <img src="./esp32-uc2-standalone-1.png" alt="M5Stack Atom Lite" />
+          <img src="./IMAGES/esp32-uc2-standalone-1.png" alt="M5Stack Atom Lite" />
         </label>
         <label>
           <input type="radio" name="type" value="esp32-uc2-standalone-2" />
-          <img src="./esp32-uc2-standalone-2.png" />
+          <img src="./IMAGES/esp32-uc2-standalone-2.png" />
         </label>
         <label>
           <input type="radio" name="type" value="esp32-uc2-standalone-3" />
-          <img src="./esp32-uc2-standalone-3.png" />
+          <img src="./IMAGES/esp32-uc2-standalone-3.png" />
         </label>        
+        <label>
+          <input type="radio" name="type" value="esp32-uc2-standalone-3-beta" />
+          <img src="./IMAGES/esp32-uc2-standalone-3.png" />
+        </label>                
       </div>
 
       <p class="button-row" align="center">
@@ -474,6 +479,19 @@
           // WiFI
           bool enableWifi = false;
           </code>
+      </pre>
+        <p>
+          This board is the updated version of the V2 with additional transistors to control High Power LEDs and a 
+          port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of 
+          linear encoders that are used in callipers. 
+          It also features an updated pin layout to access more functionalities of the ESP32. 
+          More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
+        </p>
+      </div>
+
+      <div class="hidden info esp32-uc2-standalone-3-beta">
+        <h3>ESP32 DEV-based UC2 standalone board V3 (BETA)</h3>
+        This is based on the new firmware available here  <a href="https://github.com/youseetoo/uc2-esp32/tree/reworkBD">here</a>
       </pre>
         <p>
           This board is the updated version of the V2 with additional transistors to control High Power LEDs and a 
