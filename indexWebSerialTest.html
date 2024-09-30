@@ -137,6 +137,9 @@
                         <th><p><button type="button" onclick="axisZplus()" class="btn btn-info" style="">Motor Z (+)</button></p></th>
                         <th><p><button type="button" onclick="axisZminus()" class="btn btn-warning" style="">Motor Z (-)</button></p></th>
                         <th><p><button type="button" onclick="stopZ()" class="btn btn-warning" style="">Stop Motor Z (-)</button></p></th>
+                        <th><p><button type="button" onclick="axisZplusfine()" class="btn btn-warning" style="">Motor Z (+, fine)</button></p></th>
+                        <th><p><button type="button" onclick="axisZminusfine()" class="btn btn-warning" style="">Motor Z (-, fine)</button></p></th>
+                        
                     </tr>
 
                     <tr>
@@ -534,6 +537,14 @@
         }
         function axisZplus() {
             cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 3, "position": 100, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function axisZplusfine() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 3, "position": 4, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
+            sendCMD(cmd)
+        }
+        function axisZminusfine() {
+            cmd='{"task":"/motor_act","motor":{"steppers": [{ "stepperid": 3, "position": -4, "speed": 15000, "isabs": 0, "isaccel":0}]}}'
             sendCMD(cmd)
         }
         function axisZminus() {
