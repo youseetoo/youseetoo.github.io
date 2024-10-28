@@ -99,6 +99,11 @@
                         <th><b>Laser</b></th>
                     </tr>
                     <tr>
+                        <th><p><button type="button" onclick="laser0On()" class="btn btn-info" style="">Laser 0 (on)</button></p></th>
+                        <th><p><button type="button" onclick="laser0Off()" class="btn btn-warning" style="">Laser 0 (off)</button></p></th>
+                        <th><p><input type="range" min="0" max="4095" value="0" class="slider" id="laser0Slider" onchange="setLaser0(1, this.value)"></p><p>Value: <span id="laser1Value">0</span></p></th>
+                    </tr>
+                    <tr>
                         <th><p><button type="button" onclick="laser1On()" class="btn btn-info" style="">Laser 1 (on)</button></p></th>
                         <th><p><button type="button" onclick="laser1Off()" class="btn btn-warning" style="">Laser 1 (off)</button></p></th>
                         <th><p><input type="range" min="0" max="4095" value="0" class="slider" id="laser1Slider" onchange="setLaser1(1, this.value)"></p><p>Value: <span id="laser1Value">0</span></p></th>
@@ -421,6 +426,17 @@
     <script src="../../../js/lib/ga.js"></script>
 
     <script>
+        function setLaser0(index, value) {
+            // Your implementation for setLaser
+            document.getElementById("laser0Value").innerText = value;
+            cmd='{"task": "/laser_act", "LASERid":0, "LASERval": ' + value + '}'
+            sendCMD(cmd)
+        }
+        
+        // Initialize the slider
+        document.getElementById("laser0Slider").addEventListener("input", function() {
+            setLaser0(1, this.value);
+        });
 
         function setLaser1(index, value) {
             // Your implementation for setLaser
@@ -461,6 +477,14 @@
 
         function getState() {
             cmd='{"task":"/state_get"}'
+            sendCMD(cmd)
+        }
+        function laser0On() {
+            cmd='{"task": "/laser_act", "LASERid":0, "LASERval": 1024}'
+            sendCMD(cmd)
+        }
+        function laser0Off() {
+            cmd='{"task": "/laser_act", "LASERid":0, "LASERval": 0}'
             sendCMD(cmd)
         }
         function laser1On() {
