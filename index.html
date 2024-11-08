@@ -193,6 +193,10 @@
           <input type="radio" name="type" value="esp32-uc2-standalone-3-beta" />
           <img src="./IMAGES/esp32-uc2-standalone-3.png" />
         </label>                
+        <label>
+          <input type="radio" name="type" value="seeed_xiao_esp32s3_ledservo" />
+          <img src="./IMAGES/ledboard.png" />
+        </label>                        
       </div>
 
       <p class="button-row" align="center">
@@ -503,6 +507,48 @@
       </div>
 
 
+
+      <div class="hidden info seeed_xiao_esp32s3_ledservo">
+        <h3>Xiao LED and Servo motor board</h3>
+        This is based on the new firmware available here  <a href="https://github.com/youseetoo/uc2-esp32/tree/betaBD">here</a>
+      </pre>
+        <p>
+          This PCB connects a Seeed Studio Xiao ESP32S3 module to the openUC2 modular cube system. It features a range of components for illumination and control of motors or servos, providing an I2C bus for integration with the UC2 ecosystem. The board is primarily designed for controlling a motorized system such as peristaltic pumps and driving Neopixel LEDs, with additional support for PWM-driven components and touch inputs.
+          More information can be found <a href="https://openuc2.github.io/docs/Toolboxes/DiscoveryElectronics/04_2_seeedmicroscopepcb"> here.</a>
+        </p>
+  <h3>Pin Layout</h3>
+  <pre>
+  <code class="language-pascal">
+    // UC2 STandalone V3
+    const char * pindefName = "Xiao_LED_SERVO";
+
+    // Pin definitions for Xiao ESP32S3 (using D1, D2, etc.)
+    #define NEOPIXEL_PIN D6         // Neopixel data pin (TX)
+    #define TOUCH_PIN_1 D0          // Touch Button 1 (Touch Pad 1)
+    #define TOUCH_PIN_2 D1          // Touch Button 2 (Touch Pad 2)
+    #define MOTOR_1_IN1 D3          // Motor 1 IN1 (GPIO0)
+    #define MOTOR_1_IN2 D4          // Motor 1 IN2 (GPIO9)
+    #define MOTOR_2_IN1 D9          // Motor 2 IN1 (GPIO10)
+    #define MOTOR_2_IN2 D10         // Motor 2 IN2 (GPIO3)
+    #define I2C_SDA D4              // I2C SDA (GPIO4)
+    #define I2C_SCL D5              // I2C SCL (GPIO5)
+    #define SERVO_PIN_1 D7          // Servo 1 PWM (GPIO8)
+    #define SERVO_PIN_2 D8          // Servo 2 PWM (GPIO11)
+        </code>
+</pre>
+  <p>
+    This board is the updated version of the V2 with additional transistors to control High Power LEDs and a 
+    port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of 
+    linear encoders that are used in callipers. 
+    It also features an updated pin layout to access more functionalities of the ESP32. 
+    More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
+  </p>
+</div>
+
+
+
+
+
       <h3>Advanced Users</h3>
       We provide two firmware versions: V1 (deprecated) and V2. The latter is implemented in the Platform.io standard. 
       You can find more information on their dedicated github repositories:
@@ -519,6 +565,8 @@
           <a href="https://github.com/youseetoo/uc2-esp32/">here</a>
         </li>
       </ul>
+
+
 
       <h3></h3>
       <h3 id="logs">Viewing logs &amp; sending commands</h3>
