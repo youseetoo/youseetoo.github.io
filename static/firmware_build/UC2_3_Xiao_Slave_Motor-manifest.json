@@ -1,0 +1,12 @@
+{
+  "name": "UC2-ESP32",
+  "version": "2024_11_seeed_xiao_esp32s3_ledring",
+  "home_assistant_domain": "UC2-ESP32",
+  "funding_url": "https://github.com/youseetoo/uc2-esp32",
+  "builds": [
+    {
+      "chipFamily": "ESP32S3",
+      "parts": [{ "path": "seeed_xiao_esp32s3_ledring.bin", "offset": 0 }]
+    }
+  ]
+}

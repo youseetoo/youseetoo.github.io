@@ -1,0 +1,12 @@
+{
+  "name": "UC2-ESP32",
+  "version": "2024_11_UC2_3_Xiao_Slave_Motor",
+  "home_assistant_domain": "UC2-ESP32",
+  "funding_url": "https://github.com/youseetoo/uc2-esp32",
+  "builds": [
+    {
+      "chipFamily": "ESP32S3",
+      "parts": [{ "path": "UC2_3_Xiao_Slave_Motor.bin", "offset": 0 }]
+    }
+  ]
+}
