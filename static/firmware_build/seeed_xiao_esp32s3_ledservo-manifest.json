@@ -5,7 +5,7 @@
   "funding_url": "https://github.com/youseetoo/uc2-esp32",
   "builds": [
     {
-      "chipFamily": "ESP32S3",
+      "chipFamily": "ESP32-S3",
       "parts": [{ "path": "seeed_xiao_esp32s3_ledservo.bin", "offset": 0 }]
     }
   ]
