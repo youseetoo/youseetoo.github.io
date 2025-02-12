@@ -6,7 +6,7 @@
   "builds": [
     {
       "chipFamily": "ESP32-S3",
-      "parts": [{ "path": "UC2_3_Xiao_Slave_Motor.bin", "offset": 0 }]
+      "parts": [{ "path": "seeed_xiao_esp32s3_ledring.bin", "offset": 0 }]
     }
   ]
 }
