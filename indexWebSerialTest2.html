@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>openUC2 WebSERIAL Demonstration</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light px-3">
+  <a class="navbar-brand" href="#">openUC2</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample"
+          aria-controls="navbarsExample" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarsExample">
+    <ul class="navbar-nav me-auto">
+      <li class="nav-item">
+        <a class="nav-link active" href="#">Home <span class="visually-hidden">(current)</span></a>
+      </li>
+      <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+      <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <div class="text-center mb-4">
+    <h1>
+      <img src="https://raw.githubusercontent.com/openUC2/openUC2.github.io/master/static/img/Artboard4%404x.png"
+           width="105" height="121" alt="" />
+      OpenUC2 Online Tool
+    </h1>
+    <p class="lead">Use the Web Serial interface to control a UC2 ESP device.</p>
+    <button class="btn btn-success btn-lg" id="openclose_port">Connect to ESP32</button>
+  </div>
+
+  <div class="alert alert-warning text-center" role="alert">
+    <strong>Warning!</strong> The default baudrate has changed to 115200. Please select 115200 in the dropdown and click Change.
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <h4>Microscope Webcam Livestream</h4>
+      <div class="mb-3">
+        <label for="audioSource" class="form-label">Audio input source</label>
+        <select id="audioSource" class="form-select"></select>
+      </div>
+      <div class="mb-3">
+        <label for="audioOutput" class="form-label">Audio output destination</label>
+        <select id="audioOutput" class="form-select"></select>
+      </div>
+      <div class="mb-3">
+        <label for="videoSource" class="form-label">Video source</label>
+        <select id="videoSource" class="form-select"></select>
+      </div>
+      <video id="video" playsinline autoplay class="border w-100"></video>
+
+      <hr class="my-4">
+
+      <h4>Timelapse Settings</h4>
+      <label for="timelapseInterval" class="form-label">Interval (ms):</label>
+      <input type="number" id="timelapseInterval" class="form-control mb-2" value="5000">
+      <label for="downloadImagesInterval" class="form-label">Download Images (N-times):</label>
+      <input type="number" id="downloadImagesInterval" class="form-control mb-2" value="500">
+      <p>Snaps Taken: <span id="snapCounter">0</span></p>
+      <button type="button" id="startTimelapseBtn" class="btn btn-info">Start Timelapse</button>
+      <button type="button" id="stopTimelapseBtn" class="btn btn-warning" disabled>Stop Timelapse</button>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <h4>Hardware Control</h4>
+      <div class="d-flex flex-wrap gap-2 mb-2">
+        <button class="btn btn-info" onclick="getState()">Get Board info</button>
+      </div>
+
+      <div class="bg-light p-3 rounded-3 mb-3">
+        <h5>Laser</h5>
+        <div class="d-flex align-items-center gap-2 my-2">
+          <button class="btn btn-info" onclick="laser0On()">Laser 0 (on)</button>
+          <button class="btn btn-warning" onclick="laser0Off()">Laser 0 (off)</button>
+          <div class="ms-3">
+            <input type="range" min="0" max="4095" value="0" class="form-range" id="laser0Slider">
+            <small>Value: <span id="laser0Value">0</span></small>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 my-2">
+          <button class="btn btn-info" onclick="laser1On()">Laser 1 (on)</button>
+          <button class="btn btn-warning" onclick="laser1Off()">Laser 1 (off)</button>
+          <div class="ms-3">
+            <input type="range" min="0" max="4095" value="0" class="form-range" id="laser1Slider">
+            <small>Value: <span id="laser1Value">0</span></small>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 my-2">
+          <button class="btn btn-info" onclick="laser2On()">Laser 2 (on)</button>
+          <button class="btn btn-warning" onclick="laser2Off()">Laser 2 (off)</button>
+          <div class="ms-3">
+            <input type="range" min="0" max="4095" value="0" class="form-range" id="laser2Slider">
+            <small>Value: <span id="laser2Value">0</span></small>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 my-2">
+          <button class="btn btn-info" onclick="laser3On()">Laser 3 (on)</button>
+          <button class="btn btn-warning" onclick="laser3Off()">Laser 3 (off)</button>
+          <div class="ms-3">
+            <input type="range" min="0" max="4095" value="0" class="form-range" id="laser3Slider">
+            <small>Value: <span id="laser3Value">0</span></small>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-light p-3 rounded-3 mb-3">
+        <h5>Motor</h5>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="axisXplus()">Motor X (+)</button>
+          <button class="btn btn-warning" onclick="axisXminus()">Motor X (-)</button>
+          <button class="btn btn-secondary" onclick="axisXForverplus()">X forever (+)</button>
+          <button class="btn btn-secondary" onclick="axisXForverminus()">X forever (-)</button>
+          <button class="btn btn-danger" onclick="stopX()">Stop X</button>
+        </div>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="axisYplus()">Motor Y (+)</button>
+          <button class="btn btn-warning" onclick="axisYminus()">Motor Y (-)</button>
+          <button class="btn btn-secondary" onclick="axisYForverplus()">Y forever (+)</button>
+          <button class="btn btn-secondary" onclick="axisYForverminus()">Y forever (-)</button>
+          <button class="btn btn-danger" onclick="stopY()">Stop Y</button>
+        </div>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="axisZplus()">Motor Z (+)</button>
+          <button class="btn btn-warning" onclick="axisZminus()">Motor Z (-)</button>
+          <button class="btn btn-danger" onclick="stopZ()">Stop Z</button>
+          <button class="btn btn-secondary" onclick="axisZplusfine()">Z (+ fine)</button>
+          <button class="btn btn-secondary" onclick="axisZminusfine()">Z (- fine)</button>
+        </div>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="axisAplus()">Motor A (+)</button>
+          <button class="btn btn-warning" onclick="axisAminus()">Motor A (-)</button>
+          <button class="btn btn-danger" onclick="stopA()">Stop A</button>
+        </div>
+      </div>
+
+      <div class="bg-light p-3 rounded-3 mb-3">
+        <h5>Rotator</h5>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="rotatorXplus()">Rotator X (+)</button>
+          <button class="btn btn-warning" onclick="rotatorXminus()">Rotator X (-)</button>
+        </div>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="rotatorYplus()">Rotator Y (+)</button>
+          <button class="btn btn-warning" onclick="rotatorYminus()">Rotator Y (-)</button>
+        </div>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="rotatorZplus()">Rotator Z (+)</button>
+          <button class="btn btn-warning" onclick="rotatorZminus()">Rotator Z (-)</button>
+        </div>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="rotatorAplus()">Rotator A (+)</button>
+          <button class="btn btn-warning" onclick="rotatorAminus()">Rotator A (-)</button>
+        </div>
+      </div>
+
+      <div class="bg-light p-3 rounded-3 mb-3">
+        <h5>LED</h5>
+        <button class="btn btn-info" onclick="ledOn()">LED on</button>
+        <button class="btn btn-warning" onclick="ledOff()">LED off</button>
+      </div>
+
+      <div class="bg-light p-3 rounded-3 mb-3">
+        <h5>Rings</h5>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="turnOnOuterRing()">Outer Ring on</button>
+          <button class="btn btn-warning" onclick="turnOffOuterRing()">Outer Ring off</button>
+        </div>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="turnOnMiddleRing()">Middle Ring on</button>
+          <button class="btn btn-warning" onclick="turnOffMiddleRing()">Middle Ring off</button>
+        </div>
+        <div class="mb-2">
+          <button class="btn btn-info" onclick="turnOnCenterRing()">Inner Ring on</button>
+          <button class="btn btn-warning" onclick="turnOffCenterRing()">Inner Ring off</button>
+        </div>
+      </div>
+
+      <div class="bg-light p-3 rounded-3 mb-3">
+        <h5>Enable</h5>
+        <button class="btn btn-info" onclick="autoEnableOn()">Auto Enable (on)</button>
+        <button class="btn btn-warning" onclick="autoEnableOff()">Auto Enable (off)</button>
+      </div>
+
+      <div class="bg-light p-3 rounded-3 mb-3">
+        <h5>PS4 Controller</h5>
+        <button class="btn btn-info" onclick="btPairing()">BT Pairing</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      <span>Baud Rate:</span>
+      <select id="baud_rate" class="mx-2">
+        <option value="115200">115200</option>
+        <option value="500000">500000</option>
+        <option value="128000">128000</option>
+        <option value="9600">9600</option>
+        <option value="19200">19200</option>
+        <option value="38400">38400</option>
+        <option value="57600">57600</option>
+        <option value="1000000">1000000</option>
+        <option value="2000000">2000000</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" id="change" disabled>Change</button>
+      <span class="mx-3 fw-bold" id="port_info">Disconnected</span>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <h5>Serial Terminal</h5>
+    <textarea id="term_window" class="form-control mb-2" rows="6" readonly>!</textarea>
+    <textarea id="term_input" class="form-control mb-2" rows="6"></textarea>
+    <button class="btn btn-primary btn-sm me-2" id="send" disabled>Send</button>
+    <button class="btn btn-danger btn-sm" id="clear" disabled>Clear</button>
+  </div>
+
+  <h4 class="text-center">Code Examples</h4>
+  <pre><code class="json" style="max-width:100%; display:block; white-space:pre-wrap;">
+# enable
+{"task":"/motor_act", "isen":1, "isenauto":1}
+# modules
+{"task":"/modules_get"}
+{"task":"/modules_set", "modules" : {"led" : 1, "motor": 1, "slm" : 0, "home":1, "analogin" : 0, "pid" : 0, "laser" : 1, "dac" : 0, "analogout" : 0, "digitalout" : 0, "digitalin" : 1, "scanner" : 0}}
+{"task":"/modules_set", "modules" : {"led" : 0, "motor": 1, "slm" : 0, "home":0, "analogin" : 0, "pid" : 0, "laser" : 0, "dac" : 0, "analogout" : 0, "digitalout" : 0, "digitalin" : 1, "scanner" : 0}}
+{"task":"/state_get"}
+
+# DAC
+{"task":"/dac_act_fct", "dac_channel":1, "frequency":1000, "offset":0, "amplitude":1}
+
+# MOTOR
+# X,Y,Z,A => 1,2,3,0
+{"task":"/motor_set",
+    "motor":{
+        "steppers": [
+            { "stepperid": 1, "step": 26, "dir": 16, "enable": 12, "step_inverted": 0, "dir_inverted": 0, "enable_inverted": 0 , "min_pos":0, "max_pos":0},
+            { "stepperid": 2, "step": 25, "dir": 27, "enable": 12, "step_inverted": 0, "dir_inverted": 0, "enable_inverted": 0 , "min_pos":0, "max_pos":0},
+            { "stepperid": 3, "step": 17, "dir": 14, "enable": 12, "step_inverted": 0, "dir_inverted": 0, "enable_inverted": 0 , "min_pos":0, "max_pos":0},
+            { "stepperid": 0, "step": 19, "dir": 18, "enable": 12, "step_inverted": 0, "dir_inverted": 0, "enable_inverted": 0 , "min_pos":0, "max_pos":0}
+        ]
+    }
+}
+{"task":"/motor_act",
+    "motor":{
+        "steppers": [
+            { "stepperid": 1, "position": 10000, "speed": 5000, "isabs": 0, "isaccel":0},
+            { "stepperid": 3, "position": 10000, "speed": 5000, "isabs": 0, "isaccel":0}
+        ]
+    }
+}
+
+# DIGITAL OUT
+{"task":"/digitalout_set", "digitaloutid":1, "digitaloutpin":4}
+{"task":"/digitalout_act", "digitalout1TriggerDelayOn":100, "digitalout1TriggerDelayOff":10, "digitalout1IsTrigger":1}
+
+# DIGITAL IN
+{"task": "/digitalin_set", "digitalinid":1, "digitalinpin":13}
+{"task": "/digitalin_get", "digitalinid":1}
+
+# LASER
+{"task": "/laser_act", "LASERid":1, "LASERval": 1024}
+{"task": "/laser_get"}
+
+# HOME
+{"task": "/home_get"}
+{"task": "/home_set"}
+{"task":"/home_act", "home": {"steppers": [{"stepperid":1, "timeout": 20000, "speed": 15000, "direction":-1, "endposrelease":3000}]}}
+
+# WIFI
+{"task":"/wifi/scan"}
+{"task":"/wifi/connect","ssid":"Test","PW":"12345678","AP":false}
+
+# BLUETOOTH
+{"task":"/bt_connect", "mac":"1a:2b:3c:01:01:01", "psx":2}
+
+# LED ARR
+{"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":0, "r":0, "g":5, "b":0}]}}
+  </code></pre>
+
+  <footer class="text-center py-3">
+    <p>© openUC2 2023</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="js/_script.js"></script>
+<script src="js/webrtcmain.js" async></script>
+</body>
+</html>

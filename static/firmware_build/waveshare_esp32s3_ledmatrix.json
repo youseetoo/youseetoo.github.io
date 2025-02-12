@@ -1,0 +1,12 @@
+{
+  "name": "UC2-ESP32",
+  "version": "waveshare_esp32s3_ledmatrix",
+  "home_assistant_domain": "UC2-ESP32",
+  "funding_url": "https://github.com/youseetoo/uc2-esp32",
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [{ "path": "waveshare_esp32s3_ledmatrix.bin", "offset": 0 }]
+    }
+  ]
+}
