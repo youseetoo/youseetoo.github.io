@@ -150,6 +150,7 @@
          <h1>UC2 ESP32 Flashing Tool</h1>
          <p></p>
          <p>
+           Pick your UC2 PCB and flash the software using the browser! No programming or other software required.
             User-friendly tools to flash/upload the firmware for the openUC2 ESP32 device in the browser:
          </p>
          <ul>
@@ -159,15 +160,29 @@
             <li>Access logs and send terminal commands (work in progress)</li>
          </ul>
          <p>
-            Pick your UC2 PCB and flash the software using the browser! No programming or other software required.
-         </p>
-         <h2 id="test">Test the Firmware</h2>
+        <div style="text-align: center; margin-top: 20px;">
+          <!-- Button Container with Flexbox -->
+          <div style="display: flex; justify-content: center; gap: 100px;">
+            <!-- Button 1 to 'Flash the Firmware' -->
+            <button onclick="location.href='#demo'">Flash/install the Firmware</button>
+            <!-- Button 2 to 'Test the Firmware' -->
+            <button onclick="location.href='#test'">Test the Firmware when flashed</button>
+          </div>
+        </div>
+         <p style="margin-bottom: 110px;">
+         <hr>
+         <h2 id="test">Test the Firmware (when it's already flashed)</h2>
          <p>An online Tool will enable you to connect to the ESP and control certain hardware elements. Follow <a href="./indexWebSerialTest.html">this link</a>, select the ESP32 and hit e.g. the LED on button.</p>
          <a href=./indexWebSerialTest.html><img src="./IMAGES/processor.png" width=100 alt="UC2 Logo" /></a>
-         <h2 id="demo">Flash the Firmware</h2>
-         <p>This webpage will install <a href="https://github.com/youseetoo/uc2-esp32/">UC2-ESP</a>. To get started, connect
+         <p> if you're just starting, flash the firmware first before you klick this button! The tutorial is down below.
+         <p style="margin-bottom: 110px;">
+         <hr>
+         <h2 id="demo">Flash the Firmware (when you're just starting)</h2>
+         <p>This webpage will install UC2_ESP (for the extra github documentation klick <a href="https://github.com/youseetoo/uc2-esp32/">here</a>). To get started, connect
             an ESP device to your computer and hit the button (we assume you installed the CH340 or CP2102 driver; The links to the drivers
             will be suggested if no Serial device is found by the browser.).
+        <p> when you click on one of the devices pictures, extended infromation ist provided below the picture grid for each device.
+         <p><strong>for an extended step-by-step tutorial for flashing the firmware klick <a href="./indexWebSerialTest.html">here</a> </strong>
          </p>
          <p><strong>Note: </strong>This is only available on Chrome or Microsoft Edge.&nbsp;</p>
          <div class="radios">
@@ -186,31 +201,31 @@
             <label>
             <input type="radio" name="type" value="esp32-uc2-standalone-3" />
             <img src="./IMAGES/esp32-uc2-standalone-3.png" />
-            </label>        
+            </label>
             <label>
             <input type="radio" name="type" value="esp32-uc2-standalone-3-beta" />
             <img src="./IMAGES/esp32-uc2-standalone-3.png" />
-            </label>                
+            </label>
             <label>
             <input type="radio" name="type" value="seeed_xiao_esp32s3_ledservo" />
             <img src="./IMAGES/ledboard.jpg" />
-            </label>                        
+            </label>
             <label>
               <input type="radio" name="type" value="UC2_3_Xiao_Slave_Motor" />
               <img src="./IMAGES/esp32s3-uc2-motor.jpg" />
-            </label>   
+            </label>
             <label>
               <input type="radio" name="type" value="seeed_xiao_esp32s3_ledring" />
               <img src="./IMAGES/esp32-uc2-ledring.jpg" />
-            </label>   
+            </label>
             <label>
                <input type="radio" name="type" value="xiao_webcam" />
                <img src="./IMAGES/xiao.jpg" />
-             </label>   
+             </label>
              <label>
                <input type="radio" name="type" value="waveshare_esp32s3_ledmatrix" />
                <img src="./IMAGES/waveshare.webp" />
-             </label>                            
+             </label>
          </div>
          <p class="button-row" align="center">
             <esp-web-install-button></esp-web-install-button>
@@ -234,8 +249,8 @@
          <div class="hidden info esp32-uc2-wemos">
             <h3>ESP32 WEMOS D1 R32-based UC2 board</h3>
             <p>
-               This is an off-the-shelf board that can - in conjuction with the CNC Shield v3 - 
-               be used for most of the microscopy tasks we use in the lab every day. The serious 
+               This is an off-the-shelf board that can - in conjuction with the CNC Shield v3 -
+               be used for most of the microscopy tasks we use in the lab every day. The serious
                disadvantage is the inability to quickly add new devices since the pins do not really allow this.
                More information can be found  <a href="https://github.com/openUC2/UC2-REST#hardware"> here.</a>
             </p>
@@ -244,7 +259,7 @@
         <code class="language-pascal">
           // ESP32-WEMOS D1 R32
           const int PIN_DEF_MOTOR_DIR_A = 0;
-          const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_16; 
+          const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_16;
           const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_27;
           const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
           const int PIN_DEF_MOTOR_STP_A = 0;
@@ -262,14 +277,14 @@
 
           const int PIN_DEF_LASER_1 = GPIO_NUM_18;
           const int PIN_DEF_LASER_2 = GPIO_NUM_19;
-          const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21 
+          const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21
 
           const int PIN_DEF_LED = GPIO_NUM_4;
           const int PIN_DEF_LED_NUM = 64;
 
           const int PIN_DEF_END_X = GPIO_NUM_13;
           const int PIN_DEF_END_Y = GPIO_NUM_5;
-          const int PIN_DEF_END_Z = GPIO_NUM_23; 
+          const int PIN_DEF_END_Z = GPIO_NUM_23;
 
           const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
           const int PIN_PS4_ENUM_DEF = 2;
@@ -346,7 +361,7 @@
         <code class="language-pascal">
           // UC2 STandalone V1
           const int PIN_DEF_MOTOR_DIR_A = GPIO_NUM_21;
-          const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33; 
+          const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33;
           const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_16;
           const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
           const int PIN_DEF_MOTOR_STP_A = GPIO_NUM_22;
@@ -364,14 +379,14 @@
 
           const int PIN_DEF_LASER_1 = GPIO_NUM_4;
           const int PIN_DEF_LASER_2 = GPIO_NUM_15;
-          const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21 
+          const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21
 
           const int PIN_DEF_LED = GPIO_NUM_17;
           const int PIN_DEF_LED_NUM = 25;
 
           const int PIN_DEF_END_X = GPIO_NUM_10;
           const int PIN_DEF_END_Y = GPIO_NUM_11;
-          const int PIN_DEF_END_Z = 0; 
+          const int PIN_DEF_END_Z = 0;
 
           const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
           const int PIN_PS4_ENUM_DEF = 2;
@@ -386,7 +401,7 @@
         <code class="language-pascal">
           // UC2 STandalone V2
           const int PIN_DEF_MOTOR_DIR_A = GPIO_NUM_21;
-          const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33; 
+          const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33;
           const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_16;
           const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
           const int PIN_DEF_MOTOR_STP_A = GPIO_NUM_22;
@@ -401,25 +416,25 @@
           const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
           const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
           const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
-          
+
           const int PIN_DEF_LASER_1 = GPIO_NUM_17;
           const int PIN_DEF_LASER_2 = GPIO_NUM_4;
-          const int PIN_DEF_LASER_3 = GPIO_NUM_15; 
-          
+          const int PIN_DEF_LASER_3 = GPIO_NUM_15;
+
           const int PIN_DEF_LED = GPIO_NUM_32;
           const int PIN_DEF_LED_NUM = 25;
-          
+
           const int PIN_DEF_END_X = GPIO_NUM_34;
           const int PIN_DEF_END_Y = GPIO_NUM_35;
-          const int PIN_DEF_END_Z = 0; 
-          
+          const int PIN_DEF_END_Z = 0;
+
           const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
           const int PIN_PS4_ENUM_DEF = 2;
           </code>
       </pre>
             <p>
-               This board is the updated version of the V1 with additional transistors to control High Power LEDs. 
-               It also features an updated pin layout to access more functionalities of the ESP32. 
+               This board is the updated version of the V1 with additional transistors to control High Power LEDs.
+               It also features an updated pin layout to access more functionalities of the ESP32.
                More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
             </p>
          </div>
@@ -434,24 +449,24 @@
         <code class="language-pascal">
           // UC2 STandalone V3
           const char * pindefName = "UC2_3";
-     
+
           int8_t MOTOR_A_STEP = GPIO_NUM_15;
           int8_t MOTOR_X_STEP = GPIO_NUM_16;
           int8_t MOTOR_Y_STEP = GPIO_NUM_14;
           int8_t MOTOR_Z_STEP = GPIO_NUM_0;
-     
+
           bool MOTOR_ENABLE_INVERTED = true;
           bool MOTOR_AUTOENABLE = true;
           bool useFastAccelStepper = true;
           int8_t AccelStepperMotorType = 1;
-     
+
           int8_t LASER_1 = GPIO_NUM_12;
           int8_t LASER_2 = GPIO_NUM_4;
           int8_t LASER_3 = GPIO_NUM_2;
-     
+
           int8_t LED_PIN = GPIO_NUM_13;
           int8_t LED_COUNT = 64;
-     
+
           // FIXME: Is this redudant?!
           int8_t PIN_DEF_END_X = disabled;
           int8_t PIN_DEF_END_Y = disabled;
@@ -459,16 +474,16 @@
           int8_t DIGITAL_IN_1 = PIN_DEF_END_X;
           int8_t DIGITAL_IN_2 = PIN_DEF_END_Y;
           int8_t DIGITAL_IN_3 = PIN_DEF_END_Z;
-     
+
           // const char * PSX_MAC = "1a:2b:3c:01:01:04";
           // int8_t PSX_CONTROLLER_TYPE = 2; // 1: PS3, 2: PS4
           bool enableBlueTooth = true;
           bool useBtHID = true;
-     
+
           int8_t JOYSTICK_SPEED_MULTIPLIER = 30;
           int8_t JOYSTICK_MAX_ILLU = 100;
           int8_t JOYSTICK_SPEED_MULTIPLIER_Z = 30;
-     
+
           // for caliper
           int8_t X_CAL_DATA = GPIO_NUM_32;
           int8_t Y_CAL_DATA = GPIO_NUM_34;
@@ -476,28 +491,28 @@
           int8_t X_CAL_CLK = GPIO_NUM_33;
           int8_t Y_CAL_CLK = GPIO_NUM_35;
           int8_t Z_CAL_CLK = GPIO_NUM_17;
-          
+
           // I2c
           int8_t I2C_SCL = GPIO_NUM_22;
           int8_t I2C_SDA = GPIO_NUM_21;
           int8_t I2C_ADD = 0x27;
           gpio_num_t  I2C_INT = GPIO_NUM_27;
-     
+
           // SPI
           int8_t SPI_MOSI = GPIO_NUM_23;
           int8_t SPI_MISO = GPIO_NUM_19;
           int8_t SPI_SCK = GPIO_NUM_18;
           int8_t SPI_CS = GPIO_NUM_5;
-     
+
           // WiFI
           bool enableWifi = false;
           </code>
       </pre>
             <p>
-               This board is the updated version of the V2 with additional transistors to control High Power LEDs and a 
-               port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of 
-               linear encoders that are used in callipers. 
-               It also features an updated pin layout to access more functionalities of the ESP32. 
+               This board is the updated version of the V2 with additional transistors to control High Power LEDs and a
+               port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of
+               linear encoders that are used in callipers.
+               It also features an updated pin layout to access more functionalities of the ESP32.
                More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
             </p>
          </div>
@@ -507,10 +522,10 @@
             This is based on the new firmware available here  <a href="https://github.com/youseetoo/uc2-esp32/tree/reworkBD">here</a>
             </pre>
             <p>
-               This board is the updated version of the V2 with additional transistors to control High Power LEDs and a 
-               port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of 
-               linear encoders that are used in callipers. 
-               It also features an updated pin layout to access more functionalities of the ESP32. 
+               This board is the updated version of the V2 with additional transistors to control High Power LEDs and a
+               port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of
+               linear encoders that are used in callipers.
+               It also features an updated pin layout to access more functionalities of the ESP32.
                More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
             </p>
          </div>
@@ -526,7 +541,7 @@
             <h3>Pin Layout</h3>
             <pre>
   <code class="language-pascal">
-    // UC2 Xiao ESP32S3 LED and Servo board 
+    // UC2 Xiao ESP32S3 LED and Servo board
     const char * pindefName = "Xiao_LED_SERVO";
 
     // Pin definitions for Xiao ESP32S3 (using D1, D2, etc.)
@@ -543,7 +558,7 @@
     #define SERVO_PIN_2 D8          // Servo 2 PWM (GPIO11)
         </code>
 </pre>
-            
+
          </div>
          <div class="hidden info UC2_3_Xiao_Slave_Motor">
           <h3>Xiao Motor Board</h3>
@@ -551,13 +566,13 @@
           </pre>
           <p>
              This board represents a motor control board featuring a TMC2209 stepper driver and an AS5600 magnetic encoder. It is designed to be used with the openUC2 modular cube system and is primarily intended for controlling a motorized system such as a peristaltic pump. The board provides an I2C bus for integration with the UC2 ecosystem.
-             It acts as a slave and can either be controlled via USB Serial or via I2C from a Master device. 
+             It acts as a slave and can either be controlled via USB Serial or via I2C from a Master device.
              More information can be found <a href="https://openuc2.github.io/docs/Toolboxes/DiscoveryElectronics"> here.</a>
           </p>
           <h3>Pin Layout</h3>
           <pre>
 <code class="language-pascal">
-   
+
 const char * pindefName = "UC2_3_I2CSlaveMotorX";
 const unsigned long BAUDRATE = 115200;
 
@@ -572,15 +587,15 @@ int8_t AccelStepperMotorType = 1;
 const char *I2C_NAME = "MOTX";
 I2CControllerType I2C_CONTROLLER_TYPE = I2CControllerType::mMOTOR;
 int8_t I2C_MOTOR_AXIS = 1;   // On the slave we have one motor axis per slave
-int8_t I2C_ADD_SLAVE = I2C_ADD_MOT_X;    // I2C address of the ESP32 if it's a slave ( 0x40;)  
-int8_t I2C_SCL = GPIO_NUM_2; // D1 -> GPIO2 
+int8_t I2C_ADD_SLAVE = I2C_ADD_MOT_X;    // I2C address of the ESP32 if it's a slave ( 0x40;)
+int8_t I2C_SCL = GPIO_NUM_2; // D1 -> GPIO2
 int8_t I2C_SDA = GPIO_NUM_3; // D2 -> GPIO3
 
 // I2C configuration (using updated GPIO values)
 int8_t I2C_SCL_ext = GPIO_NUM_6; // D5 -> GPIO6
 int8_t I2C_SDA_ext = GPIO_NUM_5; // D4 -> GPIO5
 
-// TMC UART 
+// TMC UART
 int8_t tmc_SW_RX = 44;// GPIO_NUM_44; // D7 -> GPIO44
 int8_t tmc_SW_TX = 43;// GPIO_NUM_43; // D6 -> GPIO43
 int8_t tmc_pin_diag = GPIO_NUM_4; // D3 -> GPIO4
@@ -615,20 +630,20 @@ int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 -> GPIO1 - > TOUCH
             <h3>Pin Layout</h3>
             <pre>
           <code class="language-pascal">
-          
+
             const char *pindefName = "UC2_ESP32S3_XIAO_LEDRING";
             const unsigned long BAUDRATE = 115200;
-          
+
             uint8_t I2C_CONTROLLER_TYPE = I2CControllerType::mLASER;
             uint8_t I2C_ADD_SLAVE = I2C_ADD_LEX_PWM1; // I2C address of the ESP32 if it's a slave
-          
+
             // Laser control pins (using updated GPIO values)
             int8_t LASER_1 = GPIO_NUM_3; // D2
             int8_t LASER_2 = GPIO_NUM_4; // D3 => Motor 1/1
-            
-            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 // Touch 1 
+
+            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 // Touch 1
             int8_t DIGITAL_IN_2 = GPIO_NUM_3; // D1 // Touch 2
-            
+
             // I2C configuration (using updated GPIO values)
             int8_t I2C_SCL = GPIO_NUM_6; // D5 -> GPIO6
             int8_t I2C_SDA = GPIO_NUM_5; // D4 -> GPIO5
@@ -647,20 +662,20 @@ int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 -> GPIO1 - > TOUCH
             <h3>Pin Layout</h3>
             <pre>
           <code class="language-pascal">
-          
+
             const char *pindefName = "UC2_ESP32S3_XIAO_LEDRING";
             const unsigned long BAUDRATE = 115200;
-          
+
             uint8_t I2C_CONTROLLER_TYPE = I2CControllerType::mLASER;
             uint8_t I2C_ADD_SLAVE = I2C_ADD_LEX_PWM1; // I2C address of the ESP32 if it's a slave
-          
+
             // Laser control pins (using updated GPIO values)
             int8_t LASER_1 = GPIO_NUM_3; // D2
             int8_t LASER_2 = GPIO_NUM_4; // D3 => Motor 1/1
-            
-            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 // Touch 1 
+
+            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 // Touch 1
             int8_t DIGITAL_IN_2 = GPIO_NUM_3; // D1 // Touch 2
-            
+
             // I2C configuration (using updated GPIO values)
             int8_t I2C_SCL = GPIO_NUM_6; // D5 -> GPIO6
             int8_t I2C_SDA = GPIO_NUM_5; // D4 -> GPIO5
@@ -680,7 +695,7 @@ int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 -> GPIO1 - > TOUCH
 
          </div>
          <h3>Advanced Users</h3>
-         We provide two firmware versions: V1 (deprecated) and V2. The latter is implemented in the Platform.io standard. 
+         We provide two firmware versions: V1 (deprecated) and V2. The latter is implemented in the Platform.io standard.
          You can find more information on their dedicated github repositories:
          <ul>
             <li>
@@ -709,7 +724,7 @@ int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 -> GPIO1 - > TOUCH
            radio.addEventListener("change", () => {
              const button = document.querySelector("esp-web-install-button");
              button.manifest = `./static/firmware_build/${radio.value}-manifest.json`;
-         
+
              document.querySelectorAll(".info").forEach((info) => {
                info.classList.add("hidden");
              });
@@ -724,8 +739,8 @@ int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 -> GPIO1 - > TOUCH
          if (new URLSearchParams(document.location.search).has("diy")) {
            document.body.classList.add("show-diy");
          }
-         
-         
+
+
       </script>
    </body>
 </html>
