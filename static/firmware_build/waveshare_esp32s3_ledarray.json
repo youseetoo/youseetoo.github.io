@@ -6,7 +6,7 @@
   "builds": [
     {
       "chipFamily": "ESP32-S3",
-      "parts": [{ "path": "waveshare_esp32s3_ledmatrix.bin", "offset": 0 }]
+      "parts": [{ "path": "waveshare_esp32s3_ledarray.bin", "offset": 0 }]
     }
   ]
 }
