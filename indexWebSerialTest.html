@@ -1,494 +1,565 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>openUC2 WebSERIAL Demonstration</title>
-  <meta name="description" content="WebSerial + WebRTC + UC2 demo" />
-  <meta name="author" content="openUC2" />
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>openUC2 WebSERIAL Demonstration</title>
+    <meta name="description" content="WebSerial + WebRTC + UC2 demo" />
+    <meta name="author" content="openUC2" />
 
-  <!-- Bootstrap 5 -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <!-- Optional: FontAwesome or other icons if needed -->
-  <!-- <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-  /> -->
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
 
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="css/style.css" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
 
-  <!-- JSZip / FileSaver (either from local lib folder or CDN) -->
-  <script src="js/lib/jszip.min.js"></script>
-  <script src="js/lib/FileSaver.min.js"></script>
-</head>
+    <!-- JSZip / FileSaver (CDN or local) -->
+    <script src="js/lib/jszip.min.js"></script>
+    <script src="js/lib/FileSaver.min.js"></script>
+  </head>
 
-<body>
-  <!-- =========================
-       NAVBAR
-  ========================== -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">openUC2 Demo</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
+  <body>
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">openUC2 Demo</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <!-- Add or remove items as needed -->
-          <li class="nav-item">
-            <a class="nav-link active" href="#">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">About</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Contact</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- =========================
-       HEADER / JUMBOTRON
-  ========================== -->
-  <header class="bg-light py-5 mb-4">
-    <div class="container text-center">
-      <h1 class="display-5">
-        <img
-          src="https://raw.githubusercontent.com/openUC2/openUC2.github.io/master/static/img/Artboard4%404x.png"
-          width="80"
-          alt="UC2 Logo"
-        />
-        OpenUC2 Online Tool
-      </h1>
-      <p class="lead">
-        A Web Serial interface to control a UC2 ESP device using your browser.
-      </p>
-      <button
-        class="btn btn-success btn-lg"
-        id="openclose_port"
-        type="button"
-      >
-        Connect to ESP32
-      </button>
-    </div>
-  </header>
-
-  <!-- =========================
-       WARNING ALERT (if needed)
-  ========================== -->
-  <div class="container mb-4">
-    <div class="alert alert-warning" role="alert">
-      <strong>Baudrate changed!</strong> Default is now 115200. Make sure to select 115200 in the dropdown and click “Change”.
-    </div>
-  </div>
-
-  <!-- =========================
-       MAIN CONTAINER
-  ========================== -->
-  <div class="container mb-5">
-    <div class="row">
-      <!-- LEFT COLUMN: WEBCAM & TIMELAPSE -->
-      <div class="col-lg-6 mb-4">
-        <!-- Webcam Livestream -->
-        <div class="card mb-3">
-          <div class="card-header">Microscope Webcam Livestream</div>
-          <div class="card-body">
-            <div class="mb-3">
-              <label for="audioSource" class="form-label">Audio Input:</label>
-              <select id="audioSource" class="form-select"></select>
-            </div>
-            <div class="mb-3">
-              <label for="audioOutput" class="form-label">Audio Output:</label>
-              <select id="audioOutput" class="form-select"></select>
-            </div>
-            <div class="mb-3">
-              <label for="videoSource" class="form-label">Video Source:</label>
-              <select id="videoSource" class="form-select"></select>
-            </div>
-            <div class="video-container">
-              <video
-                id="video"
-                class="border"
-                playsinline
-                autoplay
-                style="width:100%; max-height:360px;"
-              ></video>
-            </div>
-          </div>
-        </div>
-
-        <!-- Timelapse Settings -->
-        <div class="card">
-          <div class="card-header">Timelapse Settings</div>
-          <div class="card-body">
-            <div class="mb-3">
-              <label for="timelapseInterval" class="form-label"
-                >Interval (ms):</label
-              >
-              <input
-                type="number"
-                id="timelapseInterval"
-                class="form-control"
-                value="5000"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="downloadImagesInterval" class="form-label"
-                >Download Images (N-times):</label
-              >
-              <input
-                type="number"
-                id="downloadImagesInterval"
-                class="form-control"
-                value="500"
-              />
-            </div>
-            <p>Snaps Taken: <span id="snapCounter">0</span></p>
-            <button
-              type="button"
-              id="startTimelapseBtn"
-              class="btn btn-info"
-            >
-              Start Timelapse
-            </button>
-            <button
-              type="button"
-              id="stopTimelapseBtn"
-              class="btn btn-warning"
-              disabled
-            >
-              Stop Timelapse
-            </button>
-          </div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Contact</a>
+            </li>
+          </ul>
         </div>
       </div>
+    </nav>
 
-      <!-- RIGHT COLUMN: HARDWARE CONTROL -->
-      <div class="col-lg-6">
-        <div class="card mb-3">
-          <div class="card-header">Hardware Control</div>
-          <div class="card-body">
-            <p>
+    <!-- ===== HEADER / JUMBOTRON ===== -->
+    <header class="bg-light py-5 mb-4">
+      <div class="container text-center">
+        <h1 class="display-5">
+          <img
+            src="https://raw.githubusercontent.com/openUC2/openUC2.github.io/master/static/img/Artboard4%404x.png"
+            width="80"
+            alt="UC2 Logo"
+          />
+          OpenUC2 Online Tool
+        </h1>
+        <p class="lead">
+          A Web Serial interface to control a UC2 ESP device using your browser.
+        </p>
+        <button
+          class="btn btn-success btn-lg"
+          id="openclose_port"
+          type="button"
+        >
+          Connect to ESP32
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== WARNING ALERT ===== -->
+    <div class="container mb-4">
+      <div class="alert alert-warning" role="alert">
+        <strong>Baudrate changed!</strong> Default is now 115200. Make sure to select
+        115200 in the dropdown and click “Change”.
+      </div>
+    </div>
+
+    <!-- ===== MAIN CONTAINER ===== -->
+    <div class="container mb-5">
+      <div class="row">
+        <!-- LEFT COLUMN: WEBCAM & TIMELAPSE -->
+        <div class="col-lg-6 mb-4">
+          <!-- Webcam Livestream -->
+          <div class="card mb-3">
+            <div class="card-header">Microscope Webcam Livestream</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="audioSource" class="form-label">Audio Input:</label>
+                <select id="audioSource" class="form-select"></select>
+              </div>
+              <div class="mb-3">
+                <label for="audioOutput" class="form-label">Audio Output:</label>
+                <select id="audioOutput" class="form-select"></select>
+              </div>
+              <div class="mb-3">
+                <label for="videoSource" class="form-label">Video Source:</label>
+                <select id="videoSource" class="form-select"></select>
+              </div>
+              <div class="video-container">
+                <video
+                  id="video"
+                  class="border"
+                  playsinline
+                  autoplay
+                  style="width:100%; max-height:360px;"
+                ></video>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timelapse Settings -->
+          <div class="card">
+            <div class="card-header">Timelapse Settings</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="timelapseInterval" class="form-label"
+                  >Interval (ms):</label
+                >
+                <input
+                  type="number"
+                  id="timelapseInterval"
+                  class="form-control"
+                  value="5000"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="downloadImagesInterval" class="form-label"
+                  >Download Images (N-times):</label
+                >
+                <input
+                  type="number"
+                  id="downloadImagesInterval"
+                  class="form-control"
+                  value="500"
+                />
+              </div>
+              <p>Snaps Taken: <span id="snapCounter">0</span></p>
               <button
                 type="button"
-                onclick="getState()"
-                class="btn btn-primary mb-2"
+                id="startTimelapseBtn"
+                class="btn btn-info"
               >
-                Get Board Info
+                Start Timelapse
               </button>
-            </p>
-            
-            <h5 class="mt-4">Laser Control</h5>
-            <!-- Laser 0 -->
-            <div class="row align-items-center mb-2">
-              <div class="col-auto">
-                <button class="btn btn-success" onclick="laser0On()">Laser 0 On</button>
-              </div>
-              <div class="col-auto">
-                <button class="btn btn-danger" onclick="laser0Off()">Off</button>
-              </div>
-              <div class="col">
-                <input
-                  type="range"
-                  min="0"
-                  max="4095"
-                  value="0"
-                  class="form-range"
-                  id="laser0Slider"
-                />
-                <small>Value: <span id="laser0Value">0</span></small>
-              </div>
-            </div>
-            <!-- Laser 1 -->
-            <div class="row align-items-center mb-2">
-              <div class="col-auto">
-                <button class="btn btn-success" onclick="laser1On()">Laser 1 On</button>
-              </div>
-              <div class="col-auto">
-                <button class="btn btn-danger" onclick="laser1Off()">Off</button>
-              </div>
-              <div class="col">
-                <input
-                  type="range"
-                  min="0"
-                  max="4095"
-                  value="0"
-                  class="form-range"
-                  id="laser1Slider"
-                />
-                <small>Value: <span id="laser1Value">0</span></small>
-              </div>
-            </div>
-            <!-- Laser 2 -->
-            <div class="row align-items-center mb-2">
-              <div class="col-auto">
-                <button class="btn btn-success" onclick="laser2On()">Laser 2 On</button>
-              </div>
-              <div class="col-auto">
-                <button class="btn btn-danger" onclick="laser2Off()">Off</button>
-              </div>
-              <div class="col">
-                <input
-                  type="range"
-                  min="0"
-                  max="4095"
-                  value="0"
-                  class="form-range"
-                  id="laser2Slider"
-                />
-                <small>Value: <span id="laser2Value">0</span></small>
-              </div>
-            </div>
-            <!-- Laser 3 -->
-            <div class="row align-items-center mb-2">
-              <div class="col-auto">
-                <button class="btn btn-success" onclick="laser3On()">Laser 3 On</button>
-              </div>
-              <div class="col-auto">
-                <button class="btn btn-danger" onclick="laser3Off()">Off</button>
-              </div>
-              <div class="col">
-                <input
-                  type="range"
-                  min="0"
-                  max="4095"
-                  value="0"
-                  class="form-range"
-                  id="laser3Slider"
-                />
-                <small>Value: <span id="laser3Value">0</span></small>
-              </div>
-            </div>
-
-            <h5 class="mt-4">Motor Control</h5>
-            <div class="d-flex flex-wrap gap-2">
-              <button class="btn btn-secondary" onclick="axisXplus()">X+</button>
-              <button class="btn btn-secondary" onclick="axisXminus()">X-</button>
-              <button class="btn btn-secondary" onclick="axisXForverplus()">X Forever +</button>
-              <button class="btn btn-secondary" onclick="axisXForverminus()">X Forever -</button>
-              <button class="btn btn-warning" onclick="stopX()">Stop X</button>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-              <button class="btn btn-secondary" onclick="axisYplus()">Y+</button>
-              <button class="btn btn-secondary" onclick="axisYminus()">Y-</button>
-              <button class="btn btn-secondary" onclick="axisYForverplus()">Y Forever +</button>
-              <button class="btn btn-secondary" onclick="axisYForverminus()">Y Forever -</button>
-              <button class="btn btn-warning" onclick="stopY()">Stop Y</button>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-              <button class="btn btn-secondary" onclick="axisZplus()">Z+</button>
-              <button class="btn btn-secondary" onclick="axisZminus()">Z-</button>
-              <button class="btn btn-warning" onclick="stopZ()">Stop Z</button>
-              <button class="btn btn-info" onclick="axisZplusfine()">Z+ Fine</button>
-              <button class="btn btn-info" onclick="axisZminusfine()">Z- Fine</button>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-              <button class="btn btn-secondary" onclick="axisAplus()">A+</button>
-              <button class="btn btn-secondary" onclick="axisAminus()">A-</button>
-              <button class="btn btn-warning" onclick="stopA()">Stop A</button>
-            </div>
-
-            <h5 class="mt-4">Rotator Control</h5>
-            <div class="d-flex flex-wrap gap-2">
-              <button class="btn btn-secondary" onclick="rotatorXplus()">Rot X+</button>
-              <button class="btn btn-secondary" onclick="rotatorXminus()">Rot X-</button>
-              <button class="btn btn-secondary" onclick="rotatorYplus()">Rot Y+</button>
-              <button class="btn btn-secondary" onclick="rotatorYminus()">Rot Y-</button>
-              <button class="btn btn-secondary" onclick="rotatorZplus()">Rot Z+</button>
-              <button class="btn btn-secondary" onclick="rotatorZminus()">Rot Z-</button>
-              <button class="btn btn-secondary" onclick="rotatorAplus()">Rot A+</button>
-              <button class="btn btn-secondary" onclick="rotatorAminus()">Rot A-</button>
-            </div>
-
-            <h5 class="mt-4">LED Array</h5>
-            <div class="d-flex flex-wrap gap-2">
-              <button class="btn btn-success" onclick="ledOn()">LED On</button>
-              <button class="btn btn-danger" onclick="ledOff()">LED Off</button>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-              <button class="btn btn-primary" onclick="turnOnOuterRing()">Outer Ring On</button>
-              <button class="btn btn-danger" onclick="turnOffOuterRing()">Off</button>
-              <button class="btn btn-primary" onclick="turnOnMiddleRing()">Middle Ring On</button>
-              <button class="btn btn-danger" onclick="turnOffMiddleRing()">Off</button>
-              <button class="btn btn-primary" onclick="turnOnCenterRing()">Inner Ring On</button>
-              <button class="btn btn-danger" onclick="turnOffCenterRing()">Off</button>
-            </div>
-
-            <h5 class="mt-4">Enabling Motors</h5>
-            <button class="btn btn-success" onclick="autoEnableOn()">Auto Enable On</button>
-            <button class="btn btn-danger" onclick="autoEnableOff()">Auto Enable Off</button>
-
-            <h5 class="mt-4">Pair with PS4 Controller</h5>
-            <button class="btn btn-info" onclick="btPairing()">BT Pairing</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- =========================
-         SERIAL TERMINAL
-    ========================== -->
-    <div class="row mt-4">
-      <div class="col-lg-12">
-        <div class="card">
-          <div class="card-header">Serial Terminal</div>
-          <div class="card-body">
-            <div class="mb-3 d-flex align-items-center">
-              <label for="baud_rate" class="form-label me-2 mb-0"
-                >Baud Rate:</label
-              >
-              <select id="baud_rate" class="form-select w-auto me-2">
-                <option value="115200">115200</option>
-                <option value="500000">500000</option>
-                <option value="128000">128000</option>
-                <option value="9600">9600</option>
-                <option value="19200">19200</option>
-                <option value="38400">38400</option>
-                <option value="57600">57600</option>
-                <option value="1000000">1000000</option>
-                <option value="2000000">2000000</option>
-              </select>
-              <button id="change" class="btn btn-secondary" disabled>Change</button>
-            </div>
-
-            <p><strong>Port Status:</strong> <span id="port_info">Disconnected</span></p>
-
-            <div class="mb-3">
-              <label for="term_window" class="form-label">Terminal Output</label>
-              <textarea
-                id="term_window"
-                class="form-control"
-                rows="6"
-                readonly
-              ></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="term_input" class="form-label">Input Command</label>
-              <textarea
-                id="term_input"
-                class="form-control"
-                rows="3"
+              <button
+                type="button"
+                id="stopTimelapseBtn"
+                class="btn btn-warning"
                 disabled
-              ></textarea>
+              >
+                Stop Timelapse
+              </button>
             </div>
-            <button id="send" class="btn btn-primary" disabled>Send</button>
-            <button id="clear" class="btn btn-warning" disabled>Clear</button>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: HARDWARE CONTROL -->
+        <div class="col-lg-6">
+          <!-- ===== Basic Hardware Control (already existing) ===== -->
+          <div class="card mb-3">
+            <div class="card-header">Hardware Control</div>
+            <div class="card-body">
+              <p>
+                <button
+                  type="button"
+                  onclick="getState()"
+                  class="btn btn-primary mb-2"
+                >
+                  Get Board Info
+                </button>
+              </p>
+
+              <h5 class="mt-4">Laser Control</h5>
+              <!-- Laser 0 -->
+              <div class="row align-items-center mb-2">
+                <div class="col-auto">
+                  <button class="btn btn-success" onclick="laser0On()">Laser 0 On</button>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-danger" onclick="laser0Off()">Off</button>
+                </div>
+                <div class="col">
+                  <input
+                    type="range"
+                    min="0"
+                    max="4095"
+                    value="0"
+                    class="form-range"
+                    id="laser0Slider"
+                  />
+                  <small>Value: <span id="laser0Value">0</span></small>
+                </div>
+              </div>
+              <!-- Laser 1 -->
+              <div class="row align-items-center mb-2">
+                <div class="col-auto">
+                  <button class="btn btn-success" onclick="laser1On()">Laser 1 On</button>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-danger" onclick="laser1Off()">Off</button>
+                </div>
+                <div class="col">
+                  <input
+                    type="range"
+                    min="0"
+                    max="4095"
+                    value="0"
+                    class="form-range"
+                    id="laser1Slider"
+                  />
+                  <small>Value: <span id="laser1Value">0</span></small>
+                </div>
+              </div>
+              <!-- Laser 2 -->
+              <div class="row align-items-center mb-2">
+                <div class="col-auto">
+                  <button class="btn btn-success" onclick="laser2On()">Laser 2 On</button>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-danger" onclick="laser2Off()">Off</button>
+                </div>
+                <div class="col">
+                  <input
+                    type="range"
+                    min="0"
+                    max="4095"
+                    value="0"
+                    class="form-range"
+                    id="laser2Slider"
+                  />
+                  <small>Value: <span id="laser2Value">0</span></small>
+                </div>
+              </div>
+              <!-- Laser 3 -->
+              <div class="row align-items-center mb-2">
+                <div class="col-auto">
+                  <button class="btn btn-success" onclick="laser3On()">Laser 3 On</button>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-danger" onclick="laser3Off()">Off</button>
+                </div>
+                <div class="col">
+                  <input
+                    type="range"
+                    min="0"
+                    max="4095"
+                    value="0"
+                    class="form-range"
+                    id="laser3Slider"
+                  />
+                  <small>Value: <span id="laser3Value">0</span></small>
+                </div>
+              </div>
+
+              <h5 class="mt-4">Motor Control</h5>
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-secondary" onclick="axisXplus()">X+</button>
+                <button class="btn btn-secondary" onclick="axisXminus()">X-</button>
+                <button class="btn btn-secondary" onclick="axisXForverplus()">X ∞ +</button>
+                <button class="btn btn-secondary" onclick="axisXForverminus()">X ∞ -</button>
+                <button class="btn btn-warning" onclick="stopX()">Stop X</button>
+              </div>
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-secondary" onclick="axisYplus()">Y+</button>
+                <button class="btn btn-secondary" onclick="axisYminus()">Y-</button>
+                <button class="btn btn-secondary" onclick="axisYForverplus()">Y ∞ +</button>
+                <button class="btn btn-secondary" onclick="axisYForverminus()">Y ∞ -</button>
+                <button class="btn btn-warning" onclick="stopY()">Stop Y</button>
+              </div>
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-secondary" onclick="axisZplus()">Z+</button>
+                <button class="btn btn-secondary" onclick="axisZminus()">Z-</button>
+                <button class="btn btn-warning" onclick="stopZ()">Stop Z</button>
+                <button class="btn btn-info" onclick="axisZplusfine()">Z+ Fine</button>
+                <button class="btn btn-info" onclick="axisZminusfine()">Z- Fine</button>
+              </div>
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-secondary" onclick="axisAplus()">A+</button>
+                <button class="btn btn-secondary" onclick="axisAminus()">A-</button>
+                <button class="btn btn-warning" onclick="stopA()">Stop A</button>
+              </div>
+
+              <h5 class="mt-4">Rotator Control</h5>
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-secondary" onclick="rotatorXplus()">Rot X+</button>
+                <button class="btn btn-secondary" onclick="rotatorXminus()">Rot X-</button>
+                <button class="btn btn-secondary" onclick="rotatorYplus()">Rot Y+</button>
+                <button class="btn btn-secondary" onclick="rotatorYminus()">Rot Y-</button>
+                <button class="btn btn-secondary" onclick="rotatorZplus()">Rot Z+</button>
+                <button class="btn btn-secondary" onclick="rotatorZminus()">Rot Z-</button>
+                <button class="btn btn-secondary" onclick="rotatorAplus()">Rot A+</button>
+                <button class="btn btn-secondary" onclick="rotatorAminus()">Rot A-</button>
+              </div>
+
+              <h5 class="mt-4">LED Array</h5>
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-success" onclick="ledOn()">LED On</button>
+                <button class="btn btn-danger" onclick="ledOff()">LED Off</button>
+              </div>
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-primary" onclick="turnOnOuterRing()">Outer Ring On</button>
+                <button class="btn btn-danger" onclick="turnOffOuterRing()">Off</button>
+                <button class="btn btn-primary" onclick="turnOnMiddleRing()">Middle Ring On</button>
+                <button class="btn btn-danger" onclick="turnOffMiddleRing()">Off</button>
+                <button class="btn btn-primary" onclick="turnOnCenterRing()">Inner Ring On</button>
+                <button class="btn btn-danger" onclick="turnOffCenterRing()">Off</button>
+              </div>
+
+              <h5 class="mt-4">Enabling Motors</h5>
+              <button class="btn btn-success" onclick="autoEnableOn()">Auto Enable On</button>
+              <button class="btn btn-danger" onclick="autoEnableOff()">Auto Enable Off</button>
+
+              <h5 class="mt-4">Pair with PS4 Controller</h5>
+              <button class="btn btn-info" onclick="btPairing()">BT Pairing</button>
+            </div>
+          </div>
+
+          <!-- ===== Advanced Motor/Driver Control ===== -->
+          <div class="card">
+            <div class="card-header">Advanced Motor/Driver Control</div>
+            <div class="card-body">
+              <!-- TMC Driver Settings -->
+              <h5>TMC Stepper Driver</h5>
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  <label for="tmc_msteps" class="form-label">Microsteps (msteps):</label>
+                  <input type="number" id="tmc_msteps" class="form-control" value="16" />
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="tmc_rms" class="form-label">RMS Current (mA):</label>
+                  <input type="number" id="tmc_rms" class="form-control" value="700" />
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="tmc_sgthrs" class="form-label">SG Threshold (sgthrs):</label>
+                  <input type="number" id="tmc_sgthrs" class="form-control" value="15" />
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="tmc_semin" class="form-label">SEMIN:</label>
+                  <input type="number" id="tmc_semin" class="form-control" value="5" />
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="tmc_semax" class="form-label">SEMAX:</label>
+                  <input type="number" id="tmc_semax" class="form-control" value="2" />
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="tmc_blank" class="form-label">Blank Time:</label>
+                  <input type="number" id="tmc_blank" class="form-control" value="24" />
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="tmc_toff" class="form-label">TOFF:</label>
+                  <input type="number" id="tmc_toff" class="form-control" value="4" />
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="tmc_axis" class="form-label">Axis ID:</label>
+                  <input type="number" id="tmc_axis" class="form-control" value="2" />
+                </div>
+              </div>
+              <button class="btn btn-primary mt-2" onclick="updateTMC()">Update TMC Settings</button>
+
+              <hr />
+
+              <!-- CAN Address -->
+              <h5>CAN Address</h5>
+              <div class="mb-3">
+                <label for="can_address" class="form-label">CAN Address:</label>
+                <input
+                  type="number"
+                  id="can_address"
+                  class="form-control"
+                  value="256"
+                />
+                <small class="text-muted"
+                  >Hint: MASTER=256, X=273, Y=274, Z=275, A=272</small
+                >
+              </div>
+              <button class="btn btn-info" onclick="updateCANAddress()">Set CAN Address</button>
+
+              <hr />
+
+              <!-- Homing -->
+              <h5>Homing</h5>
+              <div class="row">
+                <div class="col-md-3 mb-2">
+                  <label for="home_stepperid" class="form-label">Stepper ID:</label>
+                  <input
+                    type="number"
+                    id="home_stepperid"
+                    class="form-control"
+                    value="2"
+                  />
+                </div>
+                <div class="col-md-3 mb-2">
+                  <label for="home_timeout" class="form-label">Timeout (ms):</label>
+                  <input
+                    type="number"
+                    id="home_timeout"
+                    class="form-control"
+                    value="20000"
+                  />
+                </div>
+                <div class="col-md-3 mb-2">
+                  <label for="home_speed" class="form-label">Speed:</label>
+                  <input
+                    type="number"
+                    id="home_speed"
+                    class="form-control"
+                    value="15000"
+                  />
+                </div>
+                <div class="col-md-3 mb-2">
+                  <label for="home_direction" class="form-label">Direction:</label>
+                  <input
+                    type="number"
+                    id="home_direction"
+                    class="form-control"
+                    value="-1"
+                  />
+                </div>
+                <div class="col-md-3 mb-2">
+                  <label for="home_endstop" class="form-label">Endstop Polarity:</label>
+                  <input
+                    type="number"
+                    id="home_endstop"
+                    class="form-control"
+                    value="0"
+                  />
+                </div>
+              </div>
+              <button class="btn btn-success mt-2" onclick="homeStepper()">Home Stepper</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- =========================
-         CODE EXAMPLES (Collapsible)
-    ========================== -->
-    <div class="row mt-4">
-      <div class="col-lg-12">
-        <div class="accordion" id="codeExamplesAccordion">
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingOne">
-              <button
-                class="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseOne"
-                aria-expanded="false"
-                aria-controls="collapseOne"
+      <!-- SERIAL TERMINAL -->
+      <div class="row mt-4">
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-header">Serial Terminal</div>
+            <div class="card-body">
+              <div class="mb-3 d-flex align-items-center">
+                <label for="baud_rate" class="form-label me-2 mb-0"
+                  >Baud Rate:</label
+                >
+                <select id="baud_rate" class="form-select w-auto me-2">
+                  <option value="115200">115200</option>
+                  <option value="500000">500000</option>
+                  <option value="128000">128000</option>
+                  <option value="9600">9600</option>
+                  <option value="19200">19200</option>
+                  <option value="38400">38400</option>
+                  <option value="57600">57600</option>
+                  <option value="1000000">1000000</option>
+                  <option value="2000000">2000000</option>
+                </select>
+                <button id="change" class="btn btn-secondary" disabled>Change</button>
+              </div>
+
+              <p>
+                <strong>Port Status:</strong>
+                <span id="port_info">Disconnected</span>
+              </p>
+
+              <div class="mb-3">
+                <label for="term_window" class="form-label"
+                  >Terminal Output</label
+                >
+                <textarea
+                  id="term_window"
+                  class="form-control"
+                  rows="6"
+                  readonly
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="term_input" class="form-label"
+                  >Input Command</label
+                >
+                <textarea
+                  id="term_input"
+                  class="form-control"
+                  rows="3"
+                  disabled
+                ></textarea>
+              </div>
+              <button id="send" class="btn btn-primary" disabled>Send</button>
+              <button id="clear" class="btn btn-warning" disabled>Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CODE EXAMPLES ACCORDION -->
+      <div class="row mt-4">
+        <div class="col-lg-12">
+          <div class="accordion" id="codeExamplesAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseOne"
+                  aria-expanded="false"
+                  aria-controls="collapseOne"
+                >
+                  Code Examples
+                </button>
+              </h2>
+              <div
+                id="collapseOne"
+                class="accordion-collapse collapse"
+                aria-labelledby="headingOne"
+                data-bs-parent="#codeExamplesAccordion"
               >
-                Code Examples
-              </button>
-            </h2>
-            <div
-              id="collapseOne"
-              class="accordion-collapse collapse"
-              aria-labelledby="headingOne"
-              data-bs-parent="#codeExamplesAccordion"
-            >
-              <div class="accordion-body">
-                <pre><code class="json" style="max-height:500px; overflow:auto;">
-# enable
-{"task":"/motor_act", "isen":1, "isenauto":1}
+                <div class="accordion-body">
+                  <pre><code class="json" style="max-height:500px; overflow:auto;">
+# TMC Act
+{"task":"/tmc_act", "msteps":16, "rms_current":700, "sgthrs":15, "semin":5, "semax":2, "blank_time":24, "toff":4, "axis":2}
 
-# modules
-{"task":"/modules_get"}
-{"task":"/modules_set","modules":{"led":1,"motor":1,"slm":0,"home":1,"analogin":0,"pid":0,"laser":1,"dac":0,"analogout":0,"digitalout":0,"digitalin":1,"scanner":0}}
-{"task":"/state_get"}
+# CAN Act
+{"task":"/can_act", "address":256}  // MASTER=256, X=273, Y=274, Z=275, A=272
 
-# DAC
-{"task":"/dac_act_fct","dac_channel":1,"frequency":1000,"offset":0,"amplitude":1}
-
-# MOTOR
-{"task":"/motor_act",
- "motor":{
-   "steppers":[
-     {"stepperid":1,"position":10000,"speed":5000,"isabs":0,"isaccel":0},
-     {"stepperid":3,"position":10000,"speed":5000,"isabs":0,"isaccel":0}
-   ]
- }
-}
-{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"position":-1000,"speed":1000,"isabs":0,"isaccel":0}]}}
-{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"isforever":1,"speed":2000}]}}
-...
-# LED
-{"task":"/ledarr_act","led":{"LEDArrMode":1,"led_array":[{"id":0,"r":255,"g":255,"b":255}]}}
-{"task":"/ledarr_act","led":{"LEDArrMode":1,"led_array":[{"id":0,"r":0,"g":0,"b":0}]}}
-...
-# HOME
-{"task":"/home_act","home":{"steppers":[{"stepperid":1,"timeout":20000,"speed":15000,"direction":-1,"endposrelease":3000}]}}
-...
-# WIFI
-{"task":"/wifi/scan"}
-{"task":"/wifi/connect","ssid":"Test","PW":"12345678","AP":false}
-# BT
-{"task":"/bt_connect","mac":"1a:2b:3c:01:01:01","psx":2}
-...
-                </code></pre>
+# Home Act
+{"task":"/home_act", "home":{"steppers":[{"stepperid":2,"timeout":20000,"speed":15000,"direction":-1,"endstoppolarity":0}]}}
+                  </code></pre>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- FOOTER -->
+      <footer class="text-center mt-4 pt-4 border-top">
+        <p class="text-muted">© openUC2 2023</p>
+      </footer>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="text-center mt-4 pt-4 border-top">
-      <p class="text-muted">© openUC2 2023</p>
-    </footer>
-  </div>
+    <!-- Bootstrap Bundle (includes Popper) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+    ></script>
 
-  <!-- =========================
-       SCRIPTS
-  ========================== -->
-  <!-- Bootstrap Bundle (includes Popper) -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-  ></script>
+    <!-- WebRTC adapter -->
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
-  <!-- WebRTC adapter -->
-  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-
-  <!-- Google Analytics or any custom script (if needed) 
-       If you have your own ga.js in js/lib, reference it here:
-  -->
-  <!-- <script src="js/lib/ga.js"></script> -->
-
-  <!-- Our custom scripts -->
-  <script src="js/script.js"></script>
-  <script src="js/hardwareControl.js"></script>
-  <script src="js/webrtcmain.js" async></script>
-</body>
+    <!-- Our custom scripts -->
+    <script src="js/script.js"></script>
+    <script src="js/hardwareControl.js"></script>
+    <script src="js/advancedControls.js"></script> <!-- We'll add new functions here -->
+    <script src="js/webrtcmain.js" async></script>
+  </body>
 </html>
