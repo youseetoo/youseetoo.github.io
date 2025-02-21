@@ -321,7 +321,7 @@ function updateCANAddress() {
  * {"task":"/home_act","home":{"steppers":[{"stepperid":2,"timeout":20000,"speed":15000,"direction":-1,"endstoppolarity":0}]}}
  */
 function homeStepper() {
-  const stepperid = parseInt(document.getElementById("home_stepperid").value, 10) || 2;
+  const stepperid = document.getElementById("home_stepperid");
   const timeout = parseInt(document.getElementById("home_timeout").value, 10) || 20000;
   const speed = parseInt(document.getElementById("home_speed").value, 10) || 15000;
   const direction = parseInt(document.getElementById("home_direction").value, 10) || -1;
