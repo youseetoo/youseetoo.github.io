@@ -6,7 +6,7 @@
   "builds": [
     {
       "chipFamily": "ESP32",
-      "parts": [{ "path": "esp32_wemos.bin", "offset": 0 }]
+      "parts": [{ "path": "esp32_UC2_WEMOS.bin", "offset": 0 }]
     }
   ]
 }
