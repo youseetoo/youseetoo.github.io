@@ -381,7 +381,8 @@
                   value="256"
                 />
                 <small class="text-muted"
-                  >Hint: MASTER=256, X=273, Y=274, Z=275, A=272</small
+                  >Hint: MASTER=1, X=11, Y=12, Z=13, A=10, B=14, Laser1=20..</small
+
                 >
               </div>
               <button class="btn btn-info" onclick="updateCANAddress()">Set CAN Address</button>
@@ -534,6 +535,50 @@
 
 # Home Act
 {"task":"/home_act", "home":{"steppers":[{"stepperid":2,"timeout":20000,"speed":15000,"direction":-1,"endstoppolarity":0}]}}
+
+# TMC Motor driver
+{"task":"/tmc_act","msteps":16,"rms_current":700,"sgthrs":15,"semin":5,"semax":2,"blank_time":24,"toff":4,"axis":2}
+
+# Get CAN address
+{"task":"/can_act","address":256}
+
+# Drive home
+{"task":"/home_act","home":{"steppers":[{"stepperid":2,"timeout":20000,"speed":15000,"direction":-1,"endstoppolarity":0}]}}
+
+# Get activated modules
+{"task":"/modules_get"}
+
+# Retreive device information
+{"task":"/state_get"}
+
+# digital Analog controler
+{"task":"/dac_act","dac_channel":1,"frequency":1000,"offset":0,"amplitude":1}
+
+# Get state of linear encoder
+{"task":"/linearencoder_get","linencoder":{"posval":1,"id":1}}
+
+# drive motor
+{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"position":4800,"speed":30000,"isabs":0,"isaccel":0,"accel":100000}]}}
+{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"isforever":1,"speed":2000}]}}
+
+# set output pint
+{"task":"/digitalout_set","digitaloutid":1,"digitaloutpin":4}
+
+# read input pin
+{"task":"/digitalin_get","digitalinid":1}
+
+# set pwm pin
+{"task":"/laser_act","LASERid":1,"LASERval":512,"LASERdespeckle":50,"LASERdespecklePeriod":30}
+
+# scan available wifi
+{"task":"/wifi/scan"}
+
+# connect to wifi
+{"task":"/wifi/connect","ssid":"Test","PW":"12345678","AP":false}
+
+# get available heap
+{"task":"/state_get","heap":1}
+
                   </code></pre>
                 </div>
               </div>
