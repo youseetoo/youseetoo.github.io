@@ -69,17 +69,6 @@ function laser3Off() {
   sendCMD('{"task": "/laser_act", "LASERid":3, "LASERval": 0}');
 }
 
-// LED
-function ledOn() {
-  sendCMD(
-    '{"task":"/ledarr_act","led":{"LEDArrMode":1,"led_array":[{"id":0,"r":255,"g":255,"b":255}]}}'
-  );
-}
-function ledOff() {
-  sendCMD(
-    '{"task":"/ledarr_act","led":{"LEDArrMode":1,"led_array":[{"id":0,"r":0,"g":0,"b":0}]}}'
-  );
-}
 
 // Motor X
 function axisXplus() {
@@ -345,4 +334,164 @@ function homeStepper() {
   };
 
   sendCMD(JSON.stringify(cmdObj));
+}
+
+// We store the current PWM value in a global or local structure so that
+// if user toggles "On"/"Off," we can restore the same value. 
+// Example: lastLightValue[0] = 512 means channel 0 is set to 512.
+let lastLightValue = [0, 0, 0, 0];  // for 4 channels
+
+function setLight(channel, value) {
+  // clamp to 0..1023 just in case
+  const v = Math.max(0, Math.min(1023, parseInt(value)));
+  lastLightValue[channel] = v;
+  // Construct the JSON
+  const cmd = `{"task": "/laser_act", "LASERid": ${channel}, "LASERval": ${v}}`;
+  sendCMD(cmd);
+}
+
+/**  Light X ON => enables slider & sets to last known value */
+function light0On() {
+  // Enable the slider
+  document.getElementById("light0Slider").disabled = false;
+  document.getElementById("light0SliderValue").disabled = false;
+  // Disable the "On" button
+  document.getElementById("light0OnBtn").disabled = true;
+  // Enable the "Off" button
+  document.getElementById("light0OffBtn").disabled = false;
+
+  // Immediately set to last known value
+  setLight(0, lastLightValue[0]);
+  // Also set the UI to that value
+  document.getElementById("light0Slider").value = lastLightValue[0];
+  document.getElementById("light0SliderValue").value = lastLightValue[0];
+}
+
+function light0Off() {
+  // Turn off
+  setLight(0, 0);
+
+  // slider remains at the user’s position, but is disabled
+  // “Off” is disabled, “On” re-enabled
+  document.getElementById("light0Slider").disabled = true;
+  document.getElementById("light0SliderValue").disabled = true;
+  document.getElementById("light0OnBtn").disabled = false;
+  document.getElementById("light0OffBtn").disabled = true;
+}
+
+/** On slider changes, we set the value in real time */
+document.getElementById("light0Slider").addEventListener("input", function () {
+  // keep the text box in sync
+  document.getElementById("light0SliderValue").value = this.value;
+  setLight(0, this.value);
+});
+document.getElementById("light0SliderValue").addEventListener("change", function() {
+  // if user typed a number in the box
+  document.getElementById("light0Slider").value = this.value;
+  setLight(0, this.value);
+});
+
+// Repeat the same pattern for Light 1, 2, 3...
+// Light 1:
+
+function light1On() {
+  document.getElementById("light1Slider").disabled = false;
+  document.getElementById("light1SliderValue").disabled = false;
+  document.getElementById("light1OnBtn").disabled = true;
+  document.getElementById("light1OffBtn").disabled = false;
+
+  setLight(1, lastLightValue[1]);
+  document.getElementById("light1Slider").value = lastLightValue[1];
+  document.getElementById("light1SliderValue").value = lastLightValue[1];
+}
+
+function light1Off() {
+  setLight(1, 0);
+
+  document.getElementById("light1Slider").disabled = true;
+  document.getElementById("light1SliderValue").disabled = true;
+  document.getElementById("light1OnBtn").disabled = false;
+  document.getElementById("light1OffBtn").disabled = true;
+}
+
+document.getElementById("light1Slider").addEventListener("input", function () {
+  document.getElementById("light1SliderValue").value = this.value;
+  setLight(1, this.value);
+});
+document.getElementById("light1SliderValue").addEventListener("change", function() {
+  document.getElementById("light1Slider").value = this.value;
+  setLight(1, this.value);
+});
+
+// Light 2
+function light2On() {
+  document.getElementById("light2Slider").disabled = false;
+  document.getElementById("light2SliderValue").disabled = false;
+  document.getElementById("light2OnBtn").disabled = true;
+  document.getElementById("light2OffBtn").disabled = false;
+
+  setLight(2, lastLightValue[2]);
+  document.getElementById("light2Slider").value = lastLightValue[2];
+  document.getElementById("light2SliderValue").value = lastLightValue[2];
+}
+
+function light2Off() {
+  setLight(2, 0);
+
+  document.getElementById("light2Slider").disabled = true;
+  document.getElementById("light2SliderValue").disabled = true;
+  document.getElementById("light2OnBtn").disabled = false;
+  document.getElementById("light2OffBtn").disabled = true;
+}
+
+document.getElementById("light2Slider").addEventListener("input", function () {
+  document.getElementById("light2SliderValue").value = this.value;
+  setLight(2, this.value);
+});
+document.getElementById("light2SliderValue").addEventListener("change", function() {
+  document.getElementById("light2Slider").value = this.value;
+  setLight(2, this.value);
+});
+
+// Light 3
+function light3On() {
+  document.getElementById("light3Slider").disabled = false;
+  document.getElementById("light3SliderValue").disabled = false;
+  document.getElementById("light3OnBtn").disabled = true;
+  document.getElementById("light3OffBtn").disabled = false;
+
+  setLight(3, lastLightValue[3]);
+  document.getElementById("light3Slider").value = lastLightValue[3];
+  document.getElementById("light3SliderValue").value = lastLightValue[3];
+}
+
+function light3Off() {
+  setLight(3, 0);
+
+  document.getElementById("light3Slider").disabled = true;
+  document.getElementById("light3SliderValue").disabled = true;
+  document.getElementById("light3OnBtn").disabled = false;
+  document.getElementById("light3OffBtn").disabled = true;
+}
+
+document.getElementById("light3Slider").addEventListener("input", function () {
+  document.getElementById("light3SliderValue").value = this.value;
+  setLight(3, this.value);
+});
+document.getElementById("light3SliderValue").addEventListener("change", function() {
+  document.getElementById("light3Slider").value = this.value;
+  setLight(3, this.value);
+});
+
+/* =====================
+   Other existing motor, LED ring, etc. methods 
+   remain the same, just rename or keep them as you prefer
+===================== */
+
+// LED
+function ledOn() {
+  sendCMD('{"task":"/ledarr_act","led":{"LEDArrMode":1,"led_array":[{"id":0,"r":255,"g":255,"b":255}]}}');
+}
+function ledOff() {
+  sendCMD('{"task":"/ledarr_act","led":{"LEDArrMode":1,"led_array":[{"id":0,"r":0,"g":0,"b":0}]}}');
 }

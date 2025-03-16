@@ -157,3 +157,155 @@ function detectEnter(e) {
     sendString();
   }
 }
+
+
+
+async function openClose() {
+  if (portOpen) {
+    // If open, close it
+    reader.cancel();
+    console.log("Attempting to close port...");
+  } else {
+    portPromise = new Promise((resolve) => {
+      (async () => {
+        try {
+          if (holdPort == null) {
+            port = await navigator.serial.requestPort();
+          } else {
+            port = holdPort;
+            holdPort = null;
+          }
+
+          const baudSelected = parseInt(document.getElementById("baud_rate").value);
+          await port.open({ baudRate: baudSelected });
+
+          const textDecoder = new TextDecoderStream();
+          reader = textDecoder.readable.getReader();
+          const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+
+          portOpen = true;
+          document.getElementById("openclose_port").innerText = "Close";
+
+          // Enable the relevant UI
+          enableUI(true);
+
+          // If environment supports .getInfo():
+          const portInfo = port.getInfo();
+          document.getElementById("port_info").innerText =
+            "Connected (VID " +
+            portInfo.usbVendorId +
+            ", PID " +
+            portInfo.usbProductId +
+            ")";
+
+          let imgValue = "";
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+              reader.releaseLock();
+              break;
+            }
+            document.getElementById("term_window").value += value;
+            console.log(value);
+          }
+
+          await readableStreamClosed.catch(() => {/* ignore */});
+          await port.close();
+          portOpen = false;
+          document.getElementById("openclose_port").innerText = "Connect to ESP32";
+          document.getElementById("port_info").innerText = "Disconnected";
+
+          // Re-disable the UI
+          enableUI(false);
+
+          console.log("Port closed");
+          resolve();
+        } catch (err) {
+          console.error("Error opening port:", err);
+        }
+      })();
+    });
+  }
+}
+
+function enableUI(isConnected) {
+  // Generic approach: enable/disable everything except the “Connect” button itself
+  document.getElementById("term_input").disabled = !isConnected;
+  document.getElementById("send").disabled = !isConnected;
+  document.getElementById("clear").disabled = !isConnected;
+  document.getElementById("change").disabled = !isConnected;
+  document.getElementById("startTimelapseBtn").disabled = !isConnected;
+  document.getElementById("stopTimelapseBtn").disabled = !isConnected;
+  document.getElementById("btnGetBoardInfo").disabled = !isConnected;
+
+  // Light 0
+  document.getElementById("light0OnBtn").disabled = !isConnected;
+  document.getElementById("light0OffBtn").disabled = !isConnected;
+  document.getElementById("light0Slider").disabled = true; // remains disabled until "On" is pressed
+  document.getElementById("light0SliderValue").disabled = true;
+
+  // Light 1
+  document.getElementById("light1OnBtn").disabled = !isConnected;
+  document.getElementById("light1OffBtn").disabled = !isConnected;
+  document.getElementById("light1Slider").disabled = true;
+  document.getElementById("light1SliderValue").disabled = true;
+
+  // Light 2
+  document.getElementById("light2OnBtn").disabled = !isConnected;
+  document.getElementById("light2OffBtn").disabled = !isConnected;
+  document.getElementById("light2Slider").disabled = true;
+  document.getElementById("light2SliderValue").disabled = true;
+
+  // Light 3
+  document.getElementById("light3OnBtn").disabled = !isConnected;
+  document.getElementById("light3OffBtn").disabled = !isConnected;
+  document.getElementById("light3Slider").disabled = true;
+  document.getElementById("light3SliderValue").disabled = true;
+
+  // Motor axis
+  document.getElementById("axisXplusBtn").disabled = !isConnected;
+  document.getElementById("axisXminusBtn").disabled = !isConnected;
+  document.getElementById("axisXForverplusBtn").disabled = !isConnected;
+  document.getElementById("axisXForverminusBtn").disabled = !isConnected;
+  document.getElementById("stopXBtn").disabled = !isConnected;
+  // Repeat for Y, Z, A, etc. if you have separate IDs…
+
+  // LED array
+  document.getElementById("ledOnBtn").disabled = !isConnected;
+  document.getElementById("ledOffBtn").disabled = !isConnected;
+  document.getElementById("outerOnBtn").disabled = !isConnected;
+  document.getElementById("outerOffBtn").disabled = !isConnected;
+  document.getElementById("middleOnBtn").disabled = !isConnected;
+  document.getElementById("middleOffBtn").disabled = !isConnected;
+  document.getElementById("centerOnBtn").disabled = !isConnected;
+  document.getElementById("centerOffBtn").disabled = !isConnected;
+
+  // Enabling motors
+  document.getElementById("enableMotorBtn").disabled = !isConnected;
+  document.getElementById("disableMotorBtn").disabled = !isConnected;
+
+  // PS4 Pair
+  document.getElementById("btPairBtn").disabled = !isConnected;
+
+  // TMC & CAN
+  document.getElementById("tmc_msteps").disabled = !isConnected;
+  document.getElementById("tmc_rms").disabled = !isConnected;
+  document.getElementById("tmc_sgthrs").disabled = !isConnected;
+  document.getElementById("tmc_semin").disabled = !isConnected;
+  document.getElementById("tmc_semax").disabled = !isConnected;
+  document.getElementById("tmc_blank").disabled = !isConnected;
+  document.getElementById("tmc_toff").disabled = !isConnected;
+  document.getElementById("tmc_axis").disabled = !isConnected;
+  document.getElementById("tmcUpdateBtn").disabled = !isConnected;
+
+  document.getElementById("can_address").disabled = !isConnected;
+  document.getElementById("canUpdateBtn").disabled = !isConnected;
+
+  // Homing
+  document.getElementById("home_stepperid").disabled = !isConnected;
+  document.getElementById("home_timeout").disabled = !isConnected;
+  document.getElementById("home_speed").disabled = !isConnected;
+  document.getElementById("home_direction").disabled = !isConnected;
+  document.getElementById("home_endstop").disabled = !isConnected;
+  document.getElementById("homeStepperBtn").disabled = !isConnected;
+}

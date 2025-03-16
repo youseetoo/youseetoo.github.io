@@ -150,6 +150,7 @@
                 type="button"
                 id="startTimelapseBtn"
                 class="btn btn-info"
+                disabled
               >
                 Start Timelapse
               </button>
@@ -176,153 +177,304 @@
                   type="button"
                   onclick="getState()"
                   class="btn btn-primary mb-2"
+                  id="btnGetBoardInfo"
+                  disabled
                 >
                   Get Board Info
                 </button>
               </p>
 
-              <h5 class="mt-4">Laser Control</h5>
-              <!-- Laser 0 -->
-              <div class="row align-items-center mb-2">
+              <!-- Light Source / PWM Control -->
+              <h5 class="mt-4">Light Source / PWM Control</h5>
+              <small class="text-muted"
+                >Slider only active when the channel is On. Range: 0–1023.</small
+              >
+
+              <!-- “Laser 0” => “Light Source 0” -->
+              <div class="row align-items-center mb-3">
                 <div class="col-auto">
-                  <button class="btn btn-success" onclick="laser0On()">Laser 0 On</button>
+                  <button class="btn btn-success" onclick="light0On()" id="light0OnBtn" disabled>
+                    Light 0 On
+                  </button>
                 </div>
                 <div class="col-auto">
-                  <button class="btn btn-danger" onclick="laser0Off()">Off</button>
+                  <button class="btn btn-danger" onclick="light0Off()" id="light0OffBtn" disabled>
+                    Off
+                  </button>
                 </div>
                 <div class="col">
+                  <label class="form-label" for="light0SliderValue"
+                    >Value:</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control mb-1"
+                    id="light0SliderValue"
+                    value="0"
+                    min="0"
+                    max="1023"
+                    disabled
+                  />
                   <input
                     type="range"
                     min="0"
-                    max="4095"
+                    max="1023"
                     value="0"
                     class="form-range"
-                    id="laser0Slider"
+                    id="light0Slider"
+                    disabled
                   />
-                  <small>Value: <span id="laser0Value">0</span></small>
-                </div>
-              </div>
-              <!-- Laser 1 -->
-              <div class="row align-items-center mb-2">
-                <div class="col-auto">
-                  <button class="btn btn-success" onclick="laser1On()">Laser 1 On</button>
-                </div>
-                <div class="col-auto">
-                  <button class="btn btn-danger" onclick="laser1Off()">Off</button>
-                </div>
-                <div class="col">
-                  <input
-                    type="range"
-                    min="0"
-                    max="4095"
-                    value="0"
-                    class="form-range"
-                    id="laser1Slider"
-                  />
-                  <small>Value: <span id="laser1Value">0</span></small>
-                </div>
-              </div>
-              <!-- Laser 2 -->
-              <div class="row align-items-center mb-2">
-                <div class="col-auto">
-                  <button class="btn btn-success" onclick="laser2On()">Laser 2 On</button>
-                </div>
-                <div class="col-auto">
-                  <button class="btn btn-danger" onclick="laser2Off()">Off</button>
-                </div>
-                <div class="col">
-                  <input
-                    type="range"
-                    min="0"
-                    max="4095"
-                    value="0"
-                    class="form-range"
-                    id="laser2Slider"
-                  />
-                  <small>Value: <span id="laser2Value">0</span></small>
-                </div>
-              </div>
-              <!-- Laser 3 -->
-              <div class="row align-items-center mb-2">
-                <div class="col-auto">
-                  <button class="btn btn-success" onclick="laser3On()">Laser 3 On</button>
-                </div>
-                <div class="col-auto">
-                  <button class="btn btn-danger" onclick="laser3Off()">Off</button>
-                </div>
-                <div class="col">
-                  <input
-                    type="range"
-                    min="0"
-                    max="4095"
-                    value="0"
-                    class="form-range"
-                    id="laser3Slider"
-                  />
-                  <small>Value: <span id="laser3Value">0</span></small>
                 </div>
               </div>
 
+              <!-- “Laser 1” => “Light Source 1” -->
+              <div class="row align-items-center mb-3">
+                <div class="col-auto">
+                  <button class="btn btn-success" onclick="light1On()" id="light1OnBtn" disabled>
+                    Light 1 On
+                  </button>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-danger" onclick="light1Off()" id="light1OffBtn" disabled>
+                    Off
+                  </button>
+                </div>
+                <div class="col">
+                  <label class="form-label" for="light1SliderValue"
+                    >Value:</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control mb-1"
+                    id="light1SliderValue"
+                    value="0"
+                    min="0"
+                    max="1023"
+                    disabled
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="1023"
+                    value="0"
+                    class="form-range"
+                    id="light1Slider"
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <!-- Example: Laser 2 => Light 2, Laser 3 => Light 3, etc. -->
+              <div class="row align-items-center mb-3">
+                <div class="col-auto">
+                  <button class="btn btn-success" onclick="light2On()" id="light2OnBtn" disabled>
+                    Light 2 On
+                  </button>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-danger" onclick="light2Off()" id="light2OffBtn" disabled>
+                    Off
+                  </button>
+                </div>
+                <div class="col">
+                  <label class="form-label" for="light2SliderValue"
+                    >Value:</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control mb-1"
+                    id="light2SliderValue"
+                    value="0"
+                    min="0"
+                    max="1023"
+                    disabled
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="1023"
+                    value="0"
+                    class="form-range"
+                    id="light2Slider"
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div class="row align-items-center mb-3">
+                <div class="col-auto">
+                  <button class="btn btn-success" onclick="light3On()" id="light3OnBtn" disabled>
+                    Light 3 On
+                  </button>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-danger" onclick="light3Off()" id="light3OffBtn" disabled>
+                    Off
+                  </button>
+                </div>
+                <div class="col">
+                  <label class="form-label" for="light3SliderValue"
+                    >Value:</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control mb-1"
+                    id="light3SliderValue"
+                    value="0"
+                    min="0"
+                    max="1023"
+                    disabled
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="1023"
+                    value="0"
+                    class="form-range"
+                    id="light3Slider"
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <!-- Motor Control -->
               <h5 class="mt-4">Motor Control</h5>
-              <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-secondary" onclick="axisXplus()">X+</button>
-                <button class="btn btn-secondary" onclick="axisXminus()">X-</button>
-                <button class="btn btn-secondary" onclick="axisXForverplus()">X ∞ +</button>
-                <button class="btn btn-secondary" onclick="axisXForverminus()">X ∞ -</button>
-                <button class="btn btn-warning" onclick="stopX()">Stop X</button>
+              <small class="text-muted"
+                >Each axis moves in steps. Axis mapping: A=0, X=1, Y=2, Z=3.</small
+              >
+              <div class="d-flex flex-wrap gap-2 my-2">
+                <button class="btn btn-secondary" onclick="axisXplus()" id="axisXplusBtn" disabled>
+                  X+
+                </button>
+                <button class="btn btn-secondary" onclick="axisXminus()" id="axisXminusBtn" disabled>
+                  X-
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  onclick="axisXForverplus()"
+                  id="axisXForverplusBtn"
+                  disabled
+                >
+                  X ∞ +
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  onclick="axisXForverminus()"
+                  id="axisXForverminusBtn"
+                  disabled
+                >
+                  X ∞ -
+                </button>
+                <button class="btn btn-warning" onclick="stopX()" id="stopXBtn" disabled>
+                  Stop X
+                </button>
               </div>
-              <div class="d-flex flex-wrap gap-2 mt-3">
-                <button class="btn btn-secondary" onclick="axisYplus()">Y+</button>
-                <button class="btn btn-secondary" onclick="axisYminus()">Y-</button>
-                <button class="btn btn-secondary" onclick="axisYForverplus()">Y ∞ +</button>
-                <button class="btn btn-secondary" onclick="axisYForverminus()">Y ∞ -</button>
-                <button class="btn btn-warning" onclick="stopY()">Stop Y</button>
-              </div>
-              <div class="d-flex flex-wrap gap-2 mt-3">
-                <button class="btn btn-secondary" onclick="axisZplus()">Z+</button>
-                <button class="btn btn-secondary" onclick="axisZminus()">Z-</button>
-                <button class="btn btn-warning" onclick="stopZ()">Stop Z</button>
-                <button class="btn btn-info" onclick="axisZplusfine()">Z+ Fine</button>
-                <button class="btn btn-info" onclick="axisZminusfine()">Z- Fine</button>
-              </div>
-              <div class="d-flex flex-wrap gap-2 mt-3">
-                <button class="btn btn-secondary" onclick="axisAplus()">A+</button>
-                <button class="btn btn-secondary" onclick="axisAminus()">A-</button>
-                <button class="btn btn-warning" onclick="stopA()">Stop A</button>
-              </div>
+              <!-- Similarly for Y, Z, A, etc. ... -->
 
-              <h5 class="mt-4">Rotator Control</h5>
-              <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-secondary" onclick="rotatorXplus()">Rot X+</button>
-                <button class="btn btn-secondary" onclick="rotatorXminus()">Rot X-</button>
-                <button class="btn btn-secondary" onclick="rotatorYplus()">Rot Y+</button>
-                <button class="btn btn-secondary" onclick="rotatorYminus()">Rot Y-</button>
-                <button class="btn btn-secondary" onclick="rotatorZplus()">Rot Z+</button>
-                <button class="btn btn-secondary" onclick="rotatorZminus()">Rot Z-</button>
-                <button class="btn btn-secondary" onclick="rotatorAplus()">Rot A+</button>
-                <button class="btn btn-secondary" onclick="rotatorAminus()">Rot A-</button>
-              </div>
-
+              <!-- LED Array -->
               <h5 class="mt-4">LED Array</h5>
               <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-success" onclick="ledOn()">LED On</button>
-                <button class="btn btn-danger" onclick="ledOff()">LED Off</button>
+                <button
+                  class="btn btn-success"
+                  onclick="ledOn()"
+                  id="ledOnBtn"
+                  disabled
+                >
+                  LED On
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="ledOff()"
+                  id="ledOffBtn"
+                  disabled
+                >
+                  LED Off
+                </button>
               </div>
               <div class="d-flex flex-wrap gap-2 mt-3">
-                <button class="btn btn-primary" onclick="turnOnOuterRing()">Outer Ring On</button>
-                <button class="btn btn-danger" onclick="turnOffOuterRing()">Off</button>
-                <button class="btn btn-primary" onclick="turnOnMiddleRing()">Middle Ring On</button>
-                <button class="btn btn-danger" onclick="turnOffMiddleRing()">Off</button>
-                <button class="btn btn-primary" onclick="turnOnCenterRing()">Inner Ring On</button>
-                <button class="btn btn-danger" onclick="turnOffCenterRing()">Off</button>
+                <button
+                  class="btn btn-primary"
+                  onclick="turnOnOuterRing()"
+                  id="outerOnBtn"
+                  disabled
+                >
+                  Outer Ring On
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="turnOffOuterRing()"
+                  id="outerOffBtn"
+                  disabled
+                >
+                  Off
+                </button>
+                <button
+                  class="btn btn-primary"
+                  onclick="turnOnMiddleRing()"
+                  id="middleOnBtn"
+                  disabled
+                >
+                  Middle Ring On
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="turnOffMiddleRing()"
+                  id="middleOffBtn"
+                  disabled
+                >
+                  Off
+                </button>
+                <button
+                  class="btn btn-primary"
+                  onclick="turnOnCenterRing()"
+                  id="centerOnBtn"
+                  disabled
+                >
+                  Inner Ring On
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="turnOffCenterRing()"
+                  id="centerOffBtn"
+                  disabled
+                >
+                  Off
+                </button>
               </div>
 
-              <h5 class="mt-4">Enabling Motors</h5>
-              <button class="btn btn-success" onclick="autoEnableOn()">Auto Enable On</button>
-              <button class="btn btn-danger" onclick="autoEnableOff()">Auto Enable Off</button>
+              <!-- Motor Enabling -->
+              <h5 class="mt-4">Enable Motors</h5>
+              <small class="text-muted"
+                >Once enabled, the motors will remain powered even after movement.</small
+              >
+              <div class="mt-2">
+                <button
+                  class="btn btn-success"
+                  onclick="autoEnableOn()"
+                  id="enableMotorBtn"
+                  disabled
+                >
+                  Auto Enable On
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="autoEnableOff()"
+                  id="disableMotorBtn"
+                  disabled
+                >
+                  Auto Enable Off
+                </button>
+              </div>
 
               <h5 class="mt-4">Pair with PS4 Controller</h5>
-              <button class="btn btn-info" onclick="btPairing()">BT Pairing</button>
+              <button
+                class="btn btn-info"
+                onclick="btPairing()"
+                id="btPairBtn"
+                disabled
+              >
+                BT Pairing
+              </button>
             </div>
           </div>
 
@@ -332,41 +484,49 @@
             <div class="card-body">
               <!-- TMC Driver Settings -->
               <h5>TMC Stepper Driver</h5>
-              <div class="row">
+              <small class="text-muted"
+                >Only relevant if using CAN-based motor drivers. Axis: 0=A, 1=X, 2=Y,
+                3=Z.</small
+              >
+              <div class="row mt-2">
                 <div class="col-md-6 mb-2">
                   <label for="tmc_msteps" class="form-label">Microsteps (msteps):</label>
-                  <input type="number" id="tmc_msteps" class="form-control" value="16" />
+                  <input type="number" id="tmc_msteps" class="form-control" value="16" disabled />
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="tmc_rms" class="form-label">RMS Current (mA):</label>
-                  <input type="number" id="tmc_rms" class="form-control" value="700" />
+                  <input type="number" id="tmc_rms" class="form-control" value="700" disabled />
                 </div>
                 <div class="col-md-6 mb-2">
-                  <label for="tmc_sgthrs" class="form-label">SG Threshold (sgthrs):</label>
-                  <input type="number" id="tmc_sgthrs" class="form-control" value="15" />
+                  <label for="tmc_sgthrs" class="form-label"
+                    >SG Threshold (sgthrs):</label
+                  >
+                  <input type="number" id="tmc_sgthrs" class="form-control" value="15" disabled />
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="tmc_semin" class="form-label">SEMIN:</label>
-                  <input type="number" id="tmc_semin" class="form-control" value="5" />
+                  <input type="number" id="tmc_semin" class="form-control" value="5" disabled />
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="tmc_semax" class="form-label">SEMAX:</label>
-                  <input type="number" id="tmc_semax" class="form-control" value="2" />
+                  <input type="number" id="tmc_semax" class="form-control" value="2" disabled />
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="tmc_blank" class="form-label">Blank Time:</label>
-                  <input type="number" id="tmc_blank" class="form-control" value="24" />
+                  <input type="number" id="tmc_blank" class="form-control" value="24" disabled />
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="tmc_toff" class="form-label">TOFF:</label>
-                  <input type="number" id="tmc_toff" class="form-control" value="4" />
+                  <input type="number" id="tmc_toff" class="form-control" value="4" disabled />
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="tmc_axis" class="form-label">Axis ID:</label>
-                  <input type="number" id="tmc_axis" class="form-control" value="2" />
+                  <input type="number" id="tmc_axis" class="form-control" value="2" disabled />
                 </div>
               </div>
-              <button class="btn btn-primary mt-2" onclick="updateTMC()">Update TMC Settings</button>
+              <button class="btn btn-primary mt-2" onclick="updateTMC()" id="tmcUpdateBtn" disabled>
+                Update TMC Settings
+              </button>
 
               <hr />
 
@@ -379,13 +539,15 @@
                   id="can_address"
                   class="form-control"
                   value="256"
+                  disabled
                 />
                 <small class="text-muted"
-                  >Hint: MASTER=1, X=11, Y=12, Z=13, A=10, B=14, Laser1=20..</small
-
+                  >Hint: MASTER=256, X=273, Y=274, Z=275, A=272</small
                 >
               </div>
-              <button class="btn btn-info" onclick="updateCANAddress()">Set CAN Address</button>
+              <button class="btn btn-info" onclick="updateCANAddress()" id="canUpdateBtn" disabled>
+                Set CAN Address
+              </button>
 
               <hr />
 
@@ -399,6 +561,7 @@
                     id="home_stepperid"
                     class="form-control"
                     value="2"
+                    disabled
                   />
                 </div>
                 <div class="col-md-3 mb-2">
@@ -408,6 +571,7 @@
                     id="home_timeout"
                     class="form-control"
                     value="20000"
+                    disabled
                   />
                 </div>
                 <div class="col-md-3 mb-2">
@@ -417,6 +581,7 @@
                     id="home_speed"
                     class="form-control"
                     value="15000"
+                    disabled
                   />
                 </div>
                 <div class="col-md-3 mb-2">
@@ -426,6 +591,7 @@
                     id="home_direction"
                     class="form-control"
                     value="-1"
+                    disabled
                   />
                 </div>
                 <div class="col-md-3 mb-2">
@@ -435,10 +601,13 @@
                     id="home_endstop"
                     class="form-control"
                     value="0"
+                    disabled
                   />
                 </div>
               </div>
-              <button class="btn btn-success mt-2" onclick="homeStepper()">Home Stepper</button>
+              <button class="btn btn-success mt-2" onclick="homeStepper()" id="homeStepperBtn" disabled>
+                Home Stepper
+              </button>
             </div>
           </div>
         </div>
@@ -536,49 +705,8 @@
 # Home Act
 {"task":"/home_act", "home":{"steppers":[{"stepperid":2,"timeout":20000,"speed":15000,"direction":-1,"endstoppolarity":0}]}}
 
-# TMC Motor driver
-{"task":"/tmc_act","msteps":16,"rms_current":700,"sgthrs":15,"semin":5,"semax":2,"blank_time":24,"toff":4,"axis":2}
-
-# Get CAN address
-{"task":"/can_act","address":256}
-
-# Drive home
-{"task":"/home_act","home":{"steppers":[{"stepperid":2,"timeout":20000,"speed":15000,"direction":-1,"endstoppolarity":0}]}}
-
-# Get activated modules
-{"task":"/modules_get"}
-
-# Retreive device information
-{"task":"/state_get"}
-
-# digital Analog controler
-{"task":"/dac_act","dac_channel":1,"frequency":1000,"offset":0,"amplitude":1}
-
-# Get state of linear encoder
-{"task":"/linearencoder_get","linencoder":{"posval":1,"id":1}}
-
-# drive motor
+# Motor Act
 {"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"position":4800,"speed":30000,"isabs":0,"isaccel":0,"accel":100000}]}}
-{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"isforever":1,"speed":2000}]}}
-
-# set output pint
-{"task":"/digitalout_set","digitaloutid":1,"digitaloutpin":4}
-
-# read input pin
-{"task":"/digitalin_get","digitalinid":1}
-
-# set pwm pin
-{"task":"/laser_act","LASERid":1,"LASERval":512,"LASERdespeckle":50,"LASERdespecklePeriod":30}
-
-# scan available wifi
-{"task":"/wifi/scan"}
-
-# connect to wifi
-{"task":"/wifi/connect","ssid":"Test","PW":"12345678","AP":false}
-
-# get available heap
-{"task":"/state_get","heap":1}
-
                   </code></pre>
                 </div>
               </div>
@@ -604,7 +732,7 @@
     <!-- Our custom scripts -->
     <script src="js/script.js"></script>
     <script src="js/hardwareControl.js"></script>
-    <script src="js/advancedControls.js"></script> <!-- We'll add new functions here -->
+    <script src="js/advancedControls.js"></script>
     <script src="js/webrtcmain.js" async></script>
   </body>
 </html>
