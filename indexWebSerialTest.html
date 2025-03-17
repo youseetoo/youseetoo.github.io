@@ -342,34 +342,89 @@
               <small class="text-muted"
                 >Each axis moves in steps. Axis mapping: A=0, X=1, Y=2, Z=3.</small
               >
-              <div class="d-flex flex-wrap gap-2 my-2">
-                <button class="btn btn-secondary" onclick="axisXplus()" id="axisXplusBtn" disabled>
-                  X+
-                </button>
-                <button class="btn btn-secondary" onclick="axisXminus()" id="axisXminusBtn" disabled>
-                  X-
-                </button>
-                <button
-                  class="btn btn-secondary"
-                  onclick="axisXForverplus()"
-                  id="axisXForverplusBtn"
-                  disabled
-                >
-                  X ∞ +
-                </button>
-                <button
-                  class="btn btn-secondary"
-                  onclick="axisXForverminus()"
-                  id="axisXForverminusBtn"
-                  disabled
-                >
-                  X ∞ -
-                </button>
-                <button class="btn btn-warning" onclick="stopX()" id="stopXBtn" disabled>
-                  Stop X
-                </button>
+              <!-- Axis A -->
+              <div class="row align-items-center mb-3">
+                <div class="col-auto">
+                  <label for="stepA" class="form-label">Step size (A):</label>
+                  <input
+                    type="number"
+                    id="stepA"
+                    class="form-control"
+                    value="1000"
+                    style="width: 120px;"
+                  />
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-secondary" onclick="axisAplus()">A+</button>
+                  <button class="btn btn-secondary" onclick="axisAminus()">A-</button>
+                  <button class="btn btn-secondary" onclick="axisAForverplus()">A ∞ +</button>
+                  <button class="btn btn-secondary" onclick="axisAForverminus()">A ∞ -</button>
+                  <button class="btn btn-warning" onclick="stopA()">Stop A</button>
+                </div>
               </div>
-              <!-- Similarly for Y, Z, A, etc. ... -->
+
+              <!-- Axis X -->
+              <div class="row align-items-center mb-3">
+                <div class="col-auto">
+                  <label for="stepX" class="form-label">Step size (X):</label>
+                  <input
+                    type="number"
+                    id="stepX"
+                    class="form-control"
+                    value="1000"
+                    style="width: 120px;"
+                  />
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-secondary" onclick="axisXplus()">X+</button>
+                  <button class="btn btn-secondary" onclick="axisXminus()">X-</button>
+                  <button class="btn btn-secondary" onclick="axisXForverplus()">X ∞ +</button>
+                  <button class="btn btn-secondary" onclick="axisXForverminus()">X ∞ -</button>
+                  <button class="btn btn-warning" onclick="stopX()">Stop X</button>
+                </div>
+              </div>
+
+              <!-- Axis Y -->
+              <div class="row align-items-center mb-3">
+                <div class="col-auto">
+                  <label for="stepY" class="form-label">Step size (Y):</label>
+                  <input
+                    type="number"
+                    id="stepY"
+                    class="form-control"
+                    value="1000"
+                    style="width: 120px;"
+                  />
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-secondary" onclick="axisYplus()">Y+</button>
+                  <button class="btn btn-secondary" onclick="axisYminus()">Y-</button>
+                  <button class="btn btn-secondary" onclick="axisYForverplus()">Y ∞ +</button>
+                  <button class="btn btn-secondary" onclick="axisYForverminus()">Y ∞ -</button>
+                  <button class="btn btn-warning" onclick="stopY()">Stop Y</button>
+                </div>
+              </div>
+
+              <!-- Axis Z -->
+              <div class="row align-items-center mb-3">
+                <div class="col-auto">
+                  <label for="stepZ" class="form-label">Step size (Z):</label>
+                  <input
+                    type="number"
+                    id="stepZ"
+                    class="form-control"
+                    value="1000"
+                    style="width: 120px;"
+                  />
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-secondary" onclick="axisZplus()">Z+</button>
+                  <button class="btn btn-secondary" onclick="axisZminus()">Z-</button>
+                  <button class="btn btn-secondary" onclick="axisZForverplus()">Z ∞ +</button>
+                  <button class="btn btn-secondary" onclick="axisZForverminus()">Z ∞ -</button>
+                  <button class="btn btn-warning" onclick="stopZ()">Stop Z</button>
+                </div>
+              </div>
 
               <!-- LED Array -->
               <h5 class="mt-4">LED Array</h5>

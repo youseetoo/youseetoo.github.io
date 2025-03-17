@@ -391,10 +391,98 @@
           </p>
           <h4>Pin Layout</h4>
           <pre><code>
-const int PIN_DEF_LASER_1 = GPIO_NUM_18;
-const int PIN_DEF_LASER_2 = GPIO_NUM_19;
-// ...
-// See your existing code snippet for full pin definitions
+            // ESP32-WEMOS D1 R32
+            const int PIN_DEF_MOTOR_DIR_A = 0;
+            const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_16;
+            const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_27;
+            const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
+            const int PIN_DEF_MOTOR_STP_A = 0;
+            const int PIN_DEF_MOTOR_STP_X = GPIO_NUM_26;
+            const int PIN_DEF_MOTOR_STP_Y = GPIO_NUM_25;
+            const int PIN_DEF_MOTOR_STP_Z = GPIO_NUM_17;
+            const int PIN_DEF_MOTOR_EN_A = GPIO_NUM_12;
+            const int PIN_DEF_MOTOR_EN_X = GPIO_NUM_12;
+            const int PIN_DEF_MOTOR_EN_Y = GPIO_NUM_12;
+            const int PIN_DEF_MOTOR_EN_Z = GPIO_NUM_12;
+            const bool PIN_DEF_MOTOR_EN_A_INVERTED = true;
+            const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
+            const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
+            const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
+  
+            const int PIN_DEF_LASER_1 = GPIO_NUM_18;
+            const int PIN_DEF_LASER_2 = GPIO_NUM_19;
+            const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21
+  
+            const int PIN_DEF_LED = GPIO_NUM_4;
+            const int PIN_DEF_LED_NUM = 64;
+  
+            const int PIN_DEF_END_X = GPIO_NUM_13;
+            const int PIN_DEF_END_Y = GPIO_NUM_5;
+            const int PIN_DEF_END_Z = GPIO_NUM_23;
+  
+            const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
+            const int PIN_PS4_ENUM_DEF = 2;
+  
+  
+            #define WEMOS_D1_R32_BOARD_NAME "ESPDUINO-32 Wemos D1 R32"
+  
+            // timer definitions
+            #define WEMOS_D1_R32_STEP_TIMER_GROUP TIMER_GROUP_0
+            #define WEMOS_D1_R32_STEP_TIMER_INDEX TIMER_0
+  
+            // Define step pulse output pins.
+            #define WEMOS_D1_R32_X_STEP_PIN          GPIO_NUM_26
+            #define WEMOS_D1_R32_Y_STEP_PIN          GPIO_NUM_25
+            #define WEMOS_D1_R32_Z_STEP_PIN          GPIO_NUM_17
+            #define WEMOS_D1_R32_A_STEP_PIN          GPIO_NUM_19
+  
+            // Define step direction output pins. NOTE: All direction pins must be on the same port.
+            #define WEMOS_D1_R32_X_DIRECTION_PIN     GPIO_NUM_16
+            #define WEMOS_D1_R32_Y_DIRECTION_PIN     GPIO_NUM_27
+            #define WEMOS_D1_R32_Z_DIRECTION_PIN     GPIO_NUM_14
+            #define WEMOS_D1_R32_A_DIRECTION_PIN     GPIO_NUM_18
+  
+            #define WEMOS_D1_R32_X_END_STOP          GPIO_NUM_13 // arduino 9
+            #define WEMOS_D1_R32_X_END_STOP          GPIO_NUM_5  // arduino 10
+            #define WEMOS_D1_R32_X_END_STOP          GPIO_NUM_23  // arduino 11
+  
+  
+            // Define stepper driver enable/disable output pin(s).
+            #define WEMOS_D1_R32_STEPPERS_ENABLE_PIN GPIO_NUM_12
+  
+            // Define homing/hard limit switch input pins and limit interrupt vectors.
+            #define WEMOS_D1_R32_X_LIMIT_PIN         GPIO_NUM_13
+            #define WEMOS_D1_R32_Y_LIMIT_PIN         GPIO_NUM_5
+            #define WEMOS_D1_R32_Z_LIMIT_PIN         GPIO_NUM_23
+  
+            // Define spindle enable and spindle direction output pins.
+            #define WEMOS_D1_R32_SPINDLE_ENABLE_PIN  GPIO_NUM_18
+            #define WEMOS_D1_R32_SPINDLEPWMPIN       GPIO_NUM_19
+  
+            // Define flood enable output pin.
+            #define WEMOS_D1_R32_COOLANT_FLOOD_PIN   GPIO_NUM_32
+  
+            // Define user-control CONTROLs (cycle start, reset, feed hold) input pins.
+            #define WEMOS_D1_R32_RESET_PIN           GPIO_NUM_2
+            #define WEMOS_D1_R32_FEED_HOLD_PIN       GPIO_NUM_4
+            #define WEMOS_D1_R32_CYCLE_START_PIN     GPIO_NUM_35
+  
+            // Define probe switch input pin.
+            #define WEMOS_D1_R32_PROBE_PIN           GPIO_NUM_39
+  
+            #define WEMOS_D1_R32_UART2_RX_PIN            GPIO_NUM_33
+            #define WEMOS_D1_R32_UART2_TX_PIN            GPIO_NUM_32
+            #define WEMOS_D1_R32_MODBUS_DIRECTION_PIN    GPIO_NUM_15
+            #define WEMOS_D1_R32_MODBUS_BAUD             19200
+  
+  
+            // Pin mapping when using SPI mode.
+            // With this mapping, SD card can be used both in SPI and 1-line SD mode.
+            // Note that a pull-up on CS line is required in SD mode.
+            #define WEMOS_D1_R32_PIN_NUM_MISO        GPIO_NUM_19
+            #define WEMOS_D1_R32_PIN_NUM_MOSI        GPIO_NUM_23
+            #define WEMOS_D1_R32_PIN_NUM_CLK         GPIO_NUM_18
+            #define WEMOS_D1_R32_PIN_NUM_CS          GPIO_NUM_5
           </code></pre>
         </div>
 
@@ -407,9 +495,37 @@ const int PIN_DEF_LASER_2 = GPIO_NUM_19;
           </p>
           <h4>Pin Layout</h4>
           <pre><code>
-const int PIN_DEF_MOTOR_DIR_A = GPIO_NUM_21;
-const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33;
-// ...
+            // UC2 STandalone V1
+            const int PIN_DEF_MOTOR_DIR_A = GPIO_NUM_21;
+            const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33;
+            const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_16;
+            const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
+            const int PIN_DEF_MOTOR_STP_A = GPIO_NUM_22;
+            const int PIN_DEF_MOTOR_STP_X = GPIO_NUM_2;
+            const int PIN_DEF_MOTOR_STP_Y = GPIO_NUM_27;
+            const int PIN_DEF_MOTOR_STP_Z = GPIO_NUM_12;
+            const int PIN_DEF_MOTOR_EN_A = GPIO_NUM_13;
+            const int PIN_DEF_MOTOR_EN_X = GPIO_NUM_13;
+            const int PIN_DEF_MOTOR_EN_Y = GPIO_NUM_13;
+            const int PIN_DEF_MOTOR_EN_Z = GPIO_NUM_13;
+            const bool PIN_DEF_MOTOR_EN_A_INVERTED = true;
+            const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
+            const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
+            const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
+  
+            const int PIN_DEF_LASER_1 = GPIO_NUM_4;
+            const int PIN_DEF_LASER_2 = GPIO_NUM_15;
+            const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21
+  
+            const int PIN_DEF_LED = GPIO_NUM_17;
+            const int PIN_DEF_LED_NUM = 25;
+  
+            const int PIN_DEF_END_X = GPIO_NUM_10;
+            const int PIN_DEF_END_Y = GPIO_NUM_11;
+            const int PIN_DEF_END_Z = 0;
+  
+            const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
+            const int PIN_PS4_ENUM_DEF = 2;
           </code></pre>
         </div>
 
@@ -422,11 +538,43 @@ const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33;
           </p>
           <h4>Pin Layout</h4>
           <pre><code>
-const int PIN_DEF_LASER_1 = GPIO_NUM_17;
-const int PIN_DEF_LASER_2 = GPIO_NUM_4;
-const int PIN_DEF_LASER_3 = GPIO_NUM_15;
-// ...
-          </code></pre>
+            // UC2 STandalone V2
+            const int PIN_DEF_MOTOR_DIR_A = GPIO_NUM_21;
+            const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33;
+            const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_16;
+            const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
+            const int PIN_DEF_MOTOR_STP_A = GPIO_NUM_22;
+            const int PIN_DEF_MOTOR_STP_X = GPIO_NUM_2;
+            const int PIN_DEF_MOTOR_STP_Y = GPIO_NUM_27;
+            const int PIN_DEF_MOTOR_STP_Z = GPIO_NUM_12;
+            const int PIN_DEF_MOTOR_EN_A = GPIO_NUM_13;
+            const int PIN_DEF_MOTOR_EN_X = GPIO_NUM_13;
+            const int PIN_DEF_MOTOR_EN_Y = GPIO_NUM_13;
+            const int PIN_DEF_MOTOR_EN_Z = GPIO_NUM_13;
+            const bool PIN_DEF_MOTOR_EN_A_INVERTED = true;
+            const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
+            const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
+            const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
+  
+            const int PIN_DEF_LASER_1 = GPIO_NUM_17;
+            const int PIN_DEF_LASER_2 = GPIO_NUM_4;
+            const int PIN_DEF_LASER_3 = GPIO_NUM_15;
+  
+            const int PIN_DEF_LED = GPIO_NUM_32;
+            const int PIN_DEF_LED_NUM = 25;
+  
+            const int PIN_DEF_END_X = GPIO_NUM_34;
+            const int PIN_DEF_END_Y = GPIO_NUM_35;
+            const int PIN_DEF_END_Z = 0;
+  
+            const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
+            const int PIN_PS4_ENUM_DEF = 2;
+            </code></pre>
+            <p>
+              This board is the updated version of the V1 with additional transistors to control High Power LEDs.
+              It also features an updated pin layout to access more functionalities of the ESP32.
+              More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
+           </p>
         </div>
 
         <!-- Standalone Board V3 -->
@@ -441,11 +589,75 @@ const int PIN_DEF_LASER_3 = GPIO_NUM_15;
           </p>
           <h4>Pin Layout</h4>
           <pre><code>
-int8_t MOTOR_A_STEP = GPIO_NUM_15;
-int8_t MOTOR_X_STEP = GPIO_NUM_16;
-// ...
-          </code></pre>
-        </div>
+            // UC2 STandalone V3
+            const char * pindefName = "UC2_3";
+  
+            int8_t MOTOR_A_STEP = GPIO_NUM_15;
+            int8_t MOTOR_X_STEP = GPIO_NUM_16;
+            int8_t MOTOR_Y_STEP = GPIO_NUM_14;
+            int8_t MOTOR_Z_STEP = GPIO_NUM_0;
+  
+            bool MOTOR_ENABLE_INVERTED = true;
+            bool MOTOR_AUTOENABLE = true;
+            bool useFastAccelStepper = true;
+            int8_t AccelStepperMotorType = 1;
+  
+            int8_t LASER_1 = GPIO_NUM_12;
+            int8_t LASER_2 = GPIO_NUM_4;
+            int8_t LASER_3 = GPIO_NUM_2;
+  
+            int8_t LED_PIN = GPIO_NUM_13;
+            int8_t LED_COUNT = 64;
+  
+            // FIXME: Is this redudant?!
+            int8_t PIN_DEF_END_X = disabled;
+            int8_t PIN_DEF_END_Y = disabled;
+            int8_t PIN_DEF_END_Z = disabled;
+            int8_t DIGITAL_IN_1 = PIN_DEF_END_X;
+            int8_t DIGITAL_IN_2 = PIN_DEF_END_Y;
+            int8_t DIGITAL_IN_3 = PIN_DEF_END_Z;
+  
+            // const char * PSX_MAC = "1a:2b:3c:01:01:04";
+            // int8_t PSX_CONTROLLER_TYPE = 2; // 1: PS3, 2: PS4
+            bool enableBlueTooth = true;
+            bool useBtHID = true;
+  
+            int8_t JOYSTICK_SPEED_MULTIPLIER = 30;
+            int8_t JOYSTICK_MAX_ILLU = 100;
+            int8_t JOYSTICK_SPEED_MULTIPLIER_Z = 30;
+  
+            // for caliper
+            int8_t X_CAL_DATA = GPIO_NUM_32;
+            int8_t Y_CAL_DATA = GPIO_NUM_34;
+            int8_t Z_CAL_DATA = GPIO_NUM_36;
+            int8_t X_CAL_CLK = GPIO_NUM_33;
+            int8_t Y_CAL_CLK = GPIO_NUM_35;
+            int8_t Z_CAL_CLK = GPIO_NUM_17;
+  
+            // I2c
+            int8_t I2C_SCL = GPIO_NUM_22;
+            int8_t I2C_SDA = GPIO_NUM_21;
+            int8_t I2C_ADD = 0x27;
+            gpio_num_t  I2C_INT = GPIO_NUM_27;
+  
+            // SPI
+            int8_t SPI_MOSI = GPIO_NUM_23;
+            int8_t SPI_MISO = GPIO_NUM_19;
+            int8_t SPI_SCK = GPIO_NUM_18;
+            int8_t SPI_CS = GPIO_NUM_5;
+  
+            // WiFI
+            bool enableWifi = false;
+            </code>
+        </pre>
+              <p>
+                 This board is the updated version of the V2 with additional transistors to control High Power LEDs and a
+                 port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of
+                 linear encoders that are used in callipers.
+                 It also features an updated pin layout to access more functionalities of the ESP32.
+                 More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
+              </p>
+                    </div>
 
         <!-- Standalone Board V3 Beta -->
         <div id="info-esp32-uc2-standalone-3-beta" class="info-section">
@@ -468,10 +680,21 @@ int8_t MOTOR_X_STEP = GPIO_NUM_16;
           </p>
           <h4>Pin Layout</h4>
           <pre><code>
-#define NEOPIXEL_PIN D6
-#define MOTOR_1_IN1 D3
-// ...
-          </code></pre>
+            // UC2 Xiao ESP32S3 LED and Servo board
+            const char * pindefName = "Xiao_LED_SERVO";
+        
+            // Pin definitions for Xiao ESP32S3 (using D1, D2, etc.)
+            #define NEOPIXEL_PIN D6         // Neopixel data pin (TX)
+            #define TOUCH_PIN_1 D0          // Touch Button 1 (Touch Pad 1)
+            #define TOUCH_PIN_2 D1          // Touch Button 2 (Touch Pad 2)
+            #define MOTOR_1_IN1 D3          // Motor 1 IN1 (GPIO0)
+            #define MOTOR_1_IN2 D4          // Motor 1 IN2 (GPIO9)
+            #define MOTOR_2_IN1 D9          // Motor 2 IN1 (GPIO10)
+            #define MOTOR_2_IN2 D10         // Motor 2 IN2 (GPIO3)
+            #define I2C_SDA D4              // I2C SDA (GPIO4)
+            #define I2C_SCL D5              // I2C SCL (GPIO5)
+            #define SERVO_PIN_1 D7          // Servo 1 PWM (GPIO8)
+            #define SERVO_PIN_2 D8          // Servo 2 PWM (GPIO11)          </code></pre>
         </div>
 
         <!-- Xiao Motor Board -->
@@ -486,9 +709,48 @@ int8_t MOTOR_X_STEP = GPIO_NUM_16;
           </p>
           <h4>Pin Layout</h4>
           <pre><code>
-int8_t MOTOR_X_STEP = GPIO_NUM_8;
-int8_t MOTOR_X_DIR = GPIO_NUM_7;
-// ...
+
+            const char * pindefName = "UC2_3_I2CSlaveMotorX";
+            const unsigned long BAUDRATE = 115200;
+            
+            int8_t MOTOR_X_STEP = GPIO_NUM_8;  // D9 -> GPIO8
+            int8_t MOTOR_X_DIR = GPIO_NUM_7;   // D8 -> GPIO7
+            int8_t MOTOR_ENABLE = GPIO_NUM_9;  // D10 -> GPIO9
+            bool MOTOR_ENABLE_INVERTED = true;
+            bool MOTOR_AUTOENABLE = true;
+            int8_t AccelStepperMotorType = 1;
+            
+            // I2c
+            const char *I2C_NAME = "MOTX";
+            I2CControllerType I2C_CONTROLLER_TYPE = I2CControllerType::mMOTOR;
+            int8_t I2C_MOTOR_AXIS = 1;   // On the slave we have one motor axis per slave
+            int8_t I2C_ADD_SLAVE = I2C_ADD_MOT_X;    // I2C address of the ESP32 if it's a slave ( 0x40;)
+            int8_t I2C_SCL = GPIO_NUM_2; // D1 -> GPIO2
+            int8_t I2C_SDA = GPIO_NUM_3; // D2 -> GPIO3
+            
+            // I2C configuration (using updated GPIO values)
+            int8_t I2C_SCL_ext = GPIO_NUM_6; // D5 -> GPIO6
+            int8_t I2C_SDA_ext = GPIO_NUM_5; // D4 -> GPIO5
+            
+            // TMC UART
+            int8_t tmc_SW_RX = 44;// GPIO_NUM_44; // D7 -> GPIO44
+            int8_t tmc_SW_TX = 43;// GPIO_NUM_43; // D6 -> GPIO43
+            int8_t tmc_pin_diag = GPIO_NUM_4; // D3 -> GPIO4
+            
+            int tmc_microsteps = 16;
+            int tmc_rms_current = 500;
+            int tmc_stall_value = 100;
+            int tmc_sgthrs = 100;
+            int tmc_semin = 5;
+            int tmc_semax = 2;
+            int tmc_sedn = 0b01;
+            int tmc_tcoolthrs = 0xFFFFF;
+            int tmc_blank_time = 24;
+            int tmc_toff = 4;
+            
+            // TEmporarily for endstop
+            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 -> GPIO1 - > TOUCH
+            
           </code></pre>
         </div>
 
@@ -504,9 +766,23 @@ int8_t MOTOR_X_DIR = GPIO_NUM_7;
           </p>
           <h4>Pin Layout</h4>
           <pre><code>
-int8_t LASER_1 = GPIO_NUM_3;
-int8_t LASER_2 = GPIO_NUM_4;
-// ...
+
+            const char *pindefName = "UC2_ESP32S3_XIAO_LEDRING";
+            const unsigned long BAUDRATE = 115200;
+
+            uint8_t I2C_CONTROLLER_TYPE = I2CControllerType::mLASER;
+            uint8_t I2C_ADD_SLAVE = I2C_ADD_LEX_PWM1; // I2C address of the ESP32 if it's a slave
+
+            // Laser control pins (using updated GPIO values)
+            int8_t LASER_1 = GPIO_NUM_3; // D2
+            int8_t LASER_2 = GPIO_NUM_4; // D3 => Motor 1/1
+
+            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 // Touch 1
+            int8_t DIGITAL_IN_2 = GPIO_NUM_3; // D1 // Touch 2
+
+            // I2C configuration (using updated GPIO values)
+            int8_t I2C_SCL = GPIO_NUM_6; // D5 -> GPIO6
+            int8_t I2C_SDA = GPIO_NUM_5; // D4 -> GPIO5
           </code></pre>
         </div>
 
@@ -537,8 +813,22 @@ int8_t LASER_2 = GPIO_NUM_4;
           </p>
           <h4>Pin Layout</h4>
           <pre><code>
-// ...
-// E.g. define your matrix pins here
+            const char *pindefName = "UC2_ESP32S3_XIAO_LEDRING";
+            const unsigned long BAUDRATE = 115200;
+
+            uint8_t I2C_CONTROLLER_TYPE = I2CControllerType::mLASER;
+            uint8_t I2C_ADD_SLAVE = I2C_ADD_LEX_PWM1; // I2C address of the ESP32 if it's a slave
+
+            // Laser control pins (using updated GPIO values)
+            int8_t LASER_1 = GPIO_NUM_3; // D2
+            int8_t LASER_2 = GPIO_NUM_4; // D3 => Motor 1/1
+
+            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 // Touch 1
+            int8_t DIGITAL_IN_2 = GPIO_NUM_3; // D1 // Touch 2
+
+            // I2C configuration (using updated GPIO values)
+            int8_t I2C_SCL = GPIO_NUM_6; // D5 -> GPIO6
+            int8_t I2C_SDA = GPIO_NUM_5; // D4 -> GPIO5
           </code></pre>
         </div>
       </div>

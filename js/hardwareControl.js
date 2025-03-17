@@ -70,94 +70,112 @@ function laser3Off() {
 }
 
 
-// Motor X
+// Axis A
+function axisAplus() {
+  const stepSize = parseInt(document.getElementById("stepA").value, 10) || 1000;
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":0,"position":${stepSize},"speed":15000,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
+}
+
+function axisAminus() {
+  const stepSize = parseInt(document.getElementById("stepA").value, 10) || 1000;
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":0,"position":-${stepSize},"speed":15000,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
+}
+
+function axisAForverplus() {
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":0,"isforever":1,"speed":1500,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
+}
+
+function axisAForverminus() {
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":0,"isforever":1,"speed":-1500,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
+}
+
+function stopA() {
+  sendCMD('{"task":"/motor_act","motor":{"steppers":[{"stepperid":0,"isstop":1}]}}');
+}
+
+// Axis X
 function axisXplus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"position":1000,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
+  const stepSize = parseInt(document.getElementById("stepX").value, 10) || 1000;
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"position":${stepSize},"speed":15000,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
+
 function axisXminus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"position":-1000,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
+  const stepSize = parseInt(document.getElementById("stepX").value, 10) || 1000;
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"position":-${stepSize},"speed":15000,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
+
 function axisXForverplus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"isforever":1,"speed":1500,"isabs":0,"isaccel":0}]}}'
-  );
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"isforever":1,"speed":1500,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
+
 function axisXForverminus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"isforever":1,"speed":-1500,"isabs":0,"isaccel":0}]}}'
-  );
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"isforever":1,"speed":-1500,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
+
 function stopX() {
   sendCMD('{"task":"/motor_act","motor":{"steppers":[{"stepperid":1,"isstop":1}]}}');
 }
 
-// Motor Y
+// Axis Y
 function axisYplus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":2,"position":1000,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
+  const stepSize = parseInt(document.getElementById("stepY").value, 10) || 1000;
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":2,"position":${stepSize},"speed":15000,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
+
 function axisYminus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":2,"position":-1000,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
+  const stepSize = parseInt(document.getElementById("stepY").value, 10) || 1000;
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":2,"position":-${stepSize},"speed":15000,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
+
 function axisYForverplus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":2,"isforever":1,"speed":1500,"isabs":0,"isaccel":0}]}}'
-  );
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":2,"isforever":1,"speed":1500,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
+
 function axisYForverminus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":2,"isforever":1,"speed":-1500,"isabs":0,"isaccel":0}]}}'
-  );
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":2,"isforever":1,"speed":-1500,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
+
 function stopY() {
   sendCMD('{"task":"/motor_act","motor":{"steppers":[{"stepperid":2,"isstop":1}]}}');
 }
 
-// Motor Z
+// Axis Z
 function axisZplus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"position":100,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
-}
-function axisZminus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"position":-100,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
-}
-function axisZplusfine() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"position":4,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
-}
-function axisZminusfine() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"position":-4,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
-}
-function stopZ() {
-  sendCMD('{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"isstop":1}]}}');
+  const stepSize = parseInt(document.getElementById("stepZ").value, 10) || 1000;
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"position":${stepSize},"speed":15000,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
 
-// Motor A
-function axisAplus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":0,"position":1000,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
+function axisZminus() {
+  const stepSize = parseInt(document.getElementById("stepZ").value, 10) || 1000;
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"position":-${stepSize},"speed":15000,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
-function axisAminus() {
-  sendCMD(
-    '{"task":"/motor_act","motor":{"steppers":[{"stepperid":0,"position":-1000,"speed":15000,"isabs":0,"isaccel":0}]}}'
-  );
+
+function axisZForverplus() {
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"isforever":1,"speed":1500,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
 }
-function stopA() {
-  sendCMD('{"task":"/motor_act","motor":{"steppers":[{"stepperid":0,"isstop":1}]}}');
+
+function axisZForverminus() {
+  const cmd = `{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"isforever":1,"speed":-1500,"isabs":0,"isaccel":0}]}}`;
+  sendCMD(cmd);
+}
+
+function stopZ() {
+  sendCMD('{"task":"/motor_act","motor":{"steppers":[{"stepperid":3,"isstop":1}]}}');
 }
 
 // Rotators
