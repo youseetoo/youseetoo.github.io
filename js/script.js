@@ -81,8 +81,7 @@ async function openClose() {
               break;
             }
             document.getElementById("term_window").value += value;
-            // If you have a special token to parse images:
-            // ...
+            document.getElementById("term_window").scrollTop = document.getElementById("term_window").scrollHeight;
             console.log(value);
           }
 
@@ -206,6 +205,8 @@ async function openClose() {
               break;
             }
             document.getElementById("term_window").value += value;
+            document.getElementById("term_window").scrollTop = document.getElementById("term_window").scrollHeight;
+
             console.log(value);
           }
 

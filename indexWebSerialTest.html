@@ -16,9 +16,6 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css" />
 
-    <!-- JSZip / FileSaver (CDN or local) -->
-    <script src="js/lib/jszip.min.js"></script>
-    <script src="js/lib/FileSaver.min.js"></script>
   </head>
 
   <body>
@@ -376,11 +373,11 @@
                   />
                 </div>
                 <div class="col-auto">
-                  <button class="btn btn-secondary" onclick="axisXplus()">X+</button>
-                  <button class="btn btn-secondary" onclick="axisXminus()">X-</button>
-                  <button class="btn btn-secondary" onclick="axisXForverplus()">X ∞ +</button>
-                  <button class="btn btn-secondary" onclick="axisXForverminus()">X ∞ -</button>
-                  <button class="btn btn-warning" onclick="stopX()">Stop X</button>
+                  <button class="btn btn-secondary" id="axisXplusBtn" onclick="axisXplus()">X+</button>
+                  <button class="btn btn-secondary" id="axisXminusBtn" onclick="axisXminus()">X-</button>
+                  <button class="btn btn-secondary" id="axisXForverplusBtn" onclick="axisXForverplus()">X ∞ +</button>
+                  <button class="btn btn-secondary" id="axisXForverminusBtn" onclick="axisXForverminus()">X ∞ -</button>
+                  <button class="btn btn-warning"  id="stopXBtn" onclick="stopX()">Stop X</button>
                 </div>
               </div>
 
