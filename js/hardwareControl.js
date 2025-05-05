@@ -188,18 +188,17 @@ function createJSON(startID, endID, state) {
   const ledArray = [];
   for (let i = startID; i <= endID; i++) {
     ledArray.push({
-      id: i,
-      r: state,
-      g: state,
-      b: state,
+      action: "single", // Specify the action as "single" for individual LEDs
+      ledIndex: i,      // Use ledIndex to specify the LED ID
+      r: state,         // Set the red value
+      g: state,         // Set the green value
+      b: state,         // Set the blue value
     });
   }
   return JSON.stringify({
     task: "/ledarr_act",
-    led: {
-      LEDArrMode: 8,
-      led_array: ledArray,
-    },
+    qid: 17, // Add qid if required
+    led: ledArray, // Use the updated array format
   });
 }
 
@@ -396,8 +395,8 @@ document.getElementById("light3SliderValue").addEventListener("change", function
 
 // LED
 function ledOn() {
-  sendCMD('{"task":"/ledarr_act","led":{"LEDArrMode":1,"led_array":[{"id":0,"r":255,"g":255,"b":255}]}}');
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "fill", "r": 255, "g": 255, "b": 255 } }');
 }
 function ledOff() {
-  sendCMD('{"task":"/ledarr_act","led":{"LEDArrMode":1,"led_array":[{"id":0,"r":0,"g":0,"b":0}]}}');
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "fill", "r": 0, "g": 0, "b": 0 } }');
 }
