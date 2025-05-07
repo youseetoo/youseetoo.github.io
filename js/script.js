@@ -280,6 +280,10 @@ function enableUI(isConnected) {
   document.getElementById("middleOffBtn").disabled = !isConnected;
   document.getElementById("centerOnBtn").disabled = !isConnected;
   document.getElementById("centerOffBtn").disabled = !isConnected;
+  document.getElementById("downOnBtn").disabled = !isConnected; // remains disabled until "On" is pressed
+  document.getElementById("upOnBtn").disabled = !isConnected; // remains disabled until "On" is pressed
+  document.getElementById("leftOnBtn").disabled = !isConnected; // remains disabled until "On" is pressed
+  document.getElementById("rightOnBtn").disabled = !isConnected; // remains disabled until "On" is pressed
 
   // Enabling motors
   document.getElementById("enableMotorBtn").disabled = !isConnected;
@@ -309,4 +313,7 @@ function enableUI(isConnected) {
   document.getElementById("home_direction").disabled = !isConnected;
   document.getElementById("home_endstop").disabled = !isConnected;
   document.getElementById("homeStepperBtn").disabled = !isConnected;
+
+  createLEDMatrix();
+
 }

@@ -446,6 +446,76 @@
               <div class="d-flex flex-wrap gap-2 mt-3">
                 <button
                   class="btn btn-primary"
+                  onclick="turnOnLeft()"
+                  id="leftOnBtn"
+                  disabled
+                >
+                  Left On
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="ledOff()"
+                  id="ledOffBtn"
+                  disabled
+                >
+                  Off
+                </button>
+                <button
+                  class="btn btn-primary"
+                  onclick="turnOnRight()"
+                  id="rightOnBtn"
+                  disabled
+                >
+                  Right On
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="ledOff()"
+                  id="ledOffBtn"
+                  disabled
+                >
+                  Off
+                </button>
+                <button
+                  class="btn btn-primary"
+                  onclick="turnOnUp()"
+                  id="upOnBtn"
+                  disabled
+                >
+                  Up On
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="ledOff()"
+                  id="ledOffBtn"
+                  disabled
+                >
+                  Off
+                </button>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <button
+                  class="btn btn-primary"
+                  onclick="turnOnDown()"
+                  id="downOnBtn"
+                  disabled
+                >
+                  Down On
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="ledOff()"
+                  id="ledOffBtn"
+                  disabled
+                >
+                  Off
+                </button>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <button
+                  class="btn btn-primary"
                   onclick="turnOnOuterRing()"
                   id="outerOnBtn"
                   disabled
@@ -454,7 +524,7 @@
                 </button>
                 <button
                   class="btn btn-danger"
-                  onclick="turnOffOuterRing()"
+                  onclick="ledOff()"
                   id="outerOffBtn"
                   disabled
                 >
@@ -470,7 +540,7 @@
                 </button>
                 <button
                   class="btn btn-danger"
-                  onclick="turnOffMiddleRing()"
+                  onclick="ledOff()"
                   id="middleOffBtn"
                   disabled
                 >
@@ -492,6 +562,12 @@
                 >
                   Off
                 </button>
+              </div>
+
+
+              <h6 class="mt-4">8×8 LED Matrix</h6>
+              <div id="led-matrix" class="d-grid gap-1 mb-3" style="grid-template-columns: repeat(8, 1fr);">
+                <!-- Buttons will be generated dynamically -->
               </div>
 
               <!-- Motor Enabling -->

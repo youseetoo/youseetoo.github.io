@@ -203,29 +203,44 @@ function createJSON(startID, endID, state) {
 }
 
 function turnOnOuterRing() {
+  /*
   const cmd = createJSON(9, 24, 255);
   sendCMD(cmd);
-}
-function turnOffOuterRing() {
-  const cmd = createJSON(9, 24, 0);
-  sendCMD(cmd);
+  */
+  // { "task": "/ledarr_act", "qid": 17, "led": { "action": "rings", "radius": 4, "r": 255, "g": 255, "b": 255 } }
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "rings", "radius": 5, "r": 255, "g": 255, "b": 255 } }');
 }
 function turnOnMiddleRing() {
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "rings", "radius": 3, "r": 255, "g": 255, "b": 255 } }');
+  /*
   const cmd = createJSON(1, 8, 255);
   sendCMD(cmd);
-}
-function turnOffMiddleRing() {
-  const cmd = createJSON(1, 8, 0);
-  sendCMD(cmd);
+  */
 }
 function turnOnCenterRing() {
-  const cmd = createJSON(0, 0, 255);
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "rings", "radius": 2, "r": 255, "g": 255, "b": 255 } }');
+  /*const cmd = createJSON(0, 0, 255);
   sendCMD(cmd);
+*/
 }
-function turnOffCenterRing() {
-  const cmd = createJSON(0, 0, 0);
-  sendCMD(cmd);
+
+function turnOnDown() {
+  // { "task": "/ledarr_act", "qid": 17, "led": { "action": "halves", "region": "down", "r": 255, "g": 255, "b": 255 } }
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "halves", "region": "bottom", "r": 255, "g": 255, "b": 255 } }');
 }
+function turnOnUp() {
+  // { "task": "/ledarr_act", "qid": 17, "led": { "action": "halves", "region": "up", "r": 255, "g": 255, "b": 255 } }
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "halves", "region": "top", "r": 255, "g": 255, "b": 255 } }');
+}
+function turnOnLeft() {
+  // { "task": "/ledarr_act", "qid": 17, "led": { "action": "halves", "region": "left", "r": 255, "g": 255, "b": 255 } }
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "halves", "region": "left", "r": 255, "g": 255, "b": 255 } }');
+}
+function turnOnRight() {
+  // { "task": "/ledarr_act", "qid": 17, "led": { "action": "halves", "region": "right", "r": 255, "g": 255, "b": 255 } }
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "halves", "region": "right", "r": 255, "g": 255, "b": 255 } }');
+}
+
 
 // Motor enable
 function autoEnableOn() {
@@ -387,6 +402,37 @@ document.getElementById("light3SliderValue").addEventListener("change", function
   document.getElementById("light3Slider").value = this.value;
   setLight(3, this.value);
 });
+
+
+function createLEDMatrix() {
+  const matrixContainer = document.getElementById("led-matrix");
+  for (let i = 0; i < 64; i++) {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-sm btn-outline-secondary";
+    btn.textContent = i;
+    btn.dataset.index = i;
+    btn.onclick = async function () {
+      const index = parseInt(this.dataset.index);
+      const isActive = this.classList.contains("btn-success");
+      const newColor = isActive ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+
+      const cmd = {
+        task: "/ledarr_act",
+        led: {
+          action: "single",
+          ledIndex: index,
+          ...newColor,
+        },
+      };
+
+      await sendCMD(JSON.stringify(cmd));
+      this.classList.toggle("btn-outline-secondary", isActive);
+      this.classList.toggle("btn-success", !isActive);
+    };
+    matrixContainer.appendChild(btn);
+  }
+}
+
 
 /* =====================
    Other existing motor, LED ring, etc. methods 
