@@ -1,0 +1,12 @@
+{
+  "name": "UC2-ESP32 ODMR",
+  "version": "seeed_xiao_esp32c3_ODMR",
+  "home_assistant_domain": "UC2-ESP32",
+  "funding_url": "https://github.com/youseetoo/uc2-esp32",
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [{ "path": "seeed_xiao_esp32c3.bin", "offset": 0 }]
+    }
+  ]
+}
