@@ -145,6 +145,7 @@
         ById("f_step").value = 2;
         randbedingungenUebernehmen();
       }
+      /*
       function LaserOn() {
         if (confirm("Laserdiode wirklich einschalten?")) {
           var xhr = new XMLHttpRequest();
@@ -165,6 +166,7 @@
         Laser.removeEventListener("click", LaserOff);
         Laser.addEventListener("click", LaserOn);
       }
+        */
       function ToggleStart(OnOff) {
         let StartButton = ById("StartStop");
         if (OnOff) {
@@ -238,6 +240,7 @@
           Messreihe.shift();
         }
       }
+      /*
       async function freqMessung(f) {
         return new Promise(function (resolve) {
           var xhr = new XMLHttpRequest();
@@ -250,6 +253,7 @@
           xhr.send();
         });
       }
+        */
       function getScalesteps(R) {
         for (Step = 1; R > Step; Step *= 10) {}
         if (R < Step / 2) {
@@ -945,14 +949,24 @@
           while (true) {
             const { value, done } = await reader.read();
             if (done) break;
-            if (value.startsWith("DATA")) {
-              const [, f, i, b] = value.split(" ");
-              const key = Number(f);
-              if (pending.has(key)) {
-                pending.get(key)([+f, +i, +b]);
-                pending.delete(key);
+
+            value.split("\n").forEach((raw) => {
+              const line = raw.trim(); // remove \r or extra blanks
+              console.log(line);
+              if (!line.startsWith("DATA")) return;
+
+              // DATA <freq> <adc> <b-field>
+              const [, fStr, adcStr, bStr] = line.split(/\s+/);
+              const f = parseFloat(fStr); // “2400.0\r” → 2400
+              const adc = parseInt(adcStr, 10);
+              const b = parseFloat(bStr);
+
+              // first waiting caller gets the packet
+              if (pending.has(f)) {
+                pending.get(f)([f, adc, b]);
+                pending.delete(f);
               }
-            }
+            });
           }
         }
 
@@ -1109,7 +1123,7 @@
       </script>
     </main>
     <footer>
-      <address>Uni Münster - info@o3q.de</address>
+        <address> Uni Münster, openUC2 GmbH - hello@openuc2.com</address>
     </footer>
   </body>
 </html>
