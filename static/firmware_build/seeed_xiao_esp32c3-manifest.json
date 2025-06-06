@@ -1,7 +1,7 @@
 {
-  "name": "UC2-ESP32 ODMR",
+  "name": "UC2-ESP32 ODMR (C3)",
   "version": "seeed_xiao_esp32c3_ODMR",
-  "home_assistant_domain": "UC2-ESP32",
+  "home_assistant_domain": "UC2-ESP32 (C3)",
   "funding_url": "https://github.com/youseetoo/uc2-esp32",
   "builds": [
     {
