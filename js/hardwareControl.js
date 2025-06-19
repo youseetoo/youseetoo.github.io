@@ -441,8 +441,10 @@ function createLEDMatrix() {
 
 // LED
 function ledOn() {
+  // { "task": "/ledarr_act", "qid": 17, "led": { "action": "fill", "r": 255, "g": 255, "b": 255 } }
   sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "fill", "r": 255, "g": 255, "b": 255 } }');
 }
 function ledOff() {
-  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "fill", "r": 0, "g": 0, "b": 0 } }');
+  //  { "task": "/ledarr_act", "qid": 17, "led": { "action": "off" } }
+  sendCMD('{ "task": "/ledarr_act", "qid": 17, "led": { "action": "off" } }');
 }
