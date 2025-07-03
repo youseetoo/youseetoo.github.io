@@ -259,7 +259,7 @@ function btPairing() {
 // We store the current PWM value in a global or local structure so that
 // if user toggles "On"/"Off," we can restore the same value. 
 // Example: lastLightValue[0] = 512 means channel 0 is set to 512.
-let lastLightValue = [0, 0, 0, 0];  // for 4 channels
+let lastLightValue = [0, 0, 0, 0, 0];  // for 5 channels
 
 function setLight(channel, value) {
   // clamp to 0..1023 just in case
@@ -401,6 +401,46 @@ document.getElementById("light3Slider").addEventListener("input", function () {
 document.getElementById("light3SliderValue").addEventListener("change", function() {
   document.getElementById("light3Slider").value = this.value;
   setLight(3, this.value);
+});
+
+// light 4
+function light4On() {
+  document.getElementById("light4Slider").disabled = false;
+  document.getElementById("light4SliderValue").disabled = false;
+  document.getElementById("light4OnBtn").disabled = true;
+  document.getElementById("light4OffBtn").disabled = false;
+  // Enable the slider and value input
+  // Enable the buttons for light4
+  document.getElementById("light4Slider").disabled = false;
+  document.getElementById("light4SliderValue").disabled = false;
+  document.getElementById("light4OnBtn").disabled = true;
+  document.getElementById("light4OffBtn").disabled = false;
+  setLight(4, lastLightValue[4]);
+  document.getElementById("light4Slider").value = lastLightValue[4];    
+  document.getElementById("light4SliderValue").value = lastLightValue[4];
+} 
+
+function light4Off() {
+  setLight(4, 0); 
+  document.getElementById("light4Slider").disabled = true;
+  document.getElementById("light4SliderValue").disabled = true;
+  document.getElementById("light4OnBtn").disabled = false;
+  document.getElementById("light4OffBtn").disabled = true;
+  // Disable the slider and value input
+  // Disable the buttons for light4
+  document.getElementById("light4Slider").disabled = true;
+  document.getElementById("light4SliderValue").disabled = true;
+  document.getElementById("light4OnBtn").disabled = false;
+  document.getElementById("light4OffBtn").disabled = true;
+} 
+
+document.getElementById("light4Slider").addEventListener("input", function () {
+  document.getElementById("light4SliderValue").value = this.value;    
+  setLight(4, this.value);
+});
+document.getElementById("light4SliderValue").addEventListener("change", function() {
+  document.getElementById("light4Slider").value = this.value;
+  setLight(4, this.value);
 });
 
 
