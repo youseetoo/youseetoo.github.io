@@ -39,7 +39,7 @@ function parseUC2csv(csvText){
       link: (rows[r][1]||"").trim(), // Odoo store link
       desc: (rows[r][2]||"").trim(),
       price: (rows[r][3]||"").trim(),
-      img: (rows[r][4]||"").trim(),
+      img: "IMAGES/" + (rows[r][4] || "").trim(), // Prepend 'IMAGES/' to image path
       experiments: []
     };
 
