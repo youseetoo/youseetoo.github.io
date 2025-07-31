@@ -4,12 +4,12 @@ lens-1x1;Lens (positive);lenses;#7cc142;1;1;/icons/uc2_lenspositive_1x1.svg;/cad
 lens-1x1;Lens (negative);lenses;#7cc142;1;1;/icons/uc2_lensnegative_1x1.svg;/cad/lens-1x1.stl;Optical lens module for beam focusing;"{""focalLength"": -100}";ASS - 2022 - CUBLEND40F100 - V04.iam;25
 mirror-1x1;Mirror;lenses;#4a9b8e;1;1;/icons/uc2_mirror_static.svg;/cad/mirror-1x1.stl;Mirror module for beam steering;"{""angle"": 45}";ASS - 2020 - CUBMIR45�TH2 - V04.iam;25
 beamsplitter-1x1;Beamsplitter;lenses;#4a9b8e;1;1;/icons/uc2_beamsplittercube_1x1.svg;/cad/beamsplitter-1x1.stl;50/50 beamsplitter cube;"{""ratio"": ""50/50""}";ASS - 2011 - CUBSPLCUB - V04.iam;40
-led-470nm;LED Blue;fluorescence;#1e4670;2;1;/icons/uc2_ledblue_1x1.svg;/cad/led-470nm.stl;Blue LED 470nm for fluorescence excitation;"{""wavelength"": 470}";ASS - 2042 - CUBFLULEDBLUNEWENE - V04.iam;60
-led-530nm;LED Green;fluorescence;#7cc142;2;1;/icons/uc2_ledgreen_1x1.svg;/cad/led-530nm.stl;Green LED 530nm for fluorescence excitation;"{""wavelength"": 530}";ASS - 2043 - CUBFLULEDGRENEWENE - V04.iam;60
-led-625nm;LED Red;fluorescence;#dc3545;2;1;/icons/uc2_ledred_1x1.svg;/cad/led-625nm.stl;Red LED 625nm for fluorescence excitation;"{""wavelength"": 625}";ASS - 2046 - CUBLEDMTX - V04.iam;60
+led-470nm;LED Blue;fluorescence;#1e4670;2;1;/icons/uc2_ledblue_1x1.svg;/cad/led-470nm.stl;Blue LED 470nm for fluorescence excitation;"{""wavelength"": 470}";ASS - 2042 - CUBFLULEDBLUNEWENE - V04.iam;120
+led-530nm;LED Green;fluorescence;#7cc142;2;1;/icons/uc2_ledgreen_1x1.svg;/cad/led-530nm.stl;Green LED 530nm for fluorescence excitation;"{""wavelength"": 530}";ASS - 2043 - CUBFLULEDGRENEWENE - V04.iam;120
+led-625nm;LED Red;fluorescence;#dc3545;2;1;/icons/uc2_ledred_1x1.svg;/cad/led-625nm.stl;Red LED 625nm for fluorescence excitation;"{""wavelength"": 625}";ASS - 2046 - CUBLEDMTX - V04.iam;120
 filter-bandpass;Bandpass Filter;fluorescence;#4a9b8e;1;1;/icons/uc2_filter_1x1.svg;/cad/filter-bandpass.stl;Bandpass optical filter module;"{""filterType"": ""bandpass"", ""wavelength"": 525}";ASS - 2047 - CUBEXCFILWLS532 - V04.iam;70
-filter-dichroic;Dichroic Mirror;fluorescence;#6c757d;1;1;/icons/uc2_dichroicmirror_1x1.svg;/cad/filter-dichroic.stl;Dichroic mirror for fluorescence separation;"{""cutoff"": 510}";ASS - 2027 - CUBDICSPL+EMIFIL_WLS532 - A.iam;70
-camera-usb;USB Camera;cameras;#343a40;1;2;/icons/uc2_cctvcam_1x2.svg;/cad/camera-usb.stl;USB camera module for imaging;"{""resolution"": ""1920x1080""}";ASS - 2045 - CUBCAM_RASPBERRY - V04.iam;200
+filter-dichroic;Dichroic Mirror;fluorescence;#6c757d;1;1;/icons/uc2_dichroicmirror_1x1.svg;/cad/filter-dichroic.stl;Dichroic mirror for fluorescence separation;"{""cutoff"": 510}";ASS - 2027 - CUBDICSPL+EMIFIL_WLS532 - A.iam;250
+camera-usb;USB Camera with tube lens (CMOUNT);cameras;#343a40;1;2;/icons/uc2_cctvcam_1x2.svg;/cad/camera-usb.stl;USB camera module for imaging;"{""resolution"": ""1920x1080""}";ASS - 2045 - CUBCAM_RASPBERRY - V04.iam;600
 stage-z;Z Stage;stages;#495057;2;2;/icons/uc2_zstage_1x2.svg;/cad/stage-z.stl;Z-axis focus stage;"{""range"": 10}";ASS - 3004 - CUBMANSTGR10 - V04.iam;100
 laser-405nm;Laser 405nm;fluorescence;#6610f2;1;1;/icons/uc2_laser_1x1.svg;/cad/laser-405nm.stl;405nm laser diode module;"{""power"": 5}";ASS - 2018 - CUBLAS520 - V04.iam;100
 laser-532nm;Laser 532nm;fluorescence;#198754;1;1;/icons/uc2_laser_1x1.svg;/cad/laser-532nm.stl;532nm laser diode module;"{""power"": 10}";ASS - 2018 - CUBLAS520 - V04.iam;100
@@ -51,9 +51,10 @@ objective-holder-rms-1x1;Objective Holder (RMS);optics;#7cc150;1;1;;/cad/notdefi
 objective-10x-1x1;Microscope Objective 10×;optics;#7cc150;1;1;/icons/uc2-10xobjective.svg;/cad/notdefined.stl;Achromatic objective for imaging.;"{""magnification"":10,""na"":0.25,""wd_mm"":10}";;200
 objective-20x-1x1;Microscope Objective 40×;optics;#7cc150;1;1;/icons/uc2-20xobjective.svg;/cad/notdefined.stl;Achromatic objective for imaging.;"{""magnification"":40,""na"":0.65,""wd_mm"":0.6}";;250
 c-mount-adapter-1x1;C‑Mount Camera Adapter;cameras;#343a40;1;1;;/cad/notdefined.stl;Adapter for C‑mount cameras to the cube system.;"{""thread"":""C‑mount""}";;40
-tube-lens-1x1;Tube Lens;lenses;#7cc142;1;1;;/cad/notdefined.stl;Infinity‑corrected tube lens for microscope systems.;"{""focalLength_mm"":200}";;120
+tube-lens-1x1;Tube Lens;lenses;#7cc142;1;1;/icons/uc2_lenspositive_1x1.svg;/cad/notdefined.stl;Infinity‑corrected tube lens for microscope systems.;"{""focalLength_mm"":200}";;120
 diffuser-1x1;Diffuser/Screen;illumination;#7cc149;1;1;;/cad/notdefined.stl;Opal/glass diffuser for uniform illumination.;"{""type"":""opal""}";;50
 filter-1x1;Filter Wheel;optics;#7cc150;1;1;;/cad/notdefined.stl;Holds multiple filters for rapid switching.;"{""positions"":6}";;100
 rotation-stage-1x1;Rotation Stage;stages;#495057;1;1;/icons/uc2_lenspositive_1x1.svg;/cad/notdefined.stl;360° rotation with vernier for polarizer/optic alignment.;;;340
-cylindrical-lens-1x1;Cylindrical lens for lightsheet;optics;#495057;2;1;/icons/uc2-12Vsupply.svg;/cad/notdefined.stl;Cylindrical lens for lightsheet;"{""resolution_deg"":1.0}";;300
-12V power supply;;;;;;;;;;;
+cylindrical-lens-1x1;Cylindrical lens for lightsheet;optics;#495057;1;1;/icons/uc2_lenspositive_1x1.svg;/cad/notdefined.stl;Cylindrical lens for lightsheet;"{""resolution_deg"":1.0}";;300
+12V power supply;Power Supply for Electronics;electronics;#495057;2;1;/icons/uc2-12Vsupply.svg;/cad/notdefined.stl;Power Supply;"{""positions"":6}";;50
+uc2-controller;Controller To control motors and light;electronics;#495057;3;2;/icons/uc2-controller.svg;/cad/notdefined.stl;Controller;"{""positions"":6}";;60
