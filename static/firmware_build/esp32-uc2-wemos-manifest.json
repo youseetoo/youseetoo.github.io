@@ -1,12 +1,46 @@
 {
   "name": "UC2-ESP32",
-  "version": "2023_01_UC2-WEMOS",
+  "version": "2023_01_UC2-WEMOS", 
   "home_assistant_domain": "UC2-ESP32",
   "funding_url": "https://github.com/youseetoo/uc2-esp32",
   "builds": [
     {
-      "chipFamily": "ESP32",
+      "chipFamily": "ESP32", 
       "parts": [{ "path": "esp32_UC2_WEMOS.bin", "offset": 0 }]
+    }
+  ],
+  "uc2_config": [
+    {
+      "label": "Set CAN Address to Master",
+      "description": "Configure device as CAN bus master (address 1)",
+      "command": "{\"task\":\"/can_act\",\"address\":1}",
+      "type": "button"
+    },
+    {
+      "label": "Set CAN Address", 
+      "description": "Choose CAN bus address for this device",
+      "command": "{\"task\":\"/can_act\",\"address\":{value}}",
+      "type": "select",
+      "options": [
+        { "label": "Master (1)", "value": 1 },
+        { "label": "X-Axis (11)", "value": 11 },
+        { "label": "Y-Axis (12)", "value": 12 },
+        { "label": "Z-Axis (13)", "value": 13 },
+        { "label": "A-Axis (10)", "value": 10 },
+        { "label": "Custom (256)", "value": 256 }
+      ]
+    },
+    {
+      "label": "Initialize Modules",
+      "description": "Enable basic UC2 modules (LED, Motor, Laser)",
+      "command": "{\"task\":\"/modules_set\", \"modules\" : {\"led\" : 1, \"motor\": 1, \"laser\" : 1, \"home\":1, \"digitalin\" : 1}}",
+      "type": "button"
+    },
+    {
+      "label": "Get System State",
+      "description": "Retrieve current device status",
+      "command": "{\"task\":\"/state_get\"}",
+      "type": "button"
     }
   ]
 }

@@ -6,25 +6,14 @@ import {
   Manifest,
   FlashStateType,
 } from "./const";
-import { sleep } from "./util/sleep";
-
-const resetTransport = async (transport: Transport) => {
-  await transport.device.setSignals({
-    dataTerminalReady: false,
-    requestToSend: true,
-  });
-  await transport.device.setSignals({
-    dataTerminalReady: false,
-    requestToSend: false,
-  });
-};
+import { hardReset } from "./util/reset";
 
 export const flash = async (
   onEvent: (state: FlashState) => void,
   port: SerialPort,
   manifestPath: string,
   manifest: Manifest,
-  eraseFirst: boolean
+  eraseFirst: boolean,
 ) => {
   let build: Build | undefined;
   let chipFamily: Build["chipFamily"];
@@ -38,12 +27,12 @@ export const flash = async (
     });
 
   const transport = new Transport(port);
-  const esploader = new ESPLoader(
+  const esploader = new ESPLoader({
     transport,
-    115200,
-    // Wrong type, fixed in https://github.com/espressif/esptool-js/pull/75/files
-    undefined as any
-  );
+    baudrate: 115200,
+    romBaudrate: 115200,
+    enableTracing: false,
+  });
 
   // For debugging
   (window as any).esploader = esploader;
@@ -55,8 +44,8 @@ export const flash = async (
   });
 
   try {
-    await esploader.main_fn();
-    await esploader.flash_id();
+    await esploader.main();
+    await esploader.flashId();
   } catch (err: any) {
     console.error(err);
     fireStateEvent({
@@ -65,26 +54,13 @@ export const flash = async (
         "Failed to initialize. Try resetting your device or holding the BOOT button while clicking INSTALL.",
       details: { error: FlashError.FAILED_INITIALIZING, details: err },
     });
-    await resetTransport(transport);
+
+    await hardReset(transport);
     await transport.disconnect();
     return;
   }
 
   chipFamily = esploader.chip.CHIP_NAME as any;
-
-  if (!esploader.chip.ROM_TEXT) {
-    fireStateEvent({
-      state: FlashStateType.ERROR,
-      message: `Chip ${chipFamily} is not supported`,
-      details: {
-        error: FlashError.NOT_SUPPORTED,
-        details: `Chip ${chipFamily} is not supported`,
-      },
-    });
-    await resetTransport(transport);
-    await transport.disconnect();
-    return;
-  }
 
   fireStateEvent({
     state: FlashStateType.INITIALIZING,
@@ -100,7 +76,7 @@ export const flash = async (
       message: `Your ${chipFamily} board is not supported.`,
       details: { error: FlashError.NOT_SUPPORTED, details: chipFamily },
     });
-    await resetTransport(transport);
+    await hardReset(transport);
     await transport.disconnect();
     return;
   }
@@ -117,7 +93,7 @@ export const flash = async (
     const resp = await fetch(url);
     if (!resp.ok) {
       throw new Error(
-        `Downlading firmware ${part.path} failed: ${resp.status}`
+        `Downlading firmware ${part.path} failed: ${resp.status}`,
       );
     }
 
@@ -147,7 +123,7 @@ export const flash = async (
           details: err.message,
         },
       });
-      await resetTransport(transport);
+      await hardReset(transport);
       await transport.disconnect();
       return;
     }
@@ -165,7 +141,7 @@ export const flash = async (
       message: "Erasing device...",
       details: { done: false },
     });
-    await esploader.erase_flash();
+    await esploader.eraseFlash();
     fireStateEvent({
       state: FlashStateType.ERASING,
       message: "Device erased",
@@ -186,20 +162,20 @@ export const flash = async (
   let totalWritten = 0;
 
   try {
-    await esploader.write_flash(
+    await esploader.writeFlash({
       fileArray,
-      "keep",
-      "keep",
-      "keep",
-      false,
-      true,
+      flashSize: "keep",
+      flashMode: "keep",
+      flashFreq: "keep",
+      eraseAll: false,
+      compress: true,
       // report progress
-      (fileIndex: number, written: number, total: number) => {
+      reportProgress: (fileIndex: number, written: number, total: number) => {
         const uncompressedWritten =
           (written / total) * fileArray[fileIndex].data.length;
 
         const newPct = Math.floor(
-          ((totalWritten + uncompressedWritten) / totalSize) * 100
+          ((totalWritten + uncompressedWritten) / totalSize) * 100,
         );
 
         // we're done with this file
@@ -217,15 +193,15 @@ export const flash = async (
             percentage: newPct,
           },
         });
-      }
-    );
+      },
+    });
   } catch (err: any) {
     fireStateEvent({
       state: FlashStateType.ERROR,
       message: err.message,
       details: { error: FlashError.WRITE_FAILED, details: err },
     });
-    await resetTransport(transport);
+    await hardReset(transport);
     await transport.disconnect();
     return;
   }
@@ -240,9 +216,8 @@ export const flash = async (
     },
   });
 
-  await sleep(100);
-  console.log("HARD RESET");
-  await resetTransport(transport);
+  await hardReset(transport);
+
   console.log("DISCONNECT");
   await transport.disconnect();
 

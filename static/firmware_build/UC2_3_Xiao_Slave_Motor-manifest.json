@@ -8,5 +8,37 @@
       "chipFamily": "ESP32-S3",
       "parts": [{ "path": "seeed_xiao_esp32s3_can_slave_motor.bin", "offset": 0 }]
     }
+  ],
+  "uc2_config": [
+    {
+      "label": "Set Motor Axis",
+      "description": "Configure which axis this motor controls",
+      "command": "{\"task\":\"/motor_act\", \"setaxis\": {\"steppers\": [{\"stepperid\": 1, \"stepperaxis\": {value}}]}}",
+      "type": "select",
+      "options": [
+        { "label": "X-Axis (1)", "value": 1 },
+        { "label": "Y-Axis (2)", "value": 2 },
+        { "label": "Z-Axis (3)", "value": 3 },
+        { "label": "A-Axis (0)", "value": 0 }
+      ]
+    },
+    {
+      "label": "Set I2C Address",
+      "description": "Configure I2C slave address for this motor board", 
+      "command": "{\"task\":\"/can_act\",\"address\":{value}}",
+      "type": "select",
+      "options": [
+        { "label": "X-Motor (11)", "value": 11 },
+        { "label": "Y-Motor (12)", "value": 12 },
+        { "label": "Z-Motor (13)", "value": 13 },
+        { "label": "A-Motor (10)", "value": 10 }
+      ]
+    },
+    {
+      "label": "Test Motor Movement",
+      "description": "Move motor 1000 steps for testing",
+      "command": "{\"task\":\"/motor_act\",\"motor\":{\"steppers\": [{ \"stepperid\": 1, \"position\": 1000, \"speed\": 10000, \"isabs\": 0, \"isaccel\":0}]}}",
+      "type": "button"
+    }
   ]
 }
