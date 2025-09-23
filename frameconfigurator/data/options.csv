@@ -1,0 +1,12 @@
+group,label,defaultSku,allowedSkus
+illumination,Illumination,NONE,"[""NONE"",""LED-RING-V1"",""LED-MATRIX-8x8""]"
+objective,Objective (Slot 1),NONE,"[""NONE"",""RMS-10X"",""RMS-40X""]"
+objective2,Objective (Slot 2),NONE,"[""NONE"",""RMS-10X-2"",""RMS-40X-2""]"
+stage,Stage,NONE,"[""NONE"",""STAGE-MANUAL"",""STAGE-MOTOR"",""STAGE-ILLU-ARM""]"
+fluorescence,Fluorescence,NONE,"[""NONE"",""EXC-488""]"
+camera,Camera,NONE,"[""NONE"",""PI-HQ-01"",""DH-TELEDYNE-01""]"
+base,Base,NONE,"[""NONE"",""BASE""]"
+autofocus,Autofocus,NONE,"[""NONE"",""AUTOFOCUS-01""]"
+laser,Laser,NONE,"[""NONE"",""LASER-488"",""LASER-635"",""LASER-488-635""]"
+sampleholder,Sample Holder,NONE,"[""NONE"",""SAMPLE-4SLIDE"",""SAMPLE-MULTIWELL"",""SAMPLE-ROPOD""]"
+opticalmodule,Optical Module,NONE,"[""NONE"",""OPTICAL-BF"",""OPTICAL-BF-FLUO"",""OPTICAL-BF-FLIM""]"

@@ -1,0 +1,17 @@
+{
+  "base": "/models/base/frame_base.glb",
+  "anchors": ["LED_RING_ANCHOR", "OBJECTIVE_ANCHOR", "OBJECTIVE2_ANCHOR", "CAMERA_ANCHOR", "FLUO_ANCHOR", "STAGE_ANCHOR", "BASE_ANCHOR", "AUTOFOCUS_ANCHOR", "LASER_ANCHOR", "SAMPLE_ANCHOR", "OPTICAL_ANCHOR"],
+  "defaults": {
+    "illumination": "NONE",
+    "objective": "NONE",
+    "objective2": "NONE",
+    "stage": "NONE",
+    "fluorescence": "NONE",
+    "camera": "NONE",
+    "base": "NONE",
+    "autofocus": "NONE",
+    "laser": "NONE",
+    "sampleholder": "NONE",
+    "opticalmodule": "NONE"
+  }
+}

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <defs>
+    <style>
+      .cube { fill: #666; stroke: #444; stroke-width: 1; }
+      .cube-light { fill: #999; }
+      .cube-medium { fill: #777; }
+      .cube-dark { fill: #555; }
+    </style>
+  </defs>
+  
+  <!-- OpenUC2 logo pattern - 3x3 grid of cubes -->
+  <g transform="translate(10, 10)">
+    <!-- Top row -->
+    <g transform="translate(0, 0)">
+      <polygon class="cube cube-light" points="0,20 20,0 40,20 20,40"/>
+      <polygon class="cube cube-medium" points="20,40 40,20 40,40 20,60"/>
+      <polygon class="cube cube-dark" points="0,20 20,40 20,60 0,40"/>
+    </g>
+    
+    <g transform="translate(30, 0)">
+      <polygon class="cube cube-medium" points="0,20 20,0 40,20 20,40"/>
+      <polygon class="cube cube-light" points="20,40 40,20 40,40 20,60"/>
+      <polygon class="cube cube-dark" points="0,20 20,40 20,60 0,40"/>
+    </g>
+    
+    <g transform="translate(60, 0)">
+      <polygon class="cube cube-light" points="0,20 20,0 40,20 20,40"/>
+      <polygon class="cube cube-medium" points="20,40 40,20 40,40 20,60"/>
+      <polygon class="cube cube-dark" points="0,20 20,40 20,60 0,40"/>
+    </g>
+    
+    <!-- Middle row -->
+    <g transform="translate(0, 30)">
+      <polygon class="cube cube-medium" points="0,20 20,0 40,20 20,40"/>
+      <polygon class="cube cube-dark" points="20,40 40,20 40,40 20,60"/>
+      <polygon class="cube cube-light" points="0,20 20,40 20,60 0,40"/>
+    </g>
+    
+    <g transform="translate(30, 30)">
+      <polygon class="cube cube-light" points="0,20 20,0 40,20 20,40"/>
+      <polygon class="cube cube-medium" points="20,40 40,20 40,40 20,60"/>
+      <polygon class="cube cube-dark" points="0,20 20,40 20,60 0,40"/>
+    </g>
+    
+    <g transform="translate(60, 30)">
+      <polygon class="cube cube-medium" points="0,20 20,0 40,20 20,40"/>
+      <polygon class="cube cube-dark" points="20,40 40,20 40,40 20,60"/>
+      <polygon class="cube cube-light" points="0,20 20,40 20,60 0,40"/>
+    </g>
+    
+    <!-- Bottom row -->
+    <g transform="translate(30, 60)">
+      <polygon class="cube cube-dark" points="0,20 20,0 40,20 20,40"/>
+      <polygon class="cube cube-light" points="20,40 40,20 40,40 20,60"/>
+      <polygon class="cube cube-medium" points="0,20 20,40 20,60 0,40"/>
+    </g>
+  </g>
+</svg>
