@@ -1,0 +1,12 @@
+{
+  "name": "UC2-ESP32",
+  "version": "2025_11_seeed_xiao_esp32s3_can_slave_illumination",
+  "home_assistant_domain": "UC2-ESP32",
+  "funding_url": "https://github.com/youseetoo/uc2-esp32",
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [{ "path": "seeed_xiao_esp32s3_can_slave_illumination.bin", "offset": 0 }]
+    }
+  ]
+}
