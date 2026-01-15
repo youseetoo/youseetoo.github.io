@@ -28,7 +28,7 @@
     ></script>
 
     <!-- ESPTool.js for erase functionality -->
-    <script src="https://cdn.jsdelivr.net/npm/esptool-js@0.4.3/dist/esptool.bundle.min.js"></script>
+    <script src="https://unpkg.com/esptool-js@0.4.3/bundle.js"></script>
 
     <style>
       :root {
@@ -875,18 +875,14 @@
           image: 'https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png',
           chip: 'ESP32-S3',
           description: 'Quantum ODMR spectroscopy board (ESP32-S3)',
-          canConfig: false,
-          externalRepo: 'https://github.com/openUC2/TechnicalDocs-openUC2-QBox',
-          manifestPath: '/static/firmware_odmr/'
+          canConfig: false
         },
         'odmr-xiao-esp32c3': {
           name: 'ODMR Xiao ESP32C3',
           image: 'https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png',
           chip: 'ESP32-C3',
           description: 'Quantum ODMR spectroscopy board (ESP32-C3)',
-          canConfig: false,
-          externalRepo: 'https://github.com/openUC2/TechnicalDocs-openUC2-QBox',
-          manifestPath: '/static/firmware_odmr/'
+          canConfig: false
         },
         'waveshare_esp32s3_ledarray': {
           name: 'Waveshare ESP32S3 Matrix',
@@ -1209,16 +1205,22 @@
           manifestUrl = `${window.location.origin}${boardConfig.manifestPath}${state.selectedBoard}-manifest.json`;
           console.log('Using external repo manifest:', manifestUrl);
         } else {
-          // Always use local manifests to avoid CORS issues
-          // Manifests should be hosted alongside the flasher HTML
-          if (state.currentRelease && state.currentRelease !== 'latest') {
-            // Version-specific manifests
-            manifestUrl = `${window.location.origin}/static/firmware/${state.currentRelease}/${state.selectedBoard}-manifest.json`;
+          // Normal UC2 firmware from GitHub releases
+          const release = state.releases.find(r => r.tag_name === state.currentRelease);
+          
+          if (release) {
+            // Use GitHub release assets
+            const manifestAsset = release.assets.find(a => a.name === `${state.selectedBoard}-manifest.json`);
+            if (manifestAsset) {
+              manifestUrl = manifestAsset.browser_download_url;
+            } else {
+              // Construct URL
+              manifestUrl = `https://github.com/${GITHUB_REPO}/releases/download/${state.currentRelease}/${state.selectedBoard}-manifest.json`;
+            }
           } else {
-            // Latest version manifests
-            manifestUrl = `${window.location.origin}/static/firmware/latest/${state.selectedBoard}-manifest.json`;
+            // Fallback to static files
+            manifestUrl = `./static/firmware_build/${state.selectedBoard}-manifest.json`;
           }
-          console.log('Using local manifest:', manifestUrl);
         }
         
         elements.installButton.manifest = manifestUrl;
@@ -1376,12 +1378,6 @@
         const eraseType = document.querySelector('input[name="eraseType"]:checked').value;
         
         try {
-          // Check if port is already open from previous operation
-          if (state.serialPort && state.isConnected) {
-            await disconnectSerial();
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-          
           elements.eraseProgress.classList.remove('hidden');
           elements.eraseFlashBtn.disabled = true;
           logToEraseConsole('Requesting serial port...', 'info');
@@ -1392,12 +1388,9 @@
           logToEraseConsole('Connected. Starting erase...', 'info');
           updateEraseProgress(10, 'Connecting to ESP32...');
           
-          // Use esptool.js for erasing (check if library is loaded)
-          if (typeof window.ESPLoader === 'undefined' || typeof window.Transport === 'undefined') {
-            throw new Error('ESPTool.js library not loaded. Please refresh the page.');
-          }
-          const transport = new window.Transport(port);
-          const loader = new window.ESPLoader(transport, 115200);
+          // Use esptool.js for erasing
+          const transport = new Transport(port);
+          const loader = new ESPLoader(transport, 115200);
           
           updateEraseProgress(20, 'Syncing...');
           await loader.main_fn();
@@ -1415,7 +1408,6 @@
           updateEraseProgress(100, 'Erase complete!');
           logToEraseConsole('Flash erased successfully!', 'success');
           
-          await transport.disconnect();
           await port.close();
           
         } catch (error) {
