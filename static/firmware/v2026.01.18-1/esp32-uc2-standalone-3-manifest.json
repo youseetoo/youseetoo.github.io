@@ -1,5 +1,5 @@
 {
-  "name": "UC2 WEMOS D1 R32",
+  "name": "UC2 Standalone V3",
   "version": "v2026.01.18-1",
   "home_assistant_domain": "UC2-ESP32",
   "funding_url": "https://github.com/youseetoo/uc2-esp32",
@@ -8,7 +8,7 @@
       "chipFamily": "ESP32",
       "parts": [
         {
-          "path": "esp32-uc2-wemos.bin",
+          "path": "esp32-uc2-standalone-3.bin",
           "offset": 0
         }
       ]

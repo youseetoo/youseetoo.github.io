@@ -1,14 +1,14 @@
 {
-  "name": "UC2 WEMOS D1 R32",
+  "name": "Xiao CAN Slave Illumination",
   "version": "v2026.01.18-1",
   "home_assistant_domain": "UC2-ESP32",
   "funding_url": "https://github.com/youseetoo/uc2-esp32",
   "builds": [
     {
-      "chipFamily": "ESP32",
+      "chipFamily": "ESP32-S3",
       "parts": [
         {
-          "path": "esp32-uc2-wemos.bin",
+          "path": "xiao-can-slave-illumination.bin",
           "offset": 0
         }
       ]
