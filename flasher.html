@@ -30,26 +30,45 @@
     <!-- ESPTool.js for erase functionality -->
     <script src="https://unpkg.com/esptool-js@0.4.3/bundle.js"></script>
     <script>
-      // Expose esptool classes globally after load
+      // Initialize ESPTool.js classes when available
+      let esptoolReady = false;
+      
+      function initESPTool() {
+        if (typeof esptoolPackage !== 'undefined') {
+          window.Transport = esptoolPackage.Transport;
+          window.ESPLoader = esptoolPackage.ESPLoader;
+          esptoolReady = true;
+          console.log('✓ ESPTool.js initialized:', { 
+            Transport: !!window.Transport, 
+            ESPLoader: !!window.ESPLoader 
+          });
+          return true;
+        }
+        return false;
+      }
+      
+      // Try to initialize on load
       window.addEventListener('load', () => {
-        if (typeof esptoolPackage !== 'undefined') {
-          window.Transport = esptoolPackage.Transport;
-          window.ESPLoader = esptoolPackage.ESPLoader;
-          console.log('✓ ESPTool.js loaded:', { Transport: !!window.Transport, ESPLoader: !!window.ESPLoader });
-        } else {
-          console.error('✗ esptoolPackage not found');
+        if (!initESPTool()) {
+          // Try again after a short delay
+          setTimeout(initESPTool, 100);
         }
       });
-    </script>
-    <script>
-      // Wait for esptool to load and expose globals
+      
+      // Also try on DOMContentLoaded
       window.addEventListener('DOMContentLoaded', () => {
-        if (typeof esptoolPackage !== 'undefined') {
-          window.Transport = esptoolPackage.Transport;
-          window.ESPLoader = esptoolPackage.ESPLoader;
-          console.log('ESPTool.js loaded successfully');
+        if (!esptoolReady) {
+          initESPTool();
         }
       });
+      
+      // Helper function to check if ESPTool is ready
+      window.isESPToolReady = function() {
+        if (!esptoolReady) {
+          initESPTool();
+        }
+        return esptoolReady && window.Transport && window.ESPLoader;
+      };
     </script>
 
     <style>
@@ -1590,26 +1609,29 @@
           elements.eraseFlashBtn.disabled = true;
           logToEraseConsole('Requesting serial port...', 'info');
           
+          // Check if ESPTool is ready first
+          if (!window.isESPToolReady()) {
+            logToEraseConsole('ESPTool.js not ready, initializing...', 'warning');
+            // Wait a bit for initialization
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            if (!window.isESPToolReady()) {
+              throw new Error('ESPTool.js failed to load. Please refresh the page and try again.');
+            }
+          }
+          
           const port = await navigator.serial.requestPort();
           await port.open({ baudRate: 115200 });
           
           logToEraseConsole('Connected. Starting erase...', 'info');
           updateEraseProgress(10, 'Connecting to ESP32...');
           
-          // Check if esptool is loaded, try both window and esptoolPackage
-          let Transport = window.Transport;
-          let ESPLoader = window.ESPLoader;
+          // Get ESPTool classes
+          const Transport = window.Transport;
+          const ESPLoader = window.ESPLoader;
           
           if (!Transport || !ESPLoader) {
-            if (typeof esptoolPackage !== 'undefined') {
-              Transport = esptoolPackage.Transport;
-              ESPLoader = esptoolPackage.ESPLoader;
-              // Cache for future use
-              window.Transport = Transport;
-              window.ESPLoader = ESPLoader;
-            } else {
-              throw new Error('ESPTool.js not loaded. Please refresh the page.');
-            }
+            throw new Error('ESPTool.js classes not available. Please refresh the page.');
           }
           
           // Use esptool.js for erasing
