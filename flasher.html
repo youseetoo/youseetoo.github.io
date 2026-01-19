@@ -859,8 +859,8 @@
           defaultCanId: 1
         },
         'can-hat-master-v2': {
-          name: 'CAN HAT Master V2',
-          image: './IMAGES/esp32-uc2-v4.png',
+          name: 'CAN HAT Master V2 (FRAME)',
+          image: './IMAGES/openuc2-HATv1.png',
           chip: 'ESP32',
           description: 'Raspberry Pi HAT with CAN Master',
           canConfig: true,
@@ -897,7 +897,7 @@
         },
         'xiao-can-slave-galvo': {
           name: 'Xiao CAN Slave Galvo',
-          image: './IMAGES/esp32s3-uc2-motor.jpg',
+          image: './IMAGES/esp32-uc2-xiao-can-galvo.png',
           chip: 'ESP32-S3',
           description: 'CAN slave for galvo mirror control',
           canConfig: true,
@@ -905,7 +905,7 @@
         },
         'xiao-can-slave-laser': {
           name: 'Xiao CAN Slave Laser',
-          image: './IMAGES/esp32-uc2-xiao-can-ledring.png',
+          image: './IMAGES/esp32-uc2-xiao-can-laser.png',
           chip: 'ESP32-S3',
           description: 'CAN slave for laser control',
           canConfig: true,
@@ -1804,13 +1804,25 @@
         elements.installButton.addEventListener('state-changed', (e) => {
           console.log('Install state:', e.detail);
           
-          if (e.detail.state === 'finished' && elements.postFlashConfig.checked) {
-            // Switch to configure tab after successful flash
-            const configTab = document.getElementById('configure-tab');
-            new bootstrap.Tab(configTab).show();
+          if (e.detail.state === 'finished') {
+            logToConsole('✓ Firmware flashed successfully!', 'success');
             
-            // Show notification
-            logToConsole('Firmware flashed successfully! Connect to configure the device.', 'success');
+            // Check if we should auto-switch to configure tab
+            if (elements.postFlashConfig && elements.postFlashConfig.checked) {
+              console.log('Auto-switching to configure tab...');
+              
+              // Wait a moment for the flash process to fully complete
+              setTimeout(() => {
+                const configTab = document.getElementById('configure-tab');
+                if (configTab) {
+                  const tabTrigger = new bootstrap.Tab(configTab);
+                  tabTrigger.show();
+                  logToConsole('→ Switched to Configure tab. Connect to your device to continue.', 'info');
+                } else {
+                  console.error('Configure tab not found');
+                }
+              }, 500);
+            }
           }
         });
       }
