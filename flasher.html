@@ -301,7 +301,7 @@
                   <h5 class="mb-0"><i class="bi bi-tag"></i> Select Version</h5>
                 </div>
                 <div class="card-body">
-                  <div class="row align-items-center">
+                  <div class="row align-items-center mb-3">
                     <div class="col-md-6">
                       <label for="releaseSelect" class="form-label">Firmware Release</label>
                       <select id="releaseSelect" class="form-select">
@@ -314,6 +314,18 @@
                         <span class="badge bg-secondary version-badge" id="currentVersion">Loading...</span>
                         <small class="text-muted d-block mt-1" id="releaseDate"></small>
                       </div>
+                    </div>
+                  </div>
+                  <div class="row align-items-center">
+                    <div class="col-md-12">
+                      <label for="imswitchReleaseSelect" class="form-label">
+                        <i class="bi bi-box-seam"></i> Or: Select by ImSwitch OS Release (Reverse Lookup)
+                      </label>
+                      <select id="imswitchReleaseSelect" class="form-select">
+                        <option value="">-- Select ImSwitch OS Release --</option>
+                        <!-- Dynamically populated -->
+                      </select>
+                      <small class="text-muted">Automatically resolves the matching firmware version</small>
                     </div>
                   </div>
                 </div>
@@ -777,7 +789,9 @@
       const GITHUB_REPO = 'youseetoo/uc2-esp32';
       const GITHUB_API = `https://api.github.com/repos/${GITHUB_REPO}`;
       const BINARIES_REPO = 'youseetoo/uc2-esp32-binaries';
-      const CDN_BASE = `https://cdn.jsdelivr.net/gh/${BINARIES_REPO}`;
+      const RAW_BASE = `https://raw.githubusercontent.com/${BINARIES_REPO}/refs/heads`;
+      const IMSWITCH_REPO = 'openUC2/rpi-imswitch-os';
+      const IMSWITCH_API = `https://api.github.com/repos/${IMSWITCH_REPO}`;
       
       // Board configurations with images and metadata
       const BOARD_CONFIG = {
@@ -920,6 +934,7 @@
       // Application State
       const state = {
         releases: [],
+        imswitchReleases: [],
         currentRelease: null,
         selectedBoard: null,
         serialPort: null,
@@ -931,6 +946,7 @@
       // DOM Elements
       const elements = {
         releaseSelect: document.getElementById('releaseSelect'),
+        imswitchReleaseSelect: document.getElementById('imswitchReleaseSelect'),
         currentVersion: document.getElementById('currentVersion'),
         releaseDate: document.getElementById('releaseDate'),
         boardGrid: document.getElementById('boardGrid'),
@@ -1027,13 +1043,25 @@
         try {
           showLoading('Loading firmware releases...');
           
-          const response = await fetch(`${GITHUB_API}/releases`);
-          if (!response.ok) throw new Error('Failed to fetch releases');
+          // Load firmware releases
+          const fwResponse = await fetch(`${GITHUB_API}/releases`);
+          if (!fwResponse.ok) throw new Error('Failed to fetch firmware releases');
           
-          const releases = await response.json();
+          const releases = await fwResponse.json();
           state.releases = releases;
           
-          // Populate release dropdown
+          // Load ImSwitch releases
+          try {
+            const imswitchResponse = await fetch(`${IMSWITCH_API}/releases`);
+            if (imswitchResponse.ok) {
+              state.imswitchReleases = await imswitchResponse.json();
+              console.log(`Loaded ${state.imswitchReleases.length} ImSwitch OS releases`);
+            }
+          } catch (err) {
+            console.warn('Failed to load ImSwitch releases:', err);
+          }
+          
+          // Populate firmware release dropdown
           elements.releaseSelect.innerHTML = '';
           
           // Add latest option
@@ -1042,13 +1070,25 @@
           latestOpt.textContent = 'Latest Stable';
           elements.releaseSelect.appendChild(latestOpt);
           
-          // Add all releases
+          // Add all firmware releases
           releases.forEach(release => {
             const opt = document.createElement('option');
             opt.value = release.tag_name;
             opt.textContent = `${release.tag_name} ${release.prerelease ? '(beta)' : ''}`;
             elements.releaseSelect.appendChild(opt);
           });
+          
+          // Populate ImSwitch OS release dropdown (if available)
+          if (state.imswitchReleases && state.imswitchReleases.length > 0) {
+            elements.imswitchReleaseSelect.innerHTML = '<option value="">-- Select ImSwitch OS Release --</option>';
+            state.imswitchReleases.slice(0, 20).forEach(release => {
+              const opt = document.createElement('option');
+              opt.value = release.tag_name;
+              opt.textContent = `${release.tag_name} ${release.prerelease ? '(beta)' : ''}`;
+              elements.imswitchReleaseSelect.appendChild(opt);
+            });
+            logToConsole(`\u2713 Loaded ${state.imswitchReleases.length} ImSwitch OS releases`, 'info');
+          }
           
           // Select from URL or default
           if (state.currentRelease) {
@@ -1058,9 +1098,8 @@
           // Update version display
           updateVersionDisplay();
           
-          // Log CDN info
-          logToConsole('\u2713 Firmware will be loaded from jsDelivr CDN', 'success');
-          logToConsole('\u2139 CDN provides CORS-enabled manifest access', 'info');
+          // Log info
+          logToConsole('\u2713 Firmware will be loaded from GitHub raw URLs', 'success');
           
         } catch (error) {
           console.error('Error loading releases:', error);
@@ -1072,6 +1111,37 @@
           hideLoading();
         }
       }
+      /*
+          releases.forEach(release => {
+            const opt = document.createElement('option');
+            opt.value = release.tag_name;
+            opt.textContent = `${release.tag_name} ${release.prerelease ? '(beta)' : ''}`;
+            fwGroup.appendChild(opt);
+          });
+          elements.releaseSelect.appendChild(fwGroup);
+          
+          // Select from URL or default
+          if (state.currentRelease) {
+            elements.releaseSelect.value = state.currentRelease;
+          }
+          
+          // Update version display
+          updateVersionDisplay();
+          
+          // Log info
+          logToConsole('\u2713 Firmware will be loaded from GitHub raw URLs', 'success');
+          
+        } catch (error) {
+          console.error('Error loading releases:', error);
+          logToConsole(`Error loading releases: ${error.message}`, 'error');
+          
+          // Fallback to static manifest files
+          elements.releaseSelect.innerHTML = '<option value="static">Local (static)</option>';
+        } finally {
+          hideLoading();
+        }
+      }
+      */
 
       function updateVersionDisplay() {
         const selectedValue = elements.releaseSelect.value;
@@ -1221,12 +1291,33 @@
         `;
       }
 
-      function updateManifestUrl() {
+      async function updateManifestUrl() {
         if (!state.selectedBoard) return;
         
         const boardConfig = BOARD_CONFIG[state.selectedBoard];
         let manifestUrl;
         let releaseTag = state.currentRelease;
+        
+        // Handle ImSwitch release selection
+        if (releaseTag && releaseTag.startsWith('imswitch:')) {
+          const imswitchTag = releaseTag.replace('imswitch:', '');
+          logToConsole(`\u231B Resolving firmware version for ImSwitch ${imswitchTag}...`, 'info');
+          
+          try {
+            const fwVersion = await resolveFirmwareFromImSwitch(imswitchTag);
+            if (fwVersion) {
+              releaseTag = fwVersion;
+              logToConsole(`\u2713 Resolved to firmware version: ${fwVersion}`, 'success');
+            } else {
+              logToConsole(`\u26A0 Could not resolve firmware version, using latest`, 'warning');
+              releaseTag = 'latest';
+            }
+          } catch (err) {
+            console.error('Error resolving ImSwitch firmware:', err);
+            logToConsole(`\u2717 Error resolving firmware: ${err.message}`, 'error');
+            releaseTag = 'latest';
+          }
+        }
         
         // Handle 'latest' release selection
         if (releaseTag === 'latest') {
@@ -1240,10 +1331,10 @@
           manifestUrl = `${window.location.origin}${boardConfig.manifestPath}${state.selectedBoard}-manifest.json`;
           console.log('Using external repo manifest:', manifestUrl);
         } else if (releaseTag) {
-          // Use jsDelivr CDN from mirror repository (CORS-enabled)
-          manifestUrl = `${CDN_BASE}@${releaseTag}/${state.selectedBoard}-manifest.json`;
-          console.log('Using jsDelivr CDN manifest:', manifestUrl);
-          logToConsole(`\u2713 Loading from CDN: ${releaseTag}/${state.selectedBoard}`, 'success');
+          // Use raw.githubusercontent.com from mirror repository (CORS-enabled)
+          manifestUrl = `${RAW_BASE}/${releaseTag}/${state.selectedBoard}-manifest.json`;
+          console.log('Using GitHub raw manifest:', manifestUrl);
+          logToConsole(`\u2713 Loading from GitHub: ${releaseTag}/${state.selectedBoard}`, 'success');
         } else {
           // Fallback to static files
           manifestUrl = `./static/firmware_build/${state.selectedBoard}-manifest.json`;
@@ -1252,6 +1343,68 @@
         
         elements.installButton.manifest = manifestUrl;
         console.log('Final manifest URL:', manifestUrl);
+      }
+
+      async function resolveFirmwareFromImSwitch(imswitchTag) {
+        try {
+          // Fetch the deployment.compose.yml file from the ImSwitch release
+          const fileUrl = `https://raw.githubusercontent.com/${IMSWITCH_REPO}/refs/tags/${imswitchTag}/deployments/firmware.pkg/deployment.compose.yml`;
+          const response = await fetch(fileUrl);
+          
+          if (!response.ok) {
+            throw new Error(`Failed to fetch deployment file: ${response.statusText}`);
+          }
+          
+          const yamlContent = await response.text();
+          
+          // Extract Docker image tag (e.g., "sha-77ceeb1" or "v2026.01.19")
+          // Look for: image: ghcr.io/youseetoo/firmware-image-server:sha-XXXXXX or :vYYYY.MM.DD
+          const imageMatch = yamlContent.match(/image:\s+ghcr\.io\/youseetoo\/firmware-image-server:(\S+?)(?:@|\s|$)/);
+          
+          if (!imageMatch) {
+            throw new Error('Could not find firmware-image-server image in deployment file');
+          }
+          
+          let tag = imageMatch[1];
+          console.log('Found Docker image tag:', tag);
+          
+          // If it's a SHA tag (sha-XXXXXX), we need to find the corresponding version tag
+          if (tag.startsWith('sha-')) {
+            // Extract the SHA and look for a matching firmware release
+            const sha = tag.replace('sha-', '');
+            logToConsole(`\u2139 Docker image uses commit SHA: ${sha}`, 'info');
+            
+            // Check if there's a version tag in the firmware releases that matches this timeframe
+            const imswitchRelease = state.imswitchReleases.find(r => r.tag_name === imswitchTag);
+            if (imswitchRelease) {
+              const imswitchDate = new Date(imswitchRelease.published_at);
+              
+              // Find firmware release closest to this date
+              const closestFirmware = state.releases
+                .filter(r => !r.prerelease)
+                .map(r => ({
+                  ...r,
+                  dateDiff: Math.abs(new Date(r.published_at) - imswitchDate)
+                }))
+                .sort((a, b) => a.dateDiff - b.dateDiff)[0];
+              
+              if (closestFirmware) {
+                logToConsole(`\u2139 Matched to firmware release by date: ${closestFirmware.tag_name}`, 'info');
+                return closestFirmware.tag_name;
+              }
+            }
+            
+            return null;
+          } else if (tag.match(/^v\d{4}\.\d{2}\.\d{2}/)) {
+            // It's already a version tag
+            return tag;
+          }
+          
+          return null;
+        } catch (error) {
+          console.error('Error resolving firmware from ImSwitch:', error);
+          throw error;
+        }
       }
 
       function updateDirectLink() {
@@ -1267,19 +1420,34 @@
         const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
         elements.directLink.value = url;
         
-        // Log CDN manifest URL for reference
+        // Log raw GitHub URL for reference
         if (state.selectedBoard && state.currentRelease) {
           let releaseTag = state.currentRelease;
           if (releaseTag === 'latest') {
             const latestRelease = state.releases.find(r => !r.prerelease);
             releaseTag = latestRelease ? latestRelease.tag_name : state.releases[0]?.tag_name;
           }
-          if (releaseTag) {
-            const cdnUrl = `${CDN_BASE}@${releaseTag}/${state.selectedBoard}-manifest.json`;
-            console.log('CDN Manifest URL:', cdnUrl);
+          if (releaseTag && !releaseTag.startsWith('imswitch:')) {
+            const rawUrl = `${RAW_BASE}/${releaseTag}/${state.selectedBoard}-manifest.json`;
+            console.log('Raw GitHub URL:', rawUrl);
           }
         }
       }
+        /*
+        // Log raw GitHub URL for reference
+        if (state.selectedBoard && state.currentRelease) {
+          let releaseTag = state.currentRelease;
+          if (releaseTag === 'latest') {
+            const latestRelease = state.releases.find(r => !r.prerelease);
+            releaseTag = latestRelease ? latestRelease.tag_name : state.releases[0]?.tag_name;
+          }
+          if (releaseTag && !releaseTag.startsWith('imswitch:')) {
+            const rawUrl = `${RAW_BASE}/${releaseTag}/${state.selectedBoard}-manifest.json`;
+            console.log('Raw GitHub URL:', rawUrl);
+          }
+        }
+      }
+        */
 
       // =====================================================
       // Serial Communication
@@ -1509,7 +1677,40 @@
       function setupEventListeners() {
         // Release selection
         elements.releaseSelect.addEventListener('change', () => {
+          // Clear ImSwitch selection when direct firmware release is selected
+          elements.imswitchReleaseSelect.value = '';
           updateVersionDisplay();
+        });
+        
+        // ImSwitch release selection
+        elements.imswitchReleaseSelect.addEventListener('change', async () => {
+          const selectedImswitch = elements.imswitchReleaseSelect.value;
+          if (selectedImswitch) {
+            // Set currentRelease with imswitch: prefix for lookup
+            state.currentRelease = `imswitch:${selectedImswitch}`;
+            logToConsole(`\u231B Resolving firmware for ImSwitch ${selectedImswitch}...`, 'info');
+            
+            try {
+              const fwVersion = await resolveFirmwareFromImSwitch(selectedImswitch);
+              if (fwVersion) {
+                // Update the firmware dropdown to show the resolved version
+                elements.releaseSelect.value = fwVersion;
+                state.currentRelease = fwVersion;
+                logToConsole(`\u2713 Resolved to firmware ${fwVersion}`, 'success');
+              } else {
+                logToConsole(`\u26A0 Could not resolve firmware version`, 'warning');
+                elements.releaseSelect.value = 'latest';
+                state.currentRelease = 'latest';
+              }
+            } catch (err) {
+              console.error('Error resolving:', err);
+              logToConsole(`\u2717 Error: ${err.message}`, 'error');
+              elements.releaseSelect.value = 'latest';
+              state.currentRelease = 'latest';
+            }
+            
+            updateVersionDisplay();
+          }
         });
         
         // Board search
