@@ -29,6 +29,28 @@
 
     <!-- ESPTool.js for erase functionality -->
     <script src="https://unpkg.com/esptool-js@0.4.3/bundle.js"></script>
+    <script>
+      // Expose esptool classes globally after load
+      window.addEventListener('load', () => {
+        if (typeof esptoolPackage !== 'undefined') {
+          window.Transport = esptoolPackage.Transport;
+          window.ESPLoader = esptoolPackage.ESPLoader;
+          console.log('✓ ESPTool.js loaded:', { Transport: !!window.Transport, ESPLoader: !!window.ESPLoader });
+        } else {
+          console.error('✗ esptoolPackage not found');
+        }
+      });
+    </script>
+    <script>
+      // Wait for esptool to load and expose globals
+      window.addEventListener('DOMContentLoaded', () => {
+        if (typeof esptoolPackage !== 'undefined') {
+          window.Transport = esptoolPackage.Transport;
+          window.ESPLoader = esptoolPackage.ESPLoader;
+          console.log('ESPTool.js loaded successfully');
+        }
+      });
+    </script>
 
     <style>
       :root {
@@ -754,6 +776,8 @@
 
       const GITHUB_REPO = 'youseetoo/uc2-esp32';
       const GITHUB_API = `https://api.github.com/repos/${GITHUB_REPO}`;
+      const BINARIES_REPO = 'youseetoo/uc2-esp32-binaries';
+      const CDN_BASE = `https://cdn.jsdelivr.net/gh/${BINARIES_REPO}`;
       
       // Board configurations with images and metadata
       const BOARD_CONFIG = {
@@ -1034,6 +1058,10 @@
           // Update version display
           updateVersionDisplay();
           
+          // Log CDN info
+          logToConsole('\u2713 Firmware will be loaded from jsDelivr CDN', 'success');
+          logToConsole('\u2139 CDN provides CORS-enabled manifest access', 'info');
+          
         } catch (error) {
           console.error('Error loading releases:', error);
           logToConsole(`Error loading releases: ${error.message}`, 'error');
@@ -1198,33 +1226,32 @@
         
         const boardConfig = BOARD_CONFIG[state.selectedBoard];
         let manifestUrl;
+        let releaseTag = state.currentRelease;
+        
+        // Handle 'latest' release selection
+        if (releaseTag === 'latest') {
+          const latestRelease = state.releases.find(r => !r.prerelease);
+          releaseTag = latestRelease ? latestRelease.tag_name : state.releases[0]?.tag_name;
+        }
         
         // Check if board is from external repo (ODMR firmware)
         if (boardConfig.manifestPath) {
           // Use local path for ODMR firmware uploaded by workflow
           manifestUrl = `${window.location.origin}${boardConfig.manifestPath}${state.selectedBoard}-manifest.json`;
           console.log('Using external repo manifest:', manifestUrl);
+        } else if (releaseTag) {
+          // Use jsDelivr CDN from mirror repository (CORS-enabled)
+          manifestUrl = `${CDN_BASE}@${releaseTag}/${state.selectedBoard}-manifest.json`;
+          console.log('Using jsDelivr CDN manifest:', manifestUrl);
+          logToConsole(`\u2713 Loading from CDN: ${releaseTag}/${state.selectedBoard}`, 'success');
         } else {
-          // Normal UC2 firmware from GitHub releases
-          const release = state.releases.find(r => r.tag_name === state.currentRelease);
-          
-          if (release) {
-            // Use GitHub release assets
-            const manifestAsset = release.assets.find(a => a.name === `${state.selectedBoard}-manifest.json`);
-            if (manifestAsset) {
-              manifestUrl = manifestAsset.browser_download_url;
-            } else {
-              // Construct URL
-              manifestUrl = `https://github.com/${GITHUB_REPO}/releases/download/${state.currentRelease}/${state.selectedBoard}-manifest.json`;
-            }
-          } else {
-            // Fallback to static files
-            manifestUrl = `./static/firmware_build/${state.selectedBoard}-manifest.json`;
-          }
+          // Fallback to static files
+          manifestUrl = `./static/firmware_build/${state.selectedBoard}-manifest.json`;
+          console.log('Using static manifest:', manifestUrl);
         }
         
         elements.installButton.manifest = manifestUrl;
-        console.log('Manifest URL:', manifestUrl);
+        console.log('Final manifest URL:', manifestUrl);
       }
 
       function updateDirectLink() {
@@ -1239,6 +1266,19 @@
         
         const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
         elements.directLink.value = url;
+        
+        // Log CDN manifest URL for reference
+        if (state.selectedBoard && state.currentRelease) {
+          let releaseTag = state.currentRelease;
+          if (releaseTag === 'latest') {
+            const latestRelease = state.releases.find(r => !r.prerelease);
+            releaseTag = latestRelease ? latestRelease.tag_name : state.releases[0]?.tag_name;
+          }
+          if (releaseTag) {
+            const cdnUrl = `${CDN_BASE}@${releaseTag}/${state.selectedBoard}-manifest.json`;
+            console.log('CDN Manifest URL:', cdnUrl);
+          }
+        }
       }
 
       // =====================================================
@@ -1387,6 +1427,22 @@
           
           logToEraseConsole('Connected. Starting erase...', 'info');
           updateEraseProgress(10, 'Connecting to ESP32...');
+          
+          // Check if esptool is loaded, try both window and esptoolPackage
+          let Transport = window.Transport;
+          let ESPLoader = window.ESPLoader;
+          
+          if (!Transport || !ESPLoader) {
+            if (typeof esptoolPackage !== 'undefined') {
+              Transport = esptoolPackage.Transport;
+              ESPLoader = esptoolPackage.ESPLoader;
+              // Cache for future use
+              window.Transport = Transport;
+              window.ESPLoader = ESPLoader;
+            } else {
+              throw new Error('ESPTool.js not loaded. Please refresh the page.');
+            }
+          }
           
           // Use esptool.js for erasing
           const transport = new Transport(port);
