@@ -1,6 +1,6 @@
 {
   "name": "ODMR Xiao ESP32C3",
-  "version": "v2026.01.15-1-g937aef1",
+  "version": "v2026.01.15-3-g7f03fb3",
   "home_assistant_domain": "ODMR-ESP32",
   "funding_url": "https://github.com/openUC2/TechnicalDocs-openUC2-QBox",
   "builds": [
