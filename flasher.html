@@ -27,47 +27,52 @@
       src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"
     ></script>
 
-    <!-- ESPTool.js for erase functionality -->
-    <script src="https://unpkg.com/esptool-js@0.4.3/bundle.js"></script>
+    <!-- ESPTool.js for erase functionality - loaded as ES module -->
+    <script type="module">
+      // Import ESPTool.js as ES module (same pattern as ESPressoFlash)
+      import * as esptoolJS from 'https://unpkg.com/esptool-js@0.5.0/bundle.js';
+      
+      // Make it globally available
+      window.esptoolJS = esptoolJS;
+      window.Transport = esptoolJS.Transport;
+      window.ESPLoader = esptoolJS.ESPLoader;
+      window.esptoolReady = true;
+      
+      console.log('✓ ESPTool.js v0.5.0 initialized via ES module:', { 
+        Transport: !!window.Transport, 
+        ESPLoader: !!window.ESPLoader,
+        esptoolJS: !!window.esptoolJS
+      });
+      
+      // Dispatch event when ready
+      window.dispatchEvent(new CustomEvent('esptool-ready'));
+    </script>
     <script>
-      // Initialize ESPTool.js classes when available
-      let esptoolReady = false;
-      
-      function initESPTool() {
-        if (typeof esptoolPackage !== 'undefined') {
-          window.Transport = esptoolPackage.Transport;
-          window.ESPLoader = esptoolPackage.ESPLoader;
-          esptoolReady = true;
-          console.log('✓ ESPTool.js initialized:', { 
-            Transport: !!window.Transport, 
-            ESPLoader: !!window.ESPLoader 
-          });
-          return true;
-        }
-        return false;
-      }
-      
-      // Try to initialize on load
-      window.addEventListener('load', () => {
-        if (!initESPTool()) {
-          // Try again after a short delay
-          setTimeout(initESPTool, 100);
-        }
-      });
-      
-      // Also try on DOMContentLoaded
-      window.addEventListener('DOMContentLoaded', () => {
-        if (!esptoolReady) {
-          initESPTool();
-        }
-      });
+      // Fallback flag - set to false initially
+      window.esptoolReady = window.esptoolReady || false;
       
       // Helper function to check if ESPTool is ready
       window.isESPToolReady = function() {
-        if (!esptoolReady) {
-          initESPTool();
-        }
-        return esptoolReady && window.Transport && window.ESPLoader;
+        return window.esptoolReady && window.Transport && window.ESPLoader;
+      };
+      
+      // Helper to wait for ESPTool
+      window.waitForESPTool = function(timeout = 5000) {
+        return new Promise((resolve, reject) => {
+          if (window.isESPToolReady()) {
+            resolve();
+            return;
+          }
+          
+          const timeoutId = setTimeout(() => {
+            reject(new Error('ESPTool.js failed to load within timeout'));
+          }, timeout);
+          
+          window.addEventListener('esptool-ready', () => {
+            clearTimeout(timeoutId);
+            resolve();
+          }, { once: true });
+        });
       };
     </script>
 
@@ -298,6 +303,17 @@
         <li class="nav-item" role="presentation">
           <button
             class="nav-link"
+            id="hardware-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#hardware-pane"
+            type="button"
+          >
+            <i class="bi bi-sliders"></i> Hardware Test
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
             id="help-tab"
             data-bs-toggle="tab"
             data-bs-target="#help-pane"
@@ -345,6 +361,11 @@
                         <!-- Dynamically populated -->
                       </select>
                       <small class="text-muted">Automatically resolves the matching firmware version</small>
+                      <div id="imswitchReleaseLink" class="mt-2 hidden">
+                        <a href="#" target="_blank" class="btn btn-sm btn-outline-info">
+                          <i class="bi bi-download"></i> Download ImSwitch OS Image
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -352,15 +373,26 @@
 
               <!-- Board Selection -->
               <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                  <h5 class="mb-0"><i class="bi bi-motherboard"></i> Select Board</h5>
-                  <input
-                    type="text"
-                    id="boardSearch"
-                    class="form-control form-control-sm w-auto"
-                    placeholder="Search boards..."
-                    style="max-width: 200px;"
-                  />
+                <div class="card-header">
+                  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h5 class="mb-0"><i class="bi bi-motherboard"></i> Select Board</h5>
+                    <div class="d-flex gap-2 align-items-center">
+                      <select id="boardCategory" class="form-select form-select-sm" style="max-width: 180px;">
+                        <option value="all">All Boards</option>
+                        <option value="frame">FRAME (CAN-based)</option>
+                        <option value="electrobox">electroBOX</option>
+                        <option value="qbox">qBOX (ODMR)</option>
+                        <option value="standalone">Standalone</option>
+                      </select>
+                      <input
+                        type="text"
+                        id="boardSearch"
+                        class="form-control form-control-sm"
+                        placeholder="Search boards..."
+                        style="max-width: 150px;"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div class="card-body">
                   <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3" id="boardGrid">
@@ -633,6 +665,231 @@
           </div>
         </div>
 
+        <!-- HARDWARE TEST TAB -->
+        <div class="tab-pane fade" id="hardware-pane" role="tabpanel">
+          <div class="row">
+            <!-- Left column: Hardware Controls -->
+            <div class="col-lg-8">
+              <!-- Serial Connection for Hardware Test -->
+              <div class="card mb-4">
+                <div class="card-header">
+                  <h5 class="mb-0"><i class="bi bi-usb-symbol"></i> Serial Connection</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row align-items-center">
+                    <div class="col-md-6">
+                      <button id="hwConnectSerialBtn" class="btn btn-primary">
+                        <i class="bi bi-plug"></i> Connect
+                      </button>
+                      <span id="hwConnectionStatus" class="ms-2 badge bg-secondary">Disconnected</span>
+                    </div>
+                    <div class="col-md-6">
+                      <select id="hwBaudRate" class="form-select">
+                        <option value="115200" selected>115200 baud</option>
+                        <option value="9600">9600 baud</option>
+                        <option value="57600">57600 baud</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Motor Control -->
+              <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                  <h5 class="mb-0"><i class="bi bi-gear-wide-connected"></i> Motor Control</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Stepper ID (0-3)</label>
+                      <select id="motorStepperId" class="form-select">
+                        <option value="0">A-Axis (0)</option>
+                        <option value="1" selected>X-Axis (1)</option>
+                        <option value="2">Y-Axis (2)</option>
+                        <option value="3">Z-Axis (3)</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Position (steps)</label>
+                      <input type="number" id="motorPosition" class="form-control" value="1000">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Speed</label>
+                      <input type="number" id="motorSpeed" class="form-control" value="20000">
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Acceleration</label>
+                      <input type="number" id="motorAccel" class="form-control" value="500000">
+                    </div>
+                    <div class="col-md-8 d-flex align-items-end gap-2">
+                      <button class="btn btn-success flex-grow-1" id="motorMovePositive">
+                        <i class="bi bi-arrow-right"></i> Move +
+                      </button>
+                      <button class="btn btn-warning flex-grow-1" id="motorMoveNegative">
+                        <i class="bi bi-arrow-left"></i> Move -
+                      </button>
+                      <button class="btn btn-danger" id="motorStop">
+                        <i class="bi bi-stop-fill"></i> Stop
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Laser Control -->
+              <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                  <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Laser / Light Source Control</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <label class="form-label">Laser ID (0-5)</label>
+                      <select id="laserId" class="form-select">
+                        <option value="0">Laser 0</option>
+                        <option value="1">Laser 1</option>
+                        <option value="2">Laser 2</option>
+                        <option value="3">Laser 3</option>
+                        <option value="4">Laser 4</option>
+                        <option value="5">Laser 5</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Value (0-1023)</label>
+                      <input type="range" id="laserValue" class="form-range" min="0" max="1023" value="0">
+                      <div class="d-flex justify-content-between">
+                        <span>0</span>
+                        <span id="laserValueDisplay">0</span>
+                        <span>1023</span>
+                      </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end gap-2">
+                      <button class="btn btn-success flex-grow-1" id="laserOn">
+                        <i class="bi bi-power"></i> ON (1000)
+                      </button>
+                      <button class="btn btn-danger flex-grow-1" id="laserOff">
+                        <i class="bi bi-power"></i> OFF
+                      </button>
+                    </div>
+                  </div>
+                  <div class="mt-3">
+                    <button class="btn btn-primary" id="laserSetValue">
+                      <i class="bi bi-sliders"></i> Set Value
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Homing Control -->
+              <div class="card mb-4">
+                <div class="card-header bg-warning">
+                  <h5 class="mb-0"><i class="bi bi-house"></i> Homing Control</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-3">
+                      <label class="form-label">Stepper ID</label>
+                      <select id="homeStepperId" class="form-select">
+                        <option value="0">A-Axis (0)</option>
+                        <option value="1">X-Axis (1)</option>
+                        <option value="2">Y-Axis (2)</option>
+                        <option value="3">Z-Axis (3)</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label">Timeout (ms)</label>
+                      <input type="number" id="homeTimeout" class="form-control" value="40000">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label">Speed</label>
+                      <input type="number" id="homeSpeed" class="form-control" value="15000">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label">Direction</label>
+                      <select id="homeDirection" class="form-select">
+                        <option value="1">Forward (+1)</option>
+                        <option value="-1">Backward (-1)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Endstop Polarity</label>
+                      <select id="homeEndstopPolarity" class="form-select">
+                        <option value="0">Normally Open (0)</option>
+                        <option value="1">Normally Closed (1)</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Endstop Release (steps)</label>
+                      <input type="number" id="homeEndstopRelease" class="form-control" value="1000">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                      <button class="btn btn-warning w-100" id="homeStart">
+                        <i class="bi bi-house-door"></i> Start Homing
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="card mb-4">
+                <div class="card-header">
+                  <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                  <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-primary hw-quick-cmd" data-cmd='{"task":"/state_get"}'>
+                      Get State
+                    </button>
+                    <button class="btn btn-outline-primary hw-quick-cmd" data-cmd='{"task":"/motor_get"}'>
+                      Get Motor Info
+                    </button>
+                    <button class="btn btn-outline-success hw-quick-cmd" data-cmd='{"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":0, "r":255, "g":255, "b":255}]}}'>
+                      LED Array On
+                    </button>
+                    <button class="btn btn-outline-danger hw-quick-cmd" data-cmd='{"task":"/ledarr_act", "led":{"LEDArrMode":0}}'>
+                      LED Array Off
+                    </button>
+                    <button class="btn btn-outline-warning hw-quick-cmd" data-cmd='{"task":"/motor_act", "isen":1, "isenauto":0}'>
+                      Enable Motors
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right column: Console Output -->
+            <div class="col-lg-4">
+              <div class="card sticky-top" style="top: 1rem;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="mb-0"><i class="bi bi-terminal"></i> Hardware Console</h5>
+                  <button class="btn btn-sm btn-outline-secondary" id="hwClearConsoleBtn">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+                <div class="card-body p-0">
+                  <div class="console-output" id="hwConsoleOutput" style="min-height: 400px;">
+                    <span class="info">Connect to test hardware functions.</span>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="hwCustomCommand" placeholder='{"task":"/state_get"}'>
+                    <button class="btn btn-primary" id="hwSendCommandBtn">
+                      <i class="bi bi-send"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- HELP TAB -->
         <div class="tab-pane fade" id="help-pane" role="tabpanel">
           <div class="row">
@@ -813,34 +1070,39 @@
       const IMSWITCH_API = `https://api.github.com/repos/${IMSWITCH_REPO}`;
       
       // Board configurations with images and metadata
+      // Categories: frame, electrobox, qbox, standalone
       const BOARD_CONFIG = {
         'esp32-uc2-wemos': {
           name: 'ESP32 WEMOS D1 R32',
           image: './IMAGES/esp32-uc2-wemos.jpg',
           chip: 'ESP32',
           description: 'Off-the-shelf board for use with CNC Shield v3',
-          canConfig: false
+          canConfig: false,
+          category: 'standalone'
         },
         'esp32-uc2-standalone-2': {
           name: 'Standalone Board V2',
           image: './IMAGES/esp32-uc2-standalone-2.png',
           chip: 'ESP32',
           description: 'UC2 Standalone PCB Version 2',
-          canConfig: false
+          canConfig: false,
+          category: 'standalone'
         },
         'esp32-uc2-standalone-3': {
           name: 'Standalone Board V3',
           image: './IMAGES/esp32-uc2-standalone-3.png',
           chip: 'ESP32',
           description: 'UC2 Standalone PCB Version 3',
-          canConfig: false
+          canConfig: false,
+          category: 'standalone'
         },
         'esp32-uc2-standalone-4': {
           name: 'Standalone Board V4',
           image: './IMAGES/esp32-uc2-v4.png',
           chip: 'ESP32',
           description: 'UC2 Standalone PCB Version 4',
-          canConfig: true
+          canConfig: true,
+          category: 'electrobox'
         },
         'esp32-uc2-v4-can': {
           name: 'UC2 V4 CAN Master',
@@ -848,7 +1110,8 @@
           chip: 'ESP32',
           description: 'UC2 V4 with CAN bus master functionality',
           canConfig: true,
-          defaultCanId: 1
+          defaultCanId: 1,
+          category: 'electrobox'
         },
         'esp32-uc2-v4-can-hybrid': {
           name: 'UC2 V4 CAN Hybrid',
@@ -856,7 +1119,8 @@
           chip: 'ESP32',
           description: 'UC2 V4 with native and CAN motors',
           canConfig: true,
-          defaultCanId: 1
+          defaultCanId: 1,
+          category: 'electrobox'
         },
         'can-hat-master-v2': {
           name: 'CAN HAT Master V2 (FRAME)',
@@ -864,28 +1128,32 @@
           chip: 'ESP32',
           description: 'Raspberry Pi HAT with CAN Master',
           canConfig: true,
-          defaultCanId: 1
+          defaultCanId: 1,
+          category: 'frame'
         },
         'seeed_xiao_esp32s3': {
           name: 'Xiao ESP32S3 ODMR',
           image: 'https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png',
           chip: 'ESP32-S3',
           description: 'Seeed Xiao ESP32S3 for ODMR applications',
-          canConfig: false
+          canConfig: false,
+          category: 'qbox'
         },
         'seeed_xiao_esp32s3_ledservo': {
           name: 'Xiao LED & Servo',
           image: './IMAGES/ledboard.jpg',
           chip: 'ESP32-S3',
           description: 'Xiao board for LED and servo control',
-          canConfig: false
+          canConfig: false,
+          category: 'frame'
         },
         'seeed_xiao_esp32s3_ledring': {
           name: 'Xiao LED Ring',
           image: './IMAGES/esp32-uc2-ledring.jpg',
           chip: 'ESP32-S3',
           description: 'Xiao board with LED ring for brightfield',
-          canConfig: true
+          canConfig: true,
+          category: 'frame'
         },
         'xiao-can-slave-motor': {
           name: 'Xiao CAN Slave Motor',
@@ -893,7 +1161,8 @@
           chip: 'ESP32-S3',
           description: 'CAN slave for motor control',
           canConfig: true,
-          canPresets: ['X-Axis', 'Y-Axis', 'Z-Axis', 'A-Axis']
+          canPresets: ['X-Axis', 'Y-Axis', 'Z-Axis', 'A-Axis'],
+          category: 'frame'
         },
         'xiao-can-slave-galvo': {
           name: 'Xiao CAN Slave Galvo',
@@ -901,7 +1170,8 @@
           chip: 'ESP32-S3',
           description: 'CAN slave for galvo mirror control',
           canConfig: true,
-          defaultCanId: 15
+          defaultCanId: 15,
+          category: 'frame'
         },
         'xiao-can-slave-laser': {
           name: 'Xiao CAN Slave Laser',
@@ -909,7 +1179,8 @@
           chip: 'ESP32-S3',
           description: 'CAN slave for laser control',
           canConfig: true,
-          defaultCanId: 20
+          defaultCanId: 20,
+          category: 'frame'
         },
         'xiao-can-slave-led': {
           name: 'Xiao CAN Slave LED',
@@ -917,7 +1188,8 @@
           chip: 'ESP32-S3',
           description: 'CAN slave for LED control',
           canConfig: true,
-          defaultCanId: 30
+          defaultCanId: 30,
+          category: 'frame'
         },
         'xiao-can-slave-illumination': {
           name: 'Xiao CAN Slave Illumination',
@@ -925,28 +1197,32 @@
           chip: 'ESP32-S3',
           description: 'CAN slave for LED array control',
           canConfig: true,
-          defaultCanId: 30
+          defaultCanId: 30,
+          category: 'frame'
         },
         'odmr-xiao-esp32s3': {
           name: 'ODMR Xiao ESP32S3',
           image: 'https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png',
           chip: 'ESP32-S3',
           description: 'Quantum ODMR spectroscopy board (ESP32-S3)',
-          canConfig: false
+          canConfig: false,
+          category: 'qbox'
         },
         'odmr-xiao-esp32c3': {
           name: 'ODMR Xiao ESP32C3',
           image: 'https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png',
           chip: 'ESP32-C3',
           description: 'Quantum ODMR spectroscopy board (ESP32-C3)',
-          canConfig: false
+          canConfig: false,
+          category: 'qbox'
         },
         'waveshare_esp32s3_ledarray': {
           name: 'Waveshare ESP32S3 Matrix',
           image: './IMAGES/waveshare.webp',
           chip: 'ESP32-S3',
           description: 'Waveshare ESP32S3 with LED matrix',
-          canConfig: false
+          canConfig: false,
+          category: 'electrobox'
         }
       };
 
@@ -959,17 +1235,24 @@
         serialPort: null,
         serialReader: null,
         serialWriter: null,
-        isConnected: false
+        isConnected: false,
+        hwSerialPort: null,
+        hwSerialReader: null,
+        hwSerialWriter: null,
+        hwIsConnected: false,
+        currentCategory: 'all'
       };
 
       // DOM Elements
       const elements = {
         releaseSelect: document.getElementById('releaseSelect'),
         imswitchReleaseSelect: document.getElementById('imswitchReleaseSelect'),
+        imswitchReleaseLink: document.getElementById('imswitchReleaseLink'),
         currentVersion: document.getElementById('currentVersion'),
         releaseDate: document.getElementById('releaseDate'),
         boardGrid: document.getElementById('boardGrid'),
         boardSearch: document.getElementById('boardSearch'),
+        boardCategory: document.getElementById('boardCategory'),
         boardInfoCard: document.getElementById('boardInfoCard'),
         boardInfo: document.getElementById('boardInfo'),
         selectedBoardName: document.getElementById('selectedBoardName'),
@@ -994,6 +1277,37 @@
         eraseProgressBar: document.getElementById('eraseProgressBar'),
         eraseStatus: document.getElementById('eraseStatus'),
         eraseConsole: document.getElementById('eraseConsole'),
+        // Hardware test tab
+        hwConnectSerialBtn: document.getElementById('hwConnectSerialBtn'),
+        hwConnectionStatus: document.getElementById('hwConnectionStatus'),
+        hwBaudRate: document.getElementById('hwBaudRate'),
+        hwConsoleOutput: document.getElementById('hwConsoleOutput'),
+        hwClearConsoleBtn: document.getElementById('hwClearConsoleBtn'),
+        hwCustomCommand: document.getElementById('hwCustomCommand'),
+        hwSendCommandBtn: document.getElementById('hwSendCommandBtn'),
+        // Motor controls
+        motorStepperId: document.getElementById('motorStepperId'),
+        motorPosition: document.getElementById('motorPosition'),
+        motorSpeed: document.getElementById('motorSpeed'),
+        motorAccel: document.getElementById('motorAccel'),
+        motorMovePositive: document.getElementById('motorMovePositive'),
+        motorMoveNegative: document.getElementById('motorMoveNegative'),
+        motorStop: document.getElementById('motorStop'),
+        // Laser controls
+        laserId: document.getElementById('laserId'),
+        laserValue: document.getElementById('laserValue'),
+        laserValueDisplay: document.getElementById('laserValueDisplay'),
+        laserOn: document.getElementById('laserOn'),
+        laserOff: document.getElementById('laserOff'),
+        laserSetValue: document.getElementById('laserSetValue'),
+        // Homing controls
+        homeStepperId: document.getElementById('homeStepperId'),
+        homeTimeout: document.getElementById('homeTimeout'),
+        homeSpeed: document.getElementById('homeSpeed'),
+        homeDirection: document.getElementById('homeDirection'),
+        homeEndstopPolarity: document.getElementById('homeEndstopPolarity'),
+        homeEndstopRelease: document.getElementById('homeEndstopRelease'),
+        homeStart: document.getElementById('homeStart'),
         // Loading
         loadingOverlay: document.getElementById('loadingOverlay'),
         loadingText: document.getElementById('loadingText'),
@@ -1193,13 +1507,18 @@
       // Board Rendering
       // =====================================================
 
-      function renderBoards(filter = '') {
+      function renderBoards(filter = '', category = 'all') {
         elements.boardGrid.innerHTML = '';
         
         const filterLower = filter.toLowerCase();
         
         Object.entries(BOARD_CONFIG).forEach(([boardId, config]) => {
-          // Apply filter
+          // Apply category filter
+          if (category !== 'all' && config.category !== category) {
+            return;
+          }
+          
+          // Apply text filter
           if (filter && !config.name.toLowerCase().includes(filterLower) && 
               !boardId.toLowerCase().includes(filterLower)) {
             return;
@@ -1210,14 +1529,27 @@
           
           const isSelected = state.selectedBoard === boardId;
           
+          // Category badge colors
+          const categoryColors = {
+            'frame': 'primary',
+            'electrobox': 'warning',
+            'qbox': 'success',
+            'standalone': 'secondary'
+          };
+          const categoryBadge = config.category ? 
+            `<span class="badge bg-${categoryColors[config.category] || 'secondary'} ms-1" style="font-size: 0.6rem;">${config.category.toUpperCase()}</span>` : '';
+          
           col.innerHTML = `
             <div class="card board-card h-100 ${isSelected ? 'selected' : ''}" data-board="${boardId}">
               <div class="card-body text-center p-2">
                 <img src="${config.image}" alt="${config.name}" class="board-img mb-2"
                      onerror="this.src='./IMAGES/placeholder.svg'">
                 <h6 class="card-title mb-1" style="font-size: 0.85rem;">${config.name}</h6>
-                <span class="badge bg-secondary" style="font-size: 0.7rem;">${config.chip}</span>
-                ${config.canConfig ? '<span class="badge bg-info ms-1" style="font-size: 0.7rem;">CAN</span>' : ''}
+                <div>
+                  <span class="badge bg-secondary" style="font-size: 0.7rem;">${config.chip}</span>
+                  ${config.canConfig ? '<span class="badge bg-info ms-1" style="font-size: 0.7rem;">CAN</span>' : ''}
+                  ${categoryBadge}
+                </div>
               </div>
             </div>
           `;
@@ -1609,15 +1941,12 @@
           elements.eraseFlashBtn.disabled = true;
           logToEraseConsole('Requesting serial port...', 'info');
           
-          // Check if ESPTool is ready first
-          if (!window.isESPToolReady()) {
-            logToEraseConsole('ESPTool.js not ready, initializing...', 'warning');
-            // Wait a bit for initialization
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            if (!window.isESPToolReady()) {
-              throw new Error('ESPTool.js failed to load. Please refresh the page and try again.');
-            }
+          // Wait for ESPTool to be ready
+          try {
+            await window.waitForESPTool(5000);
+            logToEraseConsole('\u2713 ESPTool.js ready', 'success');
+          } catch (err) {
+            throw new Error('ESPTool.js failed to load. Please refresh the page and try again.');
           }
           
           const port = await navigator.serial.requestPort();
@@ -1626,7 +1955,7 @@
           logToEraseConsole('Connected. Starting erase...', 'info');
           updateEraseProgress(10, 'Connecting to ESP32...');
           
-          // Get ESPTool classes
+          // Get ESPTool classes from the ES module
           const Transport = window.Transport;
           const ESPLoader = window.ESPLoader;
           
@@ -1634,31 +1963,44 @@
             throw new Error('ESPTool.js classes not available. Please refresh the page.');
           }
           
-          // Use esptool.js for erasing
-          const transport = new Transport(port);
-          const loader = new ESPLoader(transport, 115200);
+          // Use esptool.js for erasing (v0.5.0 API)
+          const transport = new Transport(port, true);  // true = enable debug logging
+          const loader = new ESPLoader({
+            transport: transport,
+            baudrate: 115200,
+            terminal: {
+              clean: () => {},
+              writeLine: (text) => {
+                logToEraseConsole(text, 'info');
+              },
+              write: (text) => {
+                logToEraseConsole(text, 'info');
+              }
+            }
+          });
           
           updateEraseProgress(20, 'Syncing...');
-          await loader.main_fn();
+          await loader.main();
           
           updateEraseProgress(40, 'Erasing flash...');
           logToEraseConsole(`Erasing ${eraseType === 'all' ? 'entire flash' : 'NVS partition'}...`, 'warning');
           
           if (eraseType === 'all') {
-            await loader.erase_flash();
+            await loader.eraseFlash();
           } else {
             // Erase NVS partition (typically at 0x9000, size 0x5000)
-            await loader.erase_region(0x9000, 0x5000);
+            await loader.eraseRegion(0x9000, 0x5000);
           }
           
           updateEraseProgress(100, 'Erase complete!');
-          logToEraseConsole('Flash erased successfully!', 'success');
+          logToEraseConsole('\u2713 Flash erased successfully!', 'success');
           
+          await transport.disconnect();
           await port.close();
           
         } catch (error) {
           console.error('Erase error:', error);
-          logToEraseConsole(`Error: ${error.message}`, 'error');
+          logToEraseConsole(`\u2717 Error: ${error.message}`, 'error');
           updateEraseProgress(0, 'Erase failed');
         } finally {
           elements.eraseFlashBtn.disabled = false;
@@ -1701,6 +2043,7 @@
         elements.releaseSelect.addEventListener('change', () => {
           // Clear ImSwitch selection when direct firmware release is selected
           elements.imswitchReleaseSelect.value = '';
+          elements.imswitchReleaseLink.classList.add('hidden');
           updateVersionDisplay();
         });
         
@@ -1711,6 +2054,15 @@
             // Set currentRelease with imswitch: prefix for lookup
             state.currentRelease = `imswitch:${selectedImswitch}`;
             logToConsole(`\u231B Resolving firmware for ImSwitch ${selectedImswitch}...`, 'info');
+            
+            // Show download link for ImSwitch release
+            const imswitchRelease = state.imswitchReleases.find(r => r.tag_name === selectedImswitch);
+            if (imswitchRelease) {
+              const linkElem = elements.imswitchReleaseLink.querySelector('a');
+              linkElem.href = imswitchRelease.html_url;
+              linkElem.innerHTML = `<i class="bi bi-download"></i> Download ImSwitch OS ${selectedImswitch}`;
+              elements.imswitchReleaseLink.classList.remove('hidden');
+            }
             
             try {
               const fwVersion = await resolveFirmwareFromImSwitch(selectedImswitch);
@@ -1732,12 +2084,20 @@
             }
             
             updateVersionDisplay();
+          } else {
+            elements.imswitchReleaseLink.classList.add('hidden');
           }
+        });
+        
+        // Board category filter
+        elements.boardCategory.addEventListener('change', (e) => {
+          state.currentCategory = e.target.value;
+          renderBoards(elements.boardSearch.value, state.currentCategory);
         });
         
         // Board search
         elements.boardSearch.addEventListener('input', (e) => {
-          renderBoards(e.target.value);
+          renderBoards(e.target.value, state.currentCategory);
         });
         
         // Copy link button
@@ -1800,12 +2160,149 @@
         // Erase flash
         elements.eraseFlashBtn.addEventListener('click', eraseFlash);
         
+        // =====================================================
+        // Hardware Test Tab Event Listeners
+        // =====================================================
+        
+        // Hardware test serial connection
+        elements.hwConnectSerialBtn.addEventListener('click', hwConnectSerial);
+        elements.hwClearConsoleBtn.addEventListener('click', () => {
+          elements.hwConsoleOutput.innerHTML = '<span class="info">Console cleared.</span>';
+        });
+        
+        // Hardware test send command
+        elements.hwSendCommandBtn.addEventListener('click', () => {
+          const cmd = elements.hwCustomCommand.value.trim();
+          if (cmd) {
+            hwSendSerialCommand(cmd);
+            elements.hwCustomCommand.value = '';
+          }
+        });
+        
+        elements.hwCustomCommand.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            elements.hwSendCommandBtn.click();
+          }
+        });
+        
+        // Hardware quick commands
+        document.querySelectorAll('.hw-quick-cmd').forEach(btn => {
+          btn.addEventListener('click', () => {
+            hwSendSerialCommand(btn.dataset.cmd);
+          });
+        });
+        
+        // Laser value slider
+        elements.laserValue.addEventListener('input', (e) => {
+          elements.laserValueDisplay.textContent = e.target.value;
+        });
+        
+        // Motor controls
+        elements.motorMovePositive.addEventListener('click', () => {
+          const stepperId = parseInt(elements.motorStepperId.value);
+          const position = parseInt(elements.motorPosition.value);
+          const speed = parseInt(elements.motorSpeed.value);
+          const accel = parseInt(elements.motorAccel.value);
+          const cmd = {
+            task: "/motor_act",
+            motor: {
+              steppers: [{
+                stepperid: stepperId,
+                position: position,
+                speed: speed,
+                isabs: 0,
+                isaccel: 1,
+                accel: accel,
+                qid: 1
+              }]
+            }
+          };
+          hwSendSerialCommand(JSON.stringify(cmd));
+        });
+        
+        elements.motorMoveNegative.addEventListener('click', () => {
+          const stepperId = parseInt(elements.motorStepperId.value);
+          const position = parseInt(elements.motorPosition.value);
+          const speed = parseInt(elements.motorSpeed.value);
+          const accel = parseInt(elements.motorAccel.value);
+          const cmd = {
+            task: "/motor_act",
+            motor: {
+              steppers: [{
+                stepperid: stepperId,
+                position: -position,
+                speed: speed,
+                isabs: 0,
+                isaccel: 1,
+                accel: accel,
+                qid: 1
+              }]
+            }
+          };
+          hwSendSerialCommand(JSON.stringify(cmd));
+        });
+        
+        elements.motorStop.addEventListener('click', () => {
+          const stepperId = parseInt(elements.motorStepperId.value);
+          const cmd = {
+            task: "/motor_act",
+            motor: {
+              steppers: [{
+                stepperid: stepperId,
+                position: 0,
+                speed: 0,
+                isabs: 0,
+                stop: 1
+              }]
+            }
+          };
+          hwSendSerialCommand(JSON.stringify(cmd));
+        });
+        
+        // Laser controls
+        elements.laserOn.addEventListener('click', () => {
+          const laserId = parseInt(elements.laserId.value);
+          const cmd = { task: "/laser_act", LASERid: laserId, LASERval: 1000 };
+          hwSendSerialCommand(JSON.stringify(cmd));
+        });
+        
+        elements.laserOff.addEventListener('click', () => {
+          const laserId = parseInt(elements.laserId.value);
+          const cmd = { task: "/laser_act", LASERid: laserId, LASERval: 0 };
+          hwSendSerialCommand(JSON.stringify(cmd));
+        });
+        
+        elements.laserSetValue.addEventListener('click', () => {
+          const laserId = parseInt(elements.laserId.value);
+          const laserVal = parseInt(elements.laserValue.value);
+          const cmd = { task: "/laser_act", LASERid: laserId, LASERval: laserVal };
+          hwSendSerialCommand(JSON.stringify(cmd));
+        });
+        
+        // Homing control
+        elements.homeStart.addEventListener('click', () => {
+          const cmd = {
+            task: "/home_act",
+            home: {
+              steppers: [{
+                stepperid: parseInt(elements.homeStepperId.value),
+                timeout: parseInt(elements.homeTimeout.value),
+                speed: parseInt(elements.homeSpeed.value),
+                direction: parseInt(elements.homeDirection.value),
+                endstoppolarity: parseInt(elements.homeEndstopPolarity.value),
+                endstoprelease: parseInt(elements.homeEndstopRelease.value)
+              }]
+            }
+          };
+          hwSendSerialCommand(JSON.stringify(cmd));
+        });
+        
         // ESP Web Tools install events
         elements.installButton.addEventListener('state-changed', (e) => {
           console.log('Install state:', e.detail);
           
           if (e.detail.state === 'finished') {
-            logToConsole('✓ Firmware flashed successfully!', 'success');
+            logToConsole('\u2713 Firmware flashed successfully!', 'success');
             
             // Check if we should auto-switch to configure tab
             if (elements.postFlashConfig && elements.postFlashConfig.checked) {
@@ -1817,7 +2314,7 @@
                 if (configTab) {
                   const tabTrigger = new bootstrap.Tab(configTab);
                   tabTrigger.show();
-                  logToConsole('→ Switched to Configure tab. Connect to your device to continue.', 'info');
+                  logToConsole('\u2192 Switched to Configure tab. Connect to your device to continue.', 'info');
                 } else {
                   console.error('Configure tab not found');
                 }
@@ -1826,6 +2323,106 @@
           }
         });
       }
+      
+      // =====================================================
+      // Hardware Test Serial Functions
+      // =====================================================
+      
+      async function hwConnectSerial() {
+        if (state.hwIsConnected) {
+          await hwDisconnectSerial();
+          return;
+        }
+        
+        try {
+          const baudRate = parseInt(elements.hwBaudRate.value);
+          state.hwSerialPort = await navigator.serial.requestPort();
+          await state.hwSerialPort.open({ baudRate });
+          
+          state.hwIsConnected = true;
+          hwUpdateConnectionStatus(true);
+          hwLogToConsole('Connected to device', 'success');
+          
+          // Start reading
+          hwReadSerialLoop();
+          
+        } catch (error) {
+          console.error('Connection error:', error);
+          hwLogToConsole(`Connection failed: ${error.message}`, 'error');
+        }
+      }
+      
+      async function hwDisconnectSerial() {
+        try {
+          if (state.hwSerialReader) {
+            await state.hwSerialReader.cancel();
+            state.hwSerialReader = null;
+          }
+          if (state.hwSerialPort) {
+            await state.hwSerialPort.close();
+            state.hwSerialPort = null;
+          }
+          state.hwIsConnected = false;
+          hwUpdateConnectionStatus(false);
+          hwLogToConsole('Disconnected', 'info');
+        } catch (error) {
+          console.error('Disconnect error:', error);
+        }
+      }
+      
+      async function hwReadSerialLoop() {
+        const decoder = new TextDecoderStream();
+        const readableStreamClosed = state.hwSerialPort.readable.pipeTo(decoder.writable);
+        state.hwSerialReader = decoder.readable.getReader();
+        
+        try {
+          while (true) {
+            const { value, done } = await state.hwSerialReader.read();
+            if (done) break;
+            if (value) {
+              hwLogToConsole(value, 'info');
+            }
+          }
+        } catch (error) {
+          console.error('Read error:', error);
+        }
+      }
+      
+      async function hwSendSerialCommand(command) {
+        if (!state.hwIsConnected || !state.hwSerialPort) {
+          hwLogToConsole('Not connected! Please connect first.', 'error');
+          return;
+        }
+        
+        try {
+          const encoder = new TextEncoder();
+          const writer = state.hwSerialPort.writable.getWriter();
+          await writer.write(encoder.encode(command + '\n'));
+          writer.releaseLock();
+          hwLogToConsole(`> ${command}`, 'info');
+        } catch (error) {
+          console.error('Send error:', error);
+          hwLogToConsole(`Send failed: ${error.message}`, 'error');
+        }
+      }
+      
+      function hwUpdateConnectionStatus(connected) {
+        elements.hwConnectionStatus.textContent = connected ? 'Connected' : 'Disconnected';
+        elements.hwConnectionStatus.className = `ms-2 badge ${connected ? 'bg-success' : 'bg-secondary'}`;
+        elements.hwConnectSerialBtn.innerHTML = connected ?
+          '<i class="bi bi-x-circle"></i> Disconnect' :
+          '<i class="bi bi-plug"></i> Connect';
+      }
+      
+      function hwLogToConsole(message, type = 'info') {
+        const console = elements.hwConsoleOutput;
+        const line = document.createElement('div');
+        line.className = type;
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        console.appendChild(line);
+        console.scrollTop = console.scrollHeight;
+      }
+
 
       // =====================================================
       // Start Application
