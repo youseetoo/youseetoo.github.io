@@ -261,6 +261,16 @@
           <i class="bi bi-exclamation-triangle"></i>
           <strong>Browser not supported!</strong> Please use Chrome, Edge, or Opera for WebSerial support.
         </div>
+        
+        <!-- Important Notes -->
+        <div class="alert alert-info text-start mt-3">
+          <h6><i class="bi bi-info-circle-fill"></i> Important Notes:</h6>
+          <ul class="mb-0 small">
+            <li><strong>Flashing Issues:</strong> If flashing doesn't work, try resetting your ESP32 using the "Erase Flash" tab first, then flash again.</li>
+            <li><strong>Connected Device:</strong> If your device is already connected and you need to disconnect it, <strong>reload this page</strong> to force disconnection.</li>
+            <li><strong>Port Already Open:</strong> Close all other serial connections before using Erase Flash or flashing firmware.</li>
+          </ul>
+        </div>
       </div>
     </header>
 
@@ -499,6 +509,7 @@
                         <option value="115200" selected>115200 baud</option>
                         <option value="9600">9600 baud</option>
                         <option value="57600">57600 baud</option>
+                        <option value="921600">921600 baud</option>
                       </select>
                     </div>
                   </div>
@@ -844,21 +855,27 @@
                 <div class="card-body">
                   <div class="d-flex flex-wrap gap-2">
                     <button class="btn btn-outline-primary hw-quick-cmd" data-cmd='{"task":"/state_get"}'>
-                      Get State
+                      <i class="bi bi-info-circle"></i> Get State
                     </button>
                     <button class="btn btn-outline-primary hw-quick-cmd" data-cmd='{"task":"/motor_get"}'>
-                      Get Motor Info
+                      <i class="bi bi-gear"></i> Get Motor Info
+                    </button>
+                    <button class="btn btn-outline-info hw-quick-cmd" data-cmd='{"task":"/can_act", "scan":true, "qid":1}'>
+                      <i class="bi bi-radar"></i> Scan CAN Bus
                     </button>
                     <button class="btn btn-outline-success hw-quick-cmd" data-cmd='{"task":"/ledarr_act", "led":{"LEDArrMode":1, "led_array":[{"id":0, "r":255, "g":255, "b":255}]}}'>
-                      LED Array On
+                      <i class="bi bi-lightbulb"></i> LED Array On
                     </button>
                     <button class="btn btn-outline-danger hw-quick-cmd" data-cmd='{"task":"/ledarr_act", "led":{"LEDArrMode":0}}'>
-                      LED Array Off
+                      <i class="bi bi-lightbulb-off"></i> LED Array Off
                     </button>
                     <button class="btn btn-outline-warning hw-quick-cmd" data-cmd='{"task":"/motor_act", "isen":1, "isenauto":0}'>
-                      Enable Motors
+                      <i class="bi bi-power"></i> Enable Motors
                     </button>
                   </div>
+                  <small class="text-muted d-block mt-2">
+                    <i class="bi bi-info-circle"></i> <strong>CAN Bus Scan</strong> detects all connected CAN devices and their IDs.
+                  </small>
                 </div>
               </div>
             </div>
@@ -1913,6 +1930,120 @@
       }
 
       // =====================================================
+      // Hardware Test Serial Communication
+      // =====================================================
+
+      async function connectHwSerial() {
+        try {
+          state.hwSerialPort = await navigator.serial.requestPort();
+          const baudRate = parseInt(elements.hwBaudRate.value);
+          
+          await state.hwSerialPort.open({ baudRate });
+          
+          const textDecoder = new TextDecoderStream();
+          state.hwSerialPort.readable.pipeTo(textDecoder.writable);
+          state.hwSerialReader = textDecoder.readable.getReader();
+          
+          const textEncoder = new TextEncoderStream();
+          textEncoder.readable.pipeTo(state.hwSerialPort.writable);
+          state.hwSerialWriter = textEncoder.writable.getWriter();
+          
+          state.hwIsConnected = true;
+          updateHwConnectionStatus(true);
+          
+          // Start reading
+          readHwSerialLoop();
+          
+          logToHwConsole('Connected to serial port', 'success');
+          
+        } catch (error) {
+          console.error('Hardware test serial connection error:', error);
+          logToHwConsole(`Connection error: ${error.message}`, 'error');
+          state.hwIsConnected = false;
+          updateHwConnectionStatus(false);
+        }
+      }
+
+      async function disconnectHwSerial() {
+        try {
+          if (state.hwSerialReader) {
+            await state.hwSerialReader.cancel();
+            state.hwSerialReader = null;
+          }
+          if (state.hwSerialWriter) {
+            await state.hwSerialWriter.close();
+            state.hwSerialWriter = null;
+          }
+          if (state.hwSerialPort) {
+            await state.hwSerialPort.close();
+            state.hwSerialPort = null;
+          }
+          
+          state.hwIsConnected = false;
+          updateHwConnectionStatus(false);
+          logToHwConsole('Disconnected from serial port', 'info');
+          
+        } catch (error) {
+          console.error('Hardware test disconnect error:', error);
+        }
+      }
+
+      async function readHwSerialLoop() {
+        try {
+          while (state.hwIsConnected && state.hwSerialReader) {
+            const { value, done } = await state.hwSerialReader.read();
+            if (done) break;
+            if (value) {
+              logToHwConsole(value, 'info');
+            }
+          }
+        } catch (error) {
+          if (error.name !== 'NetworkError') {
+            console.error('Hardware test read error:', error);
+            logToHwConsole(`Read error: ${error.message}`, 'error');
+          }
+        }
+      }
+
+      async function sendHwSerialCommand(command) {
+        if (!state.hwIsConnected || !state.hwSerialWriter) {
+          logToHwConsole('Not connected to serial port', 'error');
+          return false;
+        }
+        
+        try {
+          await state.hwSerialWriter.write(command + '\n');
+          logToHwConsole(`> ${command}`, 'success');
+          return true;
+        } catch (error) {
+          console.error('Hardware test send error:', error);
+          logToHwConsole(`Send error: ${error.message}`, 'error');
+          return false;
+        }
+      }
+
+      function updateHwConnectionStatus(connected) {
+        elements.hwConnectionStatus.textContent = connected ? 'Connected' : 'Disconnected';
+        elements.hwConnectionStatus.className = `ms-2 badge ${connected ? 'bg-success' : 'bg-secondary'}`;
+        elements.hwConnectSerialBtn.innerHTML = connected ? 
+          '<i class="bi bi-plug-fill"></i> Disconnect' : 
+          '<i class="bi bi-plug"></i> Connect';
+      }
+
+      function logToHwConsole(message, type = 'info') {
+        const console = elements.hwConsoleOutput;
+        const line = document.createElement('div');
+        line.className = type;
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        console.appendChild(line);
+        console.scrollTop = console.scrollHeight;
+      }
+
+      function clearHwConsole() {
+        elements.hwConsoleOutput.innerHTML = '<span class="info">Console cleared.</span>';
+      }
+
+      // =====================================================
       // Console Logging
       // =====================================================
 
@@ -1935,6 +2066,7 @@
 
       async function eraseFlash() {
         const eraseType = document.querySelector('input[name="eraseType"]:checked').value;
+        let port = null;
         
         try {
           elements.eraseProgress.classList.remove('hidden');
@@ -1949,7 +2081,34 @@
             throw new Error('ESPTool.js failed to load. Please refresh the page and try again.');
           }
           
-          const port = await navigator.serial.requestPort();
+          // Close any existing connections first
+          if (state.serialPort && state.serialPort.readable) {
+            logToEraseConsole('\u26A0 Closing existing serial connection...', 'warning');
+            try {
+              await disconnectSerial();
+              await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (e) {
+              logToEraseConsole('Note: Could not close existing connection. Continuing...', 'warning');
+            }
+          }
+          if (state.hwSerialPort && state.hwSerialPort.readable) {
+            logToEraseConsole('\u26A0 Closing hardware test connection...', 'warning');
+            try {
+              await disconnectHwSerial();
+              await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (e) {
+              logToEraseConsole('Note: Could not close hardware test connection. Continuing...', 'warning');
+            }
+          }
+          
+          port = await navigator.serial.requestPort();
+          
+          // Check if port is already open
+          if (port.readable) {
+            logToEraseConsole('\u26A0 Port already open. Please reload the page and try again.', 'error');
+            throw new Error('Port is already open. Please reload the page to reset connections.');
+          }
+          
           await port.open({ baudRate: 115200 });
           
           logToEraseConsole('Connected. Starting erase...', 'info');
@@ -2002,6 +2161,17 @@
           console.error('Erase error:', error);
           logToEraseConsole(`\u2717 Error: ${error.message}`, 'error');
           updateEraseProgress(0, 'Erase failed');
+          
+          // Try to close the port if it was opened
+          if (port) {
+            try {
+              if (port.readable) {
+                await port.close();
+              }
+            } catch (e) {
+              console.error('Failed to close port:', e);
+            }
+          }
         } finally {
           elements.eraseFlashBtn.disabled = false;
         }
@@ -2165,16 +2335,21 @@
         // =====================================================
         
         // Hardware test serial connection
-        elements.hwConnectSerialBtn.addEventListener('click', hwConnectSerial);
-        elements.hwClearConsoleBtn.addEventListener('click', () => {
-          elements.hwConsoleOutput.innerHTML = '<span class="info">Console cleared.</span>';
+        elements.hwConnectSerialBtn.addEventListener('click', async () => {
+          if (state.hwIsConnected) {
+            await disconnectHwSerial();
+          } else {
+            await connectHwSerial();
+          }
         });
+        
+        elements.hwClearConsoleBtn.addEventListener('click', clearHwConsole);
         
         // Hardware test send command
         elements.hwSendCommandBtn.addEventListener('click', () => {
           const cmd = elements.hwCustomCommand.value.trim();
           if (cmd) {
-            hwSendSerialCommand(cmd);
+            sendHwSerialCommand(cmd);
             elements.hwCustomCommand.value = '';
           }
         });
@@ -2188,7 +2363,7 @@
         // Hardware quick commands
         document.querySelectorAll('.hw-quick-cmd').forEach(btn => {
           btn.addEventListener('click', () => {
-            hwSendSerialCommand(btn.dataset.cmd);
+            sendHwSerialCommand(btn.dataset.cmd);
           });
         });
         
@@ -2217,7 +2392,7 @@
               }]
             }
           };
-          hwSendSerialCommand(JSON.stringify(cmd));
+          sendHwSerialCommand(JSON.stringify(cmd));
         });
         
         elements.motorMoveNegative.addEventListener('click', () => {
@@ -2239,7 +2414,7 @@
               }]
             }
           };
-          hwSendSerialCommand(JSON.stringify(cmd));
+          sendHwSerialCommand(JSON.stringify(cmd));
         });
         
         elements.motorStop.addEventListener('click', () => {
@@ -2256,27 +2431,27 @@
               }]
             }
           };
-          hwSendSerialCommand(JSON.stringify(cmd));
+          sendHwSerialCommand(JSON.stringify(cmd));
         });
         
         // Laser controls
         elements.laserOn.addEventListener('click', () => {
           const laserId = parseInt(elements.laserId.value);
           const cmd = { task: "/laser_act", LASERid: laserId, LASERval: 1000 };
-          hwSendSerialCommand(JSON.stringify(cmd));
+          sendHwSerialCommand(JSON.stringify(cmd));
         });
         
         elements.laserOff.addEventListener('click', () => {
           const laserId = parseInt(elements.laserId.value);
           const cmd = { task: "/laser_act", LASERid: laserId, LASERval: 0 };
-          hwSendSerialCommand(JSON.stringify(cmd));
+          sendHwSerialCommand(JSON.stringify(cmd));
         });
         
         elements.laserSetValue.addEventListener('click', () => {
           const laserId = parseInt(elements.laserId.value);
           const laserVal = parseInt(elements.laserValue.value);
           const cmd = { task: "/laser_act", LASERid: laserId, LASERval: laserVal };
-          hwSendSerialCommand(JSON.stringify(cmd));
+          sendHwSerialCommand(JSON.stringify(cmd));
         });
         
         // Homing control
@@ -2294,7 +2469,7 @@
               }]
             }
           };
-          hwSendSerialCommand(JSON.stringify(cmd));
+          sendHwSerialCommand(JSON.stringify(cmd));
         });
         
         // ESP Web Tools install events
