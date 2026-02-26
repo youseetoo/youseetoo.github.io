@@ -1191,8 +1191,6 @@ mm-per-step Z: 0.005 -> 200 steps/rev 1mm/revolution
 {"task":"/bt_scan"}
 
 // Stage scan
-{"task": "/motor_act", "isDualAxisZ": 1, "qid":1}
-{"task": "/motor_act", "isDualAxisZ": 0}
 {"task": "/motor_act", "setpos": {"steppers": [{"stepperid": 0, "posval": 100}, {"stepperid": 1, "posval": 0}, {"stepperid": 2, "posval": 0}, {"stepperid": 3, "posval": 0}]}}
 {"task": "/motor_act", "stagescan": {"nStepsLine": 100, "dStepsLine": 1, "nStepsPixel": 100, "dStepsPixel": 2, "delayTimeStep": 10, "stopped": 0, "nFrames": 50}}
 	// {"task": "/motor_act", "stagescan": {"nStepsLine": 256, "dStepsLine": 25, "nStepsPixel": 256, "dStepsPixel": 25, "delayTimeStep": 25, "stopped": 0, "nFrames": 50}}}
@@ -1207,9 +1205,6 @@ mm-per-step Z: 0.005 -> 200 steps/rev 1mm/revolution
 		// { "task": "/ledarr_act", "qid": 17, "led": { "action": "rings", "radius": 4, "r": 255, "g": 255, "b": 255 } }
 		// { "task": "/ledarr_act", "qid": 17, "led": { "action": "circles", "radius": 5, "r": 255, "g": 255, "b": 255 } }
 
-	
-{"task":"/galvo_act", "qid":1, "X_MIN":0, "X_MAX":1000, "Y_MIN":0, "Y_MAX":1000, "STEP":10, "tPixelDwelltime":1, "nFrames":100}
-{"task":"/galvo_act", "qid":1, "X_MIN":0, "X_MAX":100, "Y_MIN":0, "Y_MAX":100, "STEP":1, "tPixelDwelltime":0, "nFrames":1}
 
 
 {"task":"/state_get", "heap":1}
