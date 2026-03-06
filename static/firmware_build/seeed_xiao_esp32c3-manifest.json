@@ -6,7 +6,7 @@
   "builds": [
     {
       "chipFamily": "ESP32-C3",
-      "parts": [{ "path": "seeed_xiao_esp32c3.bin", "offset": 0 }]
+      "parts": [{ "path": "odmr-xiao-esp32c3.bin", "offset": 0 }]
     }
   ]
 }
