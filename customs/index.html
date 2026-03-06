@@ -77,23 +77,41 @@
         <input id="totalAmount" class="edit-primary" value="VALUE" />
       </div>
 
+      <h2 style="margin-top:16px">Dates</h2>
+      <div class="small">Auto-set: submission = now, presentation = next day 07:00, loading end = next day 13:00. Adjust if needed.</div>
+      <div class="row">
+        <label>Submission date <span class="tag edit">Edit</span></label>
+        <input id="submissionDate" type="datetime-local" class="edit-primary" />
+      </div>
+      <div class="row">
+        <label>Presentation start <span class="tag edit">Edit</span></label>
+        <input id="presentationDate" type="datetime-local" class="edit-primary" />
+      </div>
+      <div class="row">
+        <label>Loading end <span class="tag edit">Edit</span></label>
+        <input id="loadingEndDate" type="datetime-local" class="edit-primary" />
+      </div>
+
       <h2 style="margin-top:16px">Destination and Incoterms</h2>
       <div class="row">
         <label>Destination country <span class="tag edit">Edit</span></label>
-        <input id="destCountry" class="edit-primary" value="https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes" />
+        <input id="destCountry" list="countryList" class="edit-primary" placeholder="e.g. CH, NO, US …" value="" />
       </div>
+      <div class="small" style="margin-top:-4px">Requires <b>ISO 3166-1 Alpha-2</b> code (2 letters). <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements" target="_blank">Full list →</a></div>
       <div class="row">
         <label>Incoterm code <span class="tag">Prefilled</span></label>
         <input id="incoterm" class="prefilled" value="DAP" />
       </div>
       <div class="row">
-        <label>UN/LOCODE <span class="tag">Prefilled</span></label>
-        <input id="unlocode" class="prefilled" value="https://unece.org/trade/cefact/unlocode-code-list-country-and-territory - or ask chatgpt" />
+        <label>UN/LOCODE <span class="tag edit">Edit</span></label>
+        <input id="unlocode" class="edit-primary" placeholder="e.g. KRICN, CHZRH, NOGOT …" value="" />
       </div>
+      <div class="small" style="margin-top:-4px">Format: 2-letter country code + 3-letter city code (e.g. KRICN = South Korea, Incheon). <a href="https://unece.org/trade/cefact/unlocode-code-list-country-and-territory" target="_blank">Lookup UN/LOCODE →</a></div>
       <div class="row">
-        <label>Incoterm location <span class="tag">Prefilled</span></label>
-        <input id="incotermPlace" class="prefilled" value="CITY" />
+        <label>Incoterm location <span class="tag edit">Edit</span></label>
+        <input id="incotermPlace" class="edit-primary" placeholder="e.g. Incheon, Zurich, Oslo …" value="" />
       </div>
+      <div class="small" style="margin-top:-4px">City name of the delivery destination (matches the UN/LOCODE above).</div>
 
 
       <h2 style="margin-top:16px">Transport (ATLAS mask)</h2>
@@ -145,18 +163,18 @@
       </div>
 
       <h2 style="margin-top:16px">Routing countries</h2>
-      <div class="small">Default: DE then destination. Add land transit countries only when required.</div>
+      <div class="small"><b>Route #1</b> = departure country (always DE). <b>Route #2</b> = final destination country. <b>Route #3</b> = only needed when goods pass through an additional transit country on the way.</div>
       <div class="row">
-        <label>Route #1 <span class="tag">Prefilled</span></label>
+        <label>Route #1 (departure) <span class="tag">Prefilled</span></label>
         <input id="route1" class="prefilled" value="DE" />
       </div>
       <div class="row">
-        <label>Route #2 <span class="tag edit">Edit</span></label>
-        <input id="route2" class="edit-primary" value="https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes" />
+        <label>Route #2 (destination) <span class="tag edit">Edit</span></label>
+        <input id="route2" list="countryList" class="edit-primary" placeholder="e.g. CH, NO, US …" value="" />
       </div>
       <div class="row">
-        <label>Route #3 (optional) <span class="tag">Optional</span></label>
-        <input id="route3" class="prefilled" />
+        <label>Route #3 (transit, optional) <span class="tag">Optional</span></label>
+        <input id="route3" list="countryList" class="prefilled" />
       </div>
     </div>
 
@@ -199,14 +217,14 @@
       </div>
       <div class="row">
         <label>Country <span class="tag edit">Edit</span></label>
-        <input id="consCountry" class="edit-primary" value="COUNTRY" />
+        <input id="consCountry" list="countryList" class="edit-primary" placeholder="e.g. CH, NO, US …" value="" />
       </div>
 
       <div class="products-head">
         <h2 style="margin:16px 0 0">Products (Goods items)</h2>
         <button class="iconbtn" id="btnAddProduct" title="Add product">+</button>
       </div>
-      <div class="small">Commodity code must be 8 digits. Gross and net in kg. Statistical value per item.</div>
+      <div class="small">Commodity code must be 8 digits (default: 90230080). Gross and net in kg. Statistical value = total invoice amount ÷ number of items.</div>
       <div id="products" class="products" style="margin-top:10px"></div>
     </div>
   </div>
@@ -286,6 +304,7 @@
             <div class="field">
               <span>Commodity code (8 digits) <span class="tag edit">Edit</span></span>
               <input class="edit-primary" data-k="hs8" data-i="${idx}" value="${escXml(p.hs8)}" />
+              <span style="font-size:11px;color:var(--muted)">Default: 90230080 (optical instruments). <a href="https://auskunft.ezt-online.de/#/home" target="_blank">Lookup HS codes (EZT-online) →</a></span>
             </div>
             <div class="field">
               <span>Origin country <span class="tag edit">Edit</span></span>
@@ -302,7 +321,7 @@
             </div>
 
             <div class="field" style="grid-column:1 / span 2">
-              <span>Statistical value <span class="tag edit">Edit</span></span>
+              <span>Statistical value <span class="tag edit">Edit</span> <span style="font-size:11px;color:var(--muted)">(= total invoice amount ÷ number of items)</span></span>
               <input class="edit-primary" data-k="statValue" data-i="${idx}" value="${escXml(p.statValue)}" />
             </div>
 
@@ -404,11 +423,23 @@ function xText(ctx, xpath) {
       return [val("route1"), val("route2"), val("route3")].map(s => s.trim()).filter(Boolean);
     }
 
+    // Append ":00" seconds to datetime-local value if needed for XML format
+    function fmtDateXml(dtVal){
+      if (!dtVal) return "";
+      return dtVal.length === 16 ? dtVal + ":00" : dtVal;
+    }
+
     function generateXml(){
       const parser = new DOMParser();
       const doc = parser.parseFromString(TEMPLATE_XML, "application/xml");
       const parseError = doc.getElementsByTagName("parsererror")[0];
       if (parseError) throw new Error("Template XML parse error");
+
+      // Dates
+      setText(doc, "//*[local-name()='preparationDateAndTime']", fmtDateXml(val("submissionDate")));
+      setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='declarationSubmissionDateAndTime']", fmtDateXml(val("submissionDate")));
+      setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='presentationStartDateAndTime']", fmtDateXml(val("presentationDate")));
+      setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='loadingEndDateAndTime']", fmtDateXml(val("loadingEndDate")));
 
       // ExportOperation
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='LRN']", val("lrn"));
@@ -616,6 +647,14 @@ function xText(ctx, xpath) {
       setVal("totalAmount", xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='totalAmountInvoiced']"));
       setVal("currency", xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='invoiceCurrency']"));
 
+      // Dates (datetime-local needs "YYYY-MM-DDThh:mm", i.e. first 16 chars)
+      const subDt = xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='declarationSubmissionDateAndTime']");
+      const presDt = xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='presentationStartDateAndTime']");
+      const loadDt = xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='loadingEndDateAndTime']");
+      setVal("submissionDate", subDt ? subDt.slice(0, 16) : "");
+      setVal("presentationDate", presDt ? presDt.slice(0, 16) : "");
+      setVal("loadingEndDate", loadDt ? loadDt.slice(0, 16) : "");
+
       setVal("destCountry", xText(doc, "//*[local-name()='GoodsShipment']/*[local-name()='countryOfDestination']"));
       setVal("incoterm", xText(doc, "//*[local-name()='DeliveryTerms']/*[local-name()='incotermCode']"));
       setVal("unlocode", xText(doc, "//*[local-name()='DeliveryTerms']/*[local-name()='UNLocode']"));
@@ -683,9 +722,70 @@ function xText(ctx, xpath) {
       importXmlText(txt);
     });
 
+    // Initialize date fields to sensible defaults
+    function initDates(){
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      function pad(n){ return String(n).padStart(2, '0'); }
+      function fmt(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+
+      document.getElementById("submissionDate").value = fmt(now);
+
+      const pres = new Date(tomorrow);
+      pres.setHours(7, 0, 0, 0);
+      document.getElementById("presentationDate").value = fmt(pres);
+
+      const load = new Date(tomorrow);
+      load.setHours(13, 0, 0, 0);
+      document.getElementById("loadingEndDate").value = fmt(load);
+    }
+
     // init
+    initDates();
     renderProducts();
     setOutput(generateXml());
   </script>
+
+  <!-- Shared country datalist for all country inputs -->
+  <datalist id="countryList">
+    <option value="US">US – United States</option>
+    <option value="GB">GB – United Kingdom</option>
+    <option value="CH">CH – Switzerland</option>
+    <option value="NO">NO – Norway</option>
+    <option value="IS">IS – Iceland</option>
+    <option value="LI">LI – Liechtenstein</option>
+    <option value="CN">CN – China</option>
+    <option value="JP">JP – Japan</option>
+    <option value="KR">KR – South Korea</option>
+    <option value="IN">IN – India</option>
+    <option value="AU">AU – Australia</option>
+    <option value="NZ">NZ – New Zealand</option>
+    <option value="CA">CA – Canada</option>
+    <option value="BR">BR – Brazil</option>
+    <option value="MX">MX – Mexico</option>
+    <option value="SG">SG – Singapore</option>
+    <option value="TW">TW – Taiwan</option>
+    <option value="HK">HK – Hong Kong</option>
+    <option value="IL">IL – Israel</option>
+    <option value="TR">TR – Türkiye</option>
+    <option value="AE">AE – United Arab Emirates</option>
+    <option value="SA">SA – Saudi Arabia</option>
+    <option value="TH">TH – Thailand</option>
+    <option value="VN">VN – Vietnam</option>
+    <option value="ID">ID – Indonesia</option>
+    <option value="MY">MY – Malaysia</option>
+    <option value="PH">PH – Philippines</option>
+    <option value="ZA">ZA – South Africa</option>
+    <option value="EG">EG – Egypt</option>
+    <option value="UA">UA – Ukraine</option>
+    <option value="RS">RS – Serbia</option>
+    <option value="BA">BA – Bosnia and Herzegovina</option>
+    <option value="GE">GE – Georgia</option>
+    <option value="CL">CL – Chile</option>
+    <option value="CO">CO – Colombia</option>
+    <option value="AR">AR – Argentina</option>
+    <option value="PE">PE – Peru</option>
+  </datalist>
 </body>
 </html>
