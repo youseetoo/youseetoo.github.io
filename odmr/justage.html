@@ -5,47 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NV Experimente - Justage des Aufbaus</title>
 
-  <!-- Bootstrap 5 -->
-  <!-- Bootstrap 5 -->
-  <script>
-    // Automatic Bootstrap loading: Use CDN for development, local for ESP32
-    (function() {
-      const isLocalDevice = window.location.hostname === '192.168.4.1' || 
-                           window.location.hostname.includes('ODMR_') || 
-                           window.location.protocol === 'file:';
-      
-      if (isLocalDevice) {
-        // Load from ESP32 local server
-        document.write('<link href="/bootstrap.min.css" rel="stylesheet">');
-      } else {
-        // Load from CDN for development
-        document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">');
-      }
-    })();
-  </script>
-
-  <!-- Brand palette ---------------------------------------------------------->
-  <style>
-    :root{
-      --uc2-blue:       #023773;  /* primary   */
-      --uc2-green:      #85b918;  /* success   */
-      --uc2-turquoise:  #1f9c7c;  /* info      */
-      --uc2-light:      #faf9f9;  /* body bg   */
-      --uc2-grey:       #999999;  /* muted txt */
-    }
-    body           { background: var(--uc2-light); color: var(--uc2-grey); }
-    h1,h2,h3,h4,h5 { color: var(--uc2-blue); }
-    /* navbar */
-    .navbar         { background: var(--uc2-blue); }
-    .navbar-brand,
-    .navbar-nav .nav-link { color:#fff; }
-    .navbar-nav .nav-link.active{ color: var(--uc2-green); }
-    .navbar-nav .nav-link:hover{ color: var(--uc2-turquoise); }
-    /* links in text */
-    a{ color: var(--uc2-blue); }
-    a:hover{ color: var(--uc2-turquoise); }
-    footer{ background: var(--uc2-blue); color:#fff; }
-  </style>
+  <!-- Offline-capable CSS framework -->
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -63,6 +24,7 @@
           <li class="nav-item"><a class="nav-link" href="index.html" data-lang-key="nav_start">Start</a></li>
           <li class="nav-item"><a class="nav-link" href="messung.html" data-lang-key="nav_measurement_device">Messung (on Device)</a></li>
           <li class="nav-item" id="webSerialNavItem"><a class="nav-link" href="messung_webserial.html" data-lang-key="nav_measurement_webserial">Messung (WebSerial)</a></li>
+          <li class="nav-item"><a class="nav-link" href="ratio.html" data-lang-key="nav_ratio">B-Field Monitor</a></li>
           <li class="nav-item"><a class="nav-link active" href="justage.html" data-lang-key="nav_alignment">Justage</a></li>
           <li class="nav-item"><a class="nav-link" href="infos.html" data-lang-key="nav_info">Weitere Infos</a></li>
                   <li class="nav-item dropdown">
@@ -189,11 +151,12 @@
     </div>
   </footer>
 
-  <script src="/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap JS removed - offline AP mode (P0 #2) -->
   
   <script>
     let intensityInterval = null;
     let isMonitoring = false;
+    let requestInFlight = false; // Prevent overlapping requests (P0 #6)
     
     const intensityValue = document.getElementById('intensityValue');
     const intensityBar = document.getElementById('intensityBar');
@@ -259,9 +222,13 @@
     }
     
     function updateIntensity() {
+      // Skip if previous request still in flight (P0 #6)
+      if (requestInFlight) return;
+      requestInFlight = true;
       fetch('/intensity')
         .then(response => response.json())
         .then(data => {
+          requestInFlight = false;
           const intensity = data.intensity;
           intensityValue.textContent = intensity;
           
@@ -286,6 +253,7 @@
           }
         })
         .catch(error => {
+          requestInFlight = false;
           console.error('Error fetching intensity:', error);
           intensityValue.textContent = 'Fehler';
         });
@@ -438,17 +406,17 @@
       const savedLang = localStorage.getItem('language') || 'de';
       setLanguage(savedLang);
       
-      // Hide WebSerial navigation item if on ESP32
-      const isLocalDevice = window.location.hostname === '192.168.4.1' || 
-                           window.location.hostname.includes('ODMR_') || 
-                           window.location.protocol === 'file:';
-      
-      if (isLocalDevice) {
-        const webSerialNavItem = document.getElementById('webSerialNavItem');
-        if (webSerialNavItem) {
-          webSerialNavItem.style.display = 'none';
-        }
-      }
+      // WebSerial nav visibility: use /webserial_check + browser capability (P2 #12)
+      (async function(){
+          const wsNav = document.getElementById('webSerialNavItem');
+          if (!wsNav) return;
+          if (!('serial' in navigator)) { wsNav.style.display = 'none'; return; }
+          try {
+              const r = await fetch('/webserial_check');
+              const d = await r.json();
+              if (!d.webserial_enabled) wsNav.style.display = 'none';
+          } catch(e) { wsNav.style.display = 'none'; }
+      })();
       
       // Fetch and display version information
       fetch('/version')
@@ -476,6 +444,18 @@
           }
         });
     });
+  </script>
+  <script>
+  /* Bootstrap-JS replacement: navbar collapse + dropdown */
+  (function(){
+    document.querySelectorAll('.navbar-toggler').forEach(function(b){
+      b.addEventListener('click',function(){var t=document.querySelector(b.getAttribute('data-bs-target'));if(t)t.classList.toggle('show');});
+    });
+    document.querySelectorAll('.dropdown-toggle').forEach(function(b){
+      b.addEventListener('click',function(e){e.preventDefault();var m=b.nextElementSibling;if(m&&m.classList.contains('dropdown-menu'))m.classList.toggle('show');});
+    });
+    document.addEventListener('click',function(e){if(!e.target.closest('.dropdown'))document.querySelectorAll('.dropdown-menu.show').forEach(function(m){m.classList.remove('show');});});
+  })();
   </script>
 </body>
 </html>

@@ -5,46 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>NV Experimente - Messung durchführen</title>
 
-    <!-- Bootstrap 5 -->
-    <script>
-      // Automatic Bootstrap loading: Use CDN for development, local for ESP32
-      (function() {
-        const isLocalDevice = window.location.hostname === '192.168.4.1' || 
-                             window.location.hostname.includes('ODMR_') || 
-                             window.location.protocol === 'file:';
-        
-        if (isLocalDevice) {
-          // Load from ESP32 local server
-          document.write('<link href="/bootstrap.min.css" rel="stylesheet">');
-        } else {
-          // Load from CDN for development
-          document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">');
-        }
-      })();
-    </script>
+    <!-- Offline-capable CSS framework -->
+    <link rel="stylesheet" href="style.css">
 
-    <!-- Brand palette ---------------------------------------------------------->
+    <!-- Page-specific styles -->
     <style>
-      :root{
-        --uc2-blue:       #023773;  /* primary   */
-        --uc2-green:      #85b918;  /* success   */
-        --uc2-turquoise:  #1f9c7c;  /* info      */
-        --uc2-light:      #faf9f9;  /* body bg   */
-        --uc2-grey:       #999999;  /* muted txt */
-      }
-      body           { background: var(--uc2-light); color: var(--uc2-grey); }
-      h1,h2,h3,h4,h5 { color: var(--uc2-blue); }
-      /* navbar */
-      .navbar         { background: var(--uc2-blue); }
-      .navbar-brand,
-      .navbar-nav .nav-link { color:#fff; }
-      .navbar-nav .nav-link.active{ color: var(--uc2-green); }
-      .navbar-nav .nav-link:hover{ color: var(--uc2-turquoise); }
-      /* links in text */
-      a{ color: var(--uc2-blue); }
-      a:hover{ color: var(--uc2-turquoise); }
-      footer{ background: var(--uc2-blue); color:#fff; }
-      
       /* Custom styles for this page */
       body {
         overflow-x: hidden;
@@ -71,23 +36,17 @@
       }
       
       .grid-container {
-          display: grid;
           grid-template-columns: 1fr 350px;
-          gap: 1rem;
-          margin: auto;
-          padding: 0;
           flex: 1;
           min-height: 0;
       }
       .grid1 {
           grid-area: 1 / 1 / 4 / 2;
-          padding: 1rem;
           height: 100%;
           min-height: 0;
           overflow: hidden;
       }
       .grid2, .grid3, .grid4, .grid5, .grid6 {
-          padding: 1rem;
           min-width: 0;
       }
       
@@ -118,22 +77,12 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        background-color: var(--bs-dark) !important;
+        background-color: var(--uc2-blue) !important;
+        color: #fff;
       }
-      .Button {
-          background-color: var(--uc2-blue);
-          color: white;
-          border: none;
-          padding: 8px 16px;
-          margin: 4px;
-          border-radius: 4px;
-          cursor: pointer;
-      }
-      .Button:hover {
-          background-color: var(--uc2-turquoise);
-      }
+      
       .StopButton {
-          background-color: #dc3545 !important; /* Red color for stop */
+          background-color: #dc3545 !important;
           color: white;
           border: none;
           padding: 8px 16px;
@@ -142,21 +91,9 @@
           cursor: pointer;
       }
       .StopButton:hover {
-          background-color: #c82333 !important; /* Darker red on hover */
+          background-color: #c82333 !important;
       }
-      .inputField {
-          background-color: #fff;
-          padding: 10px;
-          margin: 5px 0;
-          border-radius: 4px;
-          border: 1px solid #ddd;
-      }
-      .inputFieldWide {
-          width: 100%;
-      }
-      .slider {
-          width: 100%;
-      }
+      
       .svg {
           width: 100%;
           height: calc(100vh - 300px);
@@ -186,11 +123,6 @@
       }
       
       /* Ensure cards fill available space */
-      .card-body {
-          display: flex;
-          flex-direction: column;
-      }
-      
       .card-body canvas {
           flex: 1;
       }
@@ -244,13 +176,13 @@
       var YMax = 0,
         YMin = 0;
       var _YMax = 0,
-        _YMin = 36000;
+        _YMin = 65535;
       const fMin = 2200,
         fMax = 4400,
         stepMin = 0.2,
         stepMax = 5;
       const IntMin = 0,
-        IntMax = 36000,
+        IntMax = 65535,
         IntRangeMin = 200;
       const XPlotSize = 1600,
         YPlotSize = 800;
@@ -297,19 +229,31 @@
         ToggleStart(0);
         deleteScaleGroup("DataGroupID");
         AngezeigteDatenpunkte = [];
-        (_YMax = 0), (_YMin = 36000);
+        (_YMax = 0), (_YMin = 65535);
         prepareFreqs();
         prepareXSkala(fBegin, fEnd);
         
+        let skippedCount = 0;
         while (Frequenzen.length != 0 && MessungRunning) {
           var response = await freqMessung(Frequenzen.shift());
           if (!MessungRunning) break; // Check if stopped during measurement
+          
+          // Skip null responses (timeouts)
+          if (response[1] === null || response[2] === null) {
+            skippedCount++;
+            console.warn(`Skipped measurement at ${response[0]} MHz (${skippedCount} total skipped)`);
+            continue;
+          }
           
           Messreihe.push(response);
           _YMin = Math.min(_YMin, response[1] - 100);
           _YMax = Math.max(_YMax, response[1] + 100);
           autoScale();
           drawCircle(response, +200, "black");
+        }
+        
+        if (skippedCount > 0) {
+          addSerialMessage(`⚠ Warnung: ${skippedCount} Messungen wurden wegen Timeout übersprungen`);
         }
         
         if (MessungRunning) { // Only add data if measurement completed
@@ -906,7 +850,8 @@
           <ul class="navbar-nav ms-auto">
             <li class="nav-item"><a class="nav-link" href="index.html" data-lang-key="nav_start">Start</a></li>
             <li class="nav-item"><a class="nav-link" href="messung.html" data-lang-key="nav_measurement_device">Messung (on Device)</a></li>
-            <li class="nav-item"><a class="nav-link" href="messung_webserial.html" data-lang-key="nav_measurement_webserial">Messung (WebSerial)</a></li>
+            <li class="nav-item"><a class="nav-link active" href="messung_webserial.html" data-lang-key="nav_measurement_webserial">Messung (WebSerial)</a></li>
+            <li class="nav-item"><a class="nav-link" href="ratio.html" data-lang-key="nav_ratio">B-Field Monitor</a></li>
             <li class="nav-item"><a class="nav-link" href="justage.html" data-lang-key="nav_alignment">Justage</a></li>
             <li class="nav-item"><a class="nav-link" href="infos.html" data-lang-key="nav_info">Weitere Infos</a></li>
                     <li class="nav-item dropdown">
@@ -1093,12 +1038,7 @@
               </svg>
             </div>
             <div class="grid2">
-              <input
-                type="button"
-                class="Button Laserbutton"
-                id="Laser"
-                value="Laserdiode einschalten"
-              />
+              <!-- Laser button removed (P2 #11) -->
             </div>
             <div class="grid3">
               <div
@@ -1786,29 +1726,31 @@
           .addEventListener("click", connectSerial);
 
         async function freqMessung(f) {
-          return new Promise(async (resolve) => {
-            pending.set(f, resolve);
-            await writer.write(enc.encode(`MEASURE ${f}\n`));
+          return new Promise(async (resolve, reject) => {
+            const timeout = setTimeout(() => {
+              pending.delete(f);
+              console.warn(`Timeout for frequency ${f}, skipping...`);
+              // Return null values instead of rejecting to allow sweep to continue
+              resolve([f, null, null]);
+            }, 3000); // 3 second timeout
+            
+            pending.set(f, (data) => {
+              clearTimeout(timeout);
+              resolve(data);
+            });
+            
+            try {
+              await writer.write(enc.encode(`MEASURE ${f}\n`));
+            } catch (error) {
+              clearTimeout(timeout);
+              pending.delete(f);
+              console.error(`Error sending MEASURE command for ${f}:`, error);
+              resolve([f, null, null]);
+            }
           });
         }
 
-        async function LaserOn() {
-          if (confirm("Laserdiode wirklich einschalten?")) {
-            await writer.write(enc.encode("LASER ON\n"));
-            let Laser = ById("Laser");
-            Laser.value = "Laserdiode ausschalten";
-            Laser.removeEventListener("click", LaserOn);
-            Laser.addEventListener("click", LaserOff);
-          }
-        }
-
-        async function LaserOff() {
-          await writer.write(enc.encode("LASER OFF\n"));
-          let Laser = ById("Laser");
-          Laser.value = "Laserdiode einschalten";
-          Laser.removeEventListener("click", LaserOff);
-          Laser.addEventListener("click", LaserOn);
-        }
+        // Laser control removed (P2 #11)
         /* ---------- end of webserial stuff ---------- */
 
         function YMidContr(_this) {
@@ -1848,7 +1790,7 @@
         function YRangeContr2(_this) {
           let IntensitätswertLogarithmisch = Math.min(
             100 * Math.floor(Math.pow(2, _this.value)),
-            36000
+            65535
           );
           if (
             (ById("YMid1").value - IntMin) * 2 <
@@ -1885,7 +1827,6 @@
           ["f_Reset", fReset],
           ["StartStop", MessungStarten],
           ["AutoMessung", AutoToggle],
-          ["Laser", LaserOn],
           ["startLiveBtn", startLiveMonitor],
           ["resetLiveBtn", resetLiveData],
           ["setFreqBtn", setFrequency],
@@ -1894,7 +1835,7 @@
             () => {
               deleteScaleGroup("DataGroupID");
               AngezeigteDatenpunkte = [];
-              (_YMax = 0), (_YMin = 36000);
+              (_YMax = 0), (_YMin = 65535);
             },
           ],
           ["MessreiheHerunterladen", DownloadCSV],
@@ -1925,23 +1866,7 @@
     </div>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script>
-      // Automatic Bootstrap JS loading: Use CDN for development, local for ESP32
-      (function() {
-        const isLocalDevice = window.location.hostname === '192.168.4.1' || 
-                             window.location.hostname.includes('ODMR_') || 
-                             window.location.protocol === 'file:';
-        
-        if (isLocalDevice) {
-          // Load from ESP32 local server
-          document.write('<script src="/bootstrap.bundle.min.js"><\/script>');
-        } else {
-          // Load from CDN for development
-          document.write('<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"><\/script>');
-        }
-      })();
-    </script>
+    <!-- Bootstrap JS removed - offline AP mode (P0 #2) -->
   
   <script>
     // Multi-language support
@@ -2011,6 +1936,26 @@
       const savedLang = localStorage.getItem('language') || 'de';
       setLanguage(savedLang);
     });
+  </script>
+  <script>
+  /* Bootstrap-JS replacement: navbar collapse + dropdown + tabs */
+  (function(){
+    document.querySelectorAll('.navbar-toggler').forEach(function(b){
+      b.addEventListener('click',function(){var t=document.querySelector(b.getAttribute('data-bs-target'));if(t)t.classList.toggle('show');});
+    });
+    document.querySelectorAll('.dropdown-toggle').forEach(function(b){
+      b.addEventListener('click',function(e){e.preventDefault();var m=b.nextElementSibling;if(m&&m.classList.contains('dropdown-menu'))m.classList.toggle('show');});
+    });
+    document.addEventListener('click',function(e){if(!e.target.closest('.dropdown'))document.querySelectorAll('.dropdown-menu.show').forEach(function(m){m.classList.remove('show');});});
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function(b){
+      b.addEventListener('click',function(e){e.preventDefault();
+        var tgt=document.querySelector(b.getAttribute('data-bs-target'));if(!tgt)return;
+        tgt.parentElement.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('show','active');});
+        b.closest('.nav').querySelectorAll('[data-bs-toggle="tab"]').forEach(function(t){t.classList.remove('active');});
+        tgt.classList.add('show','active');b.classList.add('active');
+      });
+    });
+  })();
   </script>
 </body>
 </html>
