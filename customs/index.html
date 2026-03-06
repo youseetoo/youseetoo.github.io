@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ATLAS IAA-Plus XML Generator</title>
+  <title>ATLAS IAA-Plus XML Generator (incl. Two-Stage)</title>
   <style>
     :root{
       --bg:#ffffff;--card:#ffffff;--border:#ddd;--text:#111;--muted:#666;
@@ -45,7 +45,7 @@
 </head>
 <body>
   <div class="topbar">
-    <h1 style="margin:0">ATLAS IAA-Plus XML Generator</h1>
+    <h1 style="margin:0">ATLAS IAA-Plus XML Generator (incl. Two-Stage)</h1>
     <div class="hint">Fields tagged Edit are the ones you usually change. Gray fields are prefilled but still editable.</div>
   </div>
 
@@ -58,6 +58,7 @@
       </div>
       <div class="small">Export uses an embedded known-good IAA-Plus template and only replaces values inside it. Import fills the form from a selected XML.</div>
     </div>
+    <div class="small" style="margin-top:10px">This page prepares the XML for IAA-Plus. It does not generate the ABD itself. MRN and ABD are created by ATLAS only after the declaration has been accepted and released.</div>
   </div>
 
   <div class="grid" style="margin-top:16px">
@@ -76,6 +77,25 @@
         <label>Total invoice amount <span class="tag edit">Edit</span></label>
         <input id="totalAmount" class="edit-primary" value="VALUE" />
       </div>
+
+      <h2 style="margin-top:16px">Procedure</h2>
+      <div class="small">Choose the export declaration type for the customs workflow. For plain two-stage standard export use 00000100. Use 00000200 only if you also apply for presentation outside the customs office.</div>
+      <div class="row">
+        <label>Export declaration type <span class="tag edit">Edit</span></label>
+        <select id="exportDeclType" class="edit-primary">
+          <option value="00000100">00000100 - Standard export declaration, two-stage</option>
+          <option value="00000200" selected>00000200 - Two-stage with presentation outside customs office</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Customs office of export (Binnenzollamt) <span class="tag edit">Edit</span></label>
+        <input id="officeOfExport" class="edit-primary" placeholder="e.g. DE003004" value="DE003004" />
+      </div>
+      <div class="row">
+        <label>Declared customs office of exit <span class="tag edit">Edit</span></label>
+        <input id="officeOfExit" class="edit-primary" placeholder="e.g. DE003305" value="DE003305" />
+      </div>
+      <div class="small" style="margin-top:-4px">Format for customs offices: country code + 6-digit office number, e.g. DE003004.</div>
 
       <h2 style="margin-top:16px">Dates</h2>
       <div class="small">Auto-set: submission = now, presentation = next day 07:00, loading end = next day 13:00. Adjust if needed.</div>
@@ -235,6 +255,7 @@
       <button class="secondary" id="btnDownload">Download XML</button>
       <button class="secondary" id="btnCopy">Copy XML</button>
     </div>
+    <div class="small">For two-stage export, upload the XML in IAA-Plus, wait for release/MRN, then download the ABD from ATLAS and send the PDF to the carrier. The site prepares the XML only.</div>
     <pre id="out" class="mono"></pre>
   </div>
 
@@ -376,13 +397,6 @@
       });
     }
 
-    function xAll(doc, xpath){
-      const out = [];
-      const it = doc.evaluate(xpath, doc, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-      let n = it.iterateNext();
-      while(n){ out.push(n); n = it.iterateNext(); }
-      return out;
-    }
 function _doc(ctx) {
   return (ctx && ctx.nodeType === 9) ? ctx : (ctx?.ownerDocument || document);
 }
@@ -443,8 +457,14 @@ function xText(ctx, xpath) {
 
       // ExportOperation
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='LRN']", val("lrn"));
+      setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='exportDeclarationType']", val("exportDeclType"));
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='totalAmountInvoiced']", val("totalAmount"));
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='invoiceCurrency']", val("currency"));
+
+      // Customs offices for two-stage workflow
+      setText(doc, "//*[local-name()='MessageRecipient']/*[local-name()='referenceNumber']", val("officeOfExport"));
+      setText(doc, "//*[local-name()='CustomsOfficeOfExport']/*[local-name()='referenceNumber']", val("officeOfExport"));
+      setText(doc, "//*[local-name()='CustomsOfficeOfExitDeclared']/*[local-name()='referenceNumber']", val("officeOfExit"));
 
       // GoodsShipment - destination + incoterms
       setText(doc, "//*[local-name()='GoodsShipment']/*[local-name()='countryOfDestination']", val("destCountry"));
@@ -644,8 +664,11 @@ function xText(ctx, xpath) {
       }
 
       setVal("lrn", xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='LRN']"));
+      setVal("exportDeclType", xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='exportDeclarationType']"));
       setVal("totalAmount", xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='totalAmountInvoiced']"));
       setVal("currency", xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='invoiceCurrency']"));
+      setVal("officeOfExport", xText(doc, "//*[local-name()='CustomsOfficeOfExport']/*[local-name()='referenceNumber']"));
+      setVal("officeOfExit", xText(doc, "//*[local-name()='CustomsOfficeOfExitDeclared']/*[local-name()='referenceNumber']"));
 
       // Dates (datetime-local needs "YYYY-MM-DDThh:mm", i.e. first 16 chars)
       const subDt = xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='declarationSubmissionDateAndTime']");
