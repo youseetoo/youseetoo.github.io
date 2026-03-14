@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Platform — For Makers, PhD Students & Startups | openUC2</title>
+  <meta name="description" content="3D-printable optics, open electronics, open firmware. Build custom microscopes, contribute to the community, prototype with cubes.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="products">
+<div id="nav-root"></div>
+<div class="container"><div class="breadcrumbs"><a href="index.html">Home</a> <span>/</span> Open Platform</div></div>
+
+<section class="hero" style="padding:48px 0 56px;">
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <span class="tag tag-maker">Makers & Research</span>
+        <h1 style="font-size:36px; line-height:1.2; margin-bottom:12px;">The open platform for optical prototyping</h1>
+        <p style="font-size:17px; margin:16px 0 24px; line-height:1.7;">3D-print your cubes. Design your optical path. Flash the firmware. Run the software. Everything is open source — hardware, electronics, and code. Build microscopes nobody has built before.</p>
+        <div class="flex flex-wrap gap-16">
+          <a href="https://github.com/openUC2/" class="btn btn-dark" target="_blank">GitHub Repository →</a>
+          <a href="configurator.html" class="btn btn-outline">Try the Configurator</a>
+        </div>
+      </div>
+      <div>
+        <div class="img-placeholder" style="min-height:320px; background:#f0e6d0;">
+          [Photo: workbench with 3D-printed cubes, electronics, soldering iron, laptop with ImSwitch]
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S OPEN -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title text-center">Everything you need to build your own microscope</h2>
+    <div class="feature-grid mt-3">
+      <div class="feature-card">
+        <div class="icon">🧊</div>
+        <h4>Hardware: 3D-printable cubes</h4>
+        <p>All cube designs are available as STL/STEP files on GitHub. Print them on any FDM printer. Injection-molded cubes available in the shop for higher precision.</p>
+        <a href="https://github.com/openUC2/UC2-GIT" target="_blank" style="font-size:13px;">Browse CAD files →</a>
+      </div>
+      <div class="feature-card">
+        <div class="icon">⚡</div>
+        <h4>Electronics: UC2-ESP32</h4>
+        <p>Custom PCB with ESP32 microcontroller, motor drivers, LED control, and CAN bus. Open schematics and Gerber files. Or use off-the-shelf components.</p>
+        <a href="https://github.com/openUC2/UC2-REST" target="_blank" style="font-size:13px;">Firmware & schematics →</a>
+      </div>
+      <div class="feature-card">
+        <div class="icon">💻</div>
+        <h4>Software: ImSwitch</h4>
+        <p>Modular microscopy control in Python. GUI, REST API, Jupyter integration. Supports USB3 and CSI cameras, motorized stages, and custom hardware.</p>
+        <a href="https://github.com/openUC2/ImSwitch" target="_blank" style="font-size:13px;">ImSwitch on GitHub →</a>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📐</div>
+        <h4>Configurator</h4>
+        <p>Drag-and-drop optical design tool. Place cubes on a virtual grid, simulate beam paths, export BOMs and assembly instructions.</p>
+        <a href="configurator.html" style="font-size:13px;">Launch Configurator →</a>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📖</div>
+        <h4>Documentation</h4>
+        <p>Comprehensive build guides, API references, workshop materials, and troubleshooting. Community-maintained on Docusaurus.</p>
+        <a href="https://docs.openuc2.com/" target="_blank" style="font-size:13px;">Read the docs →</a>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🌍</div>
+        <h4>Community</h4>
+        <p>Discourse forum, GitHub discussions, and a global network of users. Share your builds, get help, and contribute to the ecosystem.</p>
+        <a href="https://openuc2.discourse.group/" target="_blank" style="font-size:13px;">Join the community →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section class="section section-alt">
+  <div class="container">
+    <h2 class="section-title text-center">What people build with openUC2</h2>
+    <div class="feature-grid mt-3">
+      <div class="feature-card">
+        <h4>🧬 Custom fluorescence microscope</h4>
+        <p>A PhD student in Jena built a 3-color fluorescence microscope for under €2,000 using 3D-printed cubes and surplus optics.</p>
+      </div>
+      <div class="feature-card">
+        <h4>🐟 Light-sheet for zebrafish</h4>
+        <p>A developmental biology lab assembled a dual-illumination light-sheet system from UC2 modules for live zebrafish embryo imaging.</p>
+      </div>
+      <div class="feature-card">
+        <h4>🏥 Point-of-care prototype</h4>
+        <p>A startup prototyped a portable diagnostic microscope using UC2 cubes before moving to injection-molded production parts.</p>
+      </div>
+    </div>
+    <div class="text-center mt-3">
+      <p style="color:var(--uc2-gray); font-size:14px;">Have a project to share? <a href="https://openuc2.discourse.group/" target="_blank">Post it on the forum</a> — we feature community builds.</p>
+    </div>
+  </div>
+</section>
+
+<!-- BUY vs BUILD -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title text-center">Build it yourself — or buy it ready</h2>
+    <p class="section-subtitle text-center">You don't have to 3D-print everything. Mix and match.</p>
+    <div class="two-col mt-3">
+      <div style="background:#fff; border:1px solid var(--uc2-border); border-radius:10px; padding:28px;">
+        <h3 style="font-size:18px; margin-bottom:12px;">🛠️ DIY Route</h3>
+        <p style="margin-bottom:12px;">Download STL files from GitHub, print cubes on your own printer, source optics from Thorlabs/Edmund, flash the ESP32 firmware, install ImSwitch. Total control, lowest cost.</p>
+        <a href="https://github.com/openUC2/UC2-GIT" class="btn btn-outline" target="_blank" style="font-size:13px;">Start building →</a>
+      </div>
+      <div style="background:#fff; border:1px solid var(--uc2-border); border-radius:10px; padding:28px;">
+        <h3 style="font-size:18px; margin-bottom:12px;">📦 Buy Kits & Components</h3>
+        <p style="margin-bottom:12px;">Purchase precision injection-molded cubes, pre-assembled electronics, tested optics, and complete kits from our shop. Same open design, guaranteed quality.</p>
+        <a href="https://shop.openuc2.com/" class="btn btn-green" target="_blank" style="font-size:13px;">Browse the shop →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="container">
+  <div class="cta-banner" style="background: linear-gradient(135deg, #92400e 0%, #78350f 100%);">
+    <h2>Need professional-grade performance?</h2>
+    <p>When your prototype is ready for real research, FRAME gives you the same cube modularity inside a precision motorized stage.</p>
+    <a href="frame.html" class="btn" style="background:#fff; color:#92400e;">Explore FRAME →</a>
+  </div>
+</div>
+
+<div id="footer-root"></div>
+<div id="cookie-root"></div>
+<script src="shared.js"></script>
+</body>
+</html>

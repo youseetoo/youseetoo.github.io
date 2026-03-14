@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FRAME — Automated Modular Microscope | openUC2</title>
+  <meta name="description" content="FRAME: a fully motorized, open-source microscope with XYZ scanning, multi-channel fluorescence, and modular optics. Built for research labs and professionals.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="products">
+<div id="nav-root"></div>
+
+<div class="container"><div class="breadcrumbs"><a href="index.html">Home</a> <span>/</span> Products <span>/</span> FRAME</div></div>
+
+<!-- HERO -->
+<section class="hero" style="padding:48px 0 56px;">
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <span class="tag tag-pro" style="margin-bottom:12px;">Professional</span>
+        <h1 style="font-size:36px; line-height:1.2; margin-bottom:12px;">FRAME</h1>
+        <p style="font-size:16px; color:var(--uc2-gray); margin-bottom:4px;">Fast Rigid Automated Microscope Engine</p>
+        <p style="font-size:17px; margin:16px 0 24px; line-height:1.7;">A fully motorized microscope platform with sub-micrometer precision, modular optics, and open-source software. Swap imaging modes in seconds. Control everything from a browser. Integrate with any workflow through our REST API.</p>
+        <div class="flex flex-wrap gap-16">
+          <a href="contact.html?subject=FRAME+quote" class="btn btn-primary">Request a Quote</a>
+          <a href="https://docs.openuc2.com/usage/pro/frame/" class="btn btn-outline" target="_blank">Documentation</a>
+          <a href="#specs" class="btn btn-outline">Specifications ↓</a>
+        </div>
+      </div>
+      <div>
+        <div class="img-placeholder" style="min-height:360px; background:#c9d6e3;">
+          [Hero photo: FRAME microscope, front-quarter view showing the stage, optical column, and modular cube bays]<br>
+          <em>→ Use FRAME product image from openuc2.com/frame-2/</em>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY METRICS -->
+<section style="padding:24px 0; background:#fff; border-bottom:1px solid var(--uc2-border);">
+  <div class="container">
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:16px; text-align:center;">
+      <div>
+        <div style="font-size:28px; font-weight:800; color:var(--uc2-blue);">130×90 mm</div>
+        <div style="font-size:12px; color:var(--uc2-gray);">XY Travel Range</div>
+      </div>
+      <div>
+        <div style="font-size:28px; font-weight:800; color:var(--uc2-blue);">&lt;1 µm</div>
+        <div style="font-size:12px; color:var(--uc2-gray);">Positioning Precision</div>
+      </div>
+      <div>
+        <div style="font-size:28px; font-weight:800; color:var(--uc2-blue);">11 mm</div>
+        <div style="font-size:12px; color:var(--uc2-gray);">Z Travel</div>
+      </div>
+      <div>
+        <div style="font-size:28px; font-weight:800; color:var(--uc2-blue);">5+</div>
+        <div style="font-size:12px; color:var(--uc2-gray);">Imaging Modes</div>
+      </div>
+      <div>
+        <div style="font-size:28px; font-weight:800; color:var(--uc2-blue);">100%</div>
+        <div style="font-size:12px; color:var(--uc2-gray);">Open Source</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SAMPLE IMAGES -->
+<section class="section" id="results">
+  <div class="container">
+    <h2 class="section-title text-center">Imaging results</h2>
+    <p class="section-subtitle text-center">Captured on FRAME systems in real labs</p>
+    <div class="app-grid">
+      <div class="app-card">
+        <div class="app-img" style="background:#0a1e30; color:#5cb85c;">
+          [AF488 FluoCells — multi-tile fluorescence scan]<br>
+          FRAME | 20× | 488 nm LED
+        </div>
+        <div class="app-body"><h4>Fluorescence — AF488 FluoCells</h4><p>Multi-tile automated scan with stitching</p></div>
+      </div>
+      <div class="app-card">
+        <div class="app-img" style="background:#f0e6d8; color:#8a6040;">
+          [H&E stained tissue — whole slide overview]<br>
+          FRAME | 10× | Brightfield
+        </div>
+        <div class="app-body"><h4>Histology — H&E Tissue Section</h4><p>Automated slide scanning, 130×90 mm coverage</p></div>
+      </div>
+      <div class="app-card">
+        <div class="app-img" style="background:#d0dce8; color:#405a80;">
+          [Phase contrast — live HeLa cells]<br>
+          FRAME | 40× | Phase Contrast
+        </div>
+        <div class="app-body"><h4>Phase Contrast — Live Cells</h4><p>DPC and quantitative phase imaging</p></div>
+      </div>
+      <div class="app-card">
+        <div class="app-img" style="background:#1a0a30; color:#c070ff;">
+          [Super-resolution dSTORM image]<br>
+          FRAME | 60× | 638 nm Laser
+        </div>
+        <div class="app-body"><h4>Super-Resolution — dSTORM</h4><p>Single-molecule localization microscopy</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section section-alt">
+  <div class="container">
+    <h2 class="section-title text-center">How FRAME works</h2>
+    <p class="section-subtitle text-center">The optics stay fixed. Only the sample moves.</p>
+    <div class="two-col mt-3">
+      <div>
+        <h3 style="font-size:18px; margin-bottom:12px;">Modular optical column</h3>
+        <p style="margin-bottom:16px;">FRAME's optical path is built from standardized UC2 cube modules — the same building block used across the entire openUC2 ecosystem. Each cube holds one optical element (objective, dichroic, filter, camera). Slide cubes in and out to switch imaging modes without realignment.</p>
+        <h3 style="font-size:18px; margin-bottom:12px;">Rigid motorized stage</h3>
+        <p style="margin-bottom:16px;">A precision XYZ stage moves the sample beneath the fixed optics. This separation means you can add components — an incubator, a pipetting robot, additional cameras — without disturbing the optical alignment.</p>
+        <h3 style="font-size:18px; margin-bottom:12px;">Open-source control</h3>
+        <p>FRAME runs on ImSwitch, a modular open-source microscopy control software. Access via web browser, game controller, Python API, or REST endpoints. Docker-based deployment enables remote updates.</p>
+      </div>
+      <div>
+        <div class="img-placeholder" style="min-height:360px; background:#d1d9e6;">
+          [Animated GIF or diagram: FRAME with cubes visible inside the optical column, XYZ stage moving beneath]<br>
+          <em>→ Use animated GIF from openuc2.com/frame-2/</em>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULAR SYSTEM -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title text-center">Modular by design</h2>
+    <p class="section-subtitle text-center">Pre-test optical paths externally, then slide them into FRAME.</p>
+    <div class="feature-grid mt-3">
+      <div class="feature-card">
+        <div class="icon">🔄</div>
+        <h4>Swap modules in seconds</h4>
+        <p>Brightfield today, fluorescence tomorrow. Change your dichroic cube, add a laser module, or insert a phase ring — no tools, no realignment.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🎯</div>
+        <h4>Standard objectives</h4>
+        <p>Use any RMS or M25-thread infinity-corrected objective. Nikon, Olympus, Zeiss — your existing optics work with FRAME.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📸</div>
+        <h4>Your choice of camera</h4>
+        <p>Support for USB3 (e.g. Allied Vision, Basler, Daheng) and CSI cameras. Use what your lab already owns.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🌐</div>
+        <h4>Browser-based control</h4>
+        <p>Full microscope control from any device on your network. ImSwitch GUI, Jupyter Notebooks, or raw REST API calls — your choice.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🤖</div>
+        <h4>Automation-ready</h4>
+        <p>REST API and SiLA2 drivers for integration with liquid handlers, robotic arms, and automated workflows. Ready for lab-in-a-loop setups.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📖</div>
+        <h4>Fully open source</h4>
+        <p>Hardware (CAD), firmware (ESP32), and software (ImSwitch) — all open. Modify anything. No vendor lock-in. Publish your methods with full transparency.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPECIFICATIONS -->
+<section class="section section-alt" id="specs">
+  <div class="container">
+    <h2 class="section-title">Specifications</h2>
+    <p class="section-subtitle">FRAME v1.0 — Configurable to your needs</p>
+    <div class="two-col">
+      <div>
+        <table class="specs-table">
+          <tr><th>XY Travel Range</th><td>130 × 90 mm</td></tr>
+          <tr><th>Z Travel Range</th><td>11 mm</td></tr>
+          <tr><th>Positioning Precision</th><td>&lt; 1 µm (closed-loop)</td></tr>
+          <tr><th>Stage Speed</th><td>Up to 10 mm/s</td></tr>
+          <tr><th>Objectives</th><td>Any RMS/M25-thread infinity-corrected (4×–100×)</td></tr>
+          <tr><th>Illumination (Epi)</th><td>Multi-channel LED (405/470/530/590/630 nm) or Laser</td></tr>
+          <tr><th>Illumination (Trans)</th><td>White LED matrix, DPC-capable</td></tr>
+          <tr><th>Filter Cubes</th><td>Modular UC2 cubes, user-swappable</td></tr>
+          <tr><th>Camera</th><td>USB3 (Allied Vision, Basler, Daheng) or CSI</td></tr>
+        </table>
+      </div>
+      <div>
+        <table class="specs-table">
+          <tr><th>Compute</th><td>Nvidia Jetson Nano / Orin or Raspberry Pi</td></tr>
+          <tr><th>Software</th><td>ImSwitch (open source, Python)</td></tr>
+          <tr><th>Control Interfaces</th><td>Web browser, REST API, Python SDK, game controller</td></tr>
+          <tr><th>Communication</th><td>CAN Bus, WiFi, USB-Serial</td></tr>
+          <tr><th>Firmware</th><td>UC2-REST (ESP32, open source)</td></tr>
+          <tr><th>Imaging Modes</th><td>Brightfield, Fluorescence, Phase Contrast, DPC, FLIM*, dSTORM*</td></tr>
+          <tr><th>Footprint</th><td>~300 × 300 × 350 mm (configurable)</td></tr>
+          <tr><th>Sample Holders</th><td>Slides, well plates, custom fixtures</td></tr>
+          <tr><th>Certifications</th><td>CE (available on request)</td></tr>
+        </table>
+        <p style="font-size:12px; color:var(--uc2-gray); margin-top:8px;">* With additional modules. Specs may vary by configuration.</p>
+      </div>
+    </div>
+    <div class="mt-3">
+      <a href="contact.html?subject=FRAME+specs" class="btn btn-primary">Request detailed spec sheet</a>
+      <a href="https://docs.openuc2.com/usage/pro/frame/" class="btn btn-outline" target="_blank" style="margin-left:8px;">Full documentation</a>
+    </div>
+  </div>
+</section>
+
+<!-- SOFTWARE -->
+<section class="section">
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <h2 class="section-title">Software: ImSwitch</h2>
+        <p style="margin:12px 0;">FRAME is controlled by ImSwitch — a community-developed, modular microscopy control software written in Python. It provides a full GUI for acquisition, hardware control, and basic image processing, accessible from any web browser on your network.</p>
+        <p style="margin-bottom:16px;">For advanced users, the REST API and Python SDK allow full scripting of experiments, integration with Jupyter Notebooks, and connection to external automation systems. Docker-based deployment means you can update your microscope remotely.</p>
+        <div class="flex flex-wrap gap-16">
+          <a href="https://github.com/openUC2/ImSwitch" class="btn btn-outline" target="_blank">GitHub Repository</a>
+          <a href="https://docs.openuc2.com/" class="btn btn-outline" target="_blank">API Documentation</a>
+        </div>
+      </div>
+      <div>
+        <div class="img-placeholder" style="min-height:300px; background:#c9d6e3;">
+          [Screenshot of ImSwitch browser GUI — showing live camera view, stage controls, acquisition settings]<br>
+          <em>→ Use ImSwitch screenshot from openuc2.com/frame-2/</em>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL -->
+<section class="section section-alt">
+  <div class="container" style="max-width:680px;">
+    <div class="testimonial">
+      <blockquote>"We needed a fluorescence microscope that could be customized for our specific assay and integrated into our automated liquid handling workflow. FRAME let us do both without being locked into proprietary software."</blockquote>
+      <cite>— [Name], [Institution] (placeholder — add real testimonial)</cite>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="container">
+  <div class="cta-banner">
+    <h2>Ready to configure your FRAME?</h2>
+    <p>Tell us about your imaging needs and we'll propose a configuration.</p>
+    <div class="flex flex-wrap gap-16" style="justify-content:center;">
+      <a href="contact.html?subject=FRAME+quote" class="btn" style="background:#fff; color:var(--uc2-blue);">Request a Quote</a>
+      <a href="configurator.html" class="btn btn-outline" style="border-color:#fff; color:#fff;">Try the Configurator</a>
+    </div>
+  </div>
+</div>
+
+<div id="footer-root"></div>
+<div id="cookie-root"></div>
+<script src="shared.js"></script>
+</body>
+</html>
