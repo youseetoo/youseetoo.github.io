@@ -79,12 +79,12 @@
       </div>
 
       <h2 style="margin-top:16px">Procedure</h2>
-      <div class="small">Choose the export declaration type for the customs workflow. For plain two-stage standard export use 00000100. Use 00000200 only if you also apply for presentation outside the customs office.</div>
+      <div class="small">Choose the export declaration type. Use <b>00000200</b> (default) for all standard third-country exports (e.g. KR, US, JP, CN…). Use <b>00000100</b> only for Binnenverkehr destinations with inland exit (CH, NO, UK, …) — ATLAS requires a different location qualifier for this type.</div>
       <div class="row">
         <label>Export declaration type <span class="tag edit">Edit</span></label>
         <select id="exportDeclType" class="edit-primary">
-          <option value="00000100">00000100 - Standard export declaration, two-stage</option>
-          <option value="00000200" selected>00000200 - Two-stage with presentation outside customs office</option>
+          <option value="00000200" selected>00000200 – Drittland / Standard (default)</option>
+          <option value="00000100">00000100 – Binnenverkehr / Inland exit (CH, NO, UK …)</option>
         </select>
       </div>
       <div class="row">
@@ -468,6 +468,11 @@ function xText(ctx, xpath) {
       // ExportOperation
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='LRN']", val("lrn"));
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='exportDeclarationType']", val("exportDeclType"));
+
+      // ATLAS rule: exportDeclarationType 00000100 (*****1**) requires qualifierOfIdentification = 'V'
+      //             exportDeclarationType 00000200 (*****2**) requires qualifierOfIdentification = 'Z'
+      const qualId = val("exportDeclType") === "00000100" ? "V" : "Z";
+      setText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='qualifierOfIdentification']", qualId);
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='totalAmountInvoiced']", val("totalAmount"));
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='invoiceCurrency']", val("currency"));
 
