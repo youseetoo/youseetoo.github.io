@@ -444,6 +444,16 @@ function xText(ctx, xpath) {
     }
 
     function generateXml(){
+      // Validate customs office fields (ATLAS requires exactly 8 alphanumeric chars, e.g. DE003004)
+      const _exitOffice = val("officeOfExit");
+      const _exportOffice = val("officeOfExport");
+      if (!_exitOffice || _exitOffice.trim().length !== 8) {
+        throw new Error("Ausgangszollstelle (\"Declared customs office of exit\") muss genau 8 Zeichen haben, z.B. DE003305.\nAktueller Wert: \"" + _exitOffice + "\"");
+      }
+      if (!_exportOffice || _exportOffice.trim().length !== 8) {
+        throw new Error("Ausfuhrzollamt (\"Customs office of export\") muss genau 8 Zeichen haben, z.B. DE003004.\nAktueller Wert: \"" + _exportOffice + "\"");
+      }
+
       const parser = new DOMParser();
       const doc = parser.parseFromString(TEMPLATE_XML, "application/xml");
       const parseError = doc.getElementsByTagName("parsererror")[0];
@@ -552,9 +562,9 @@ function xText(ctx, xpath) {
         const coo = xFirst(g, ".//*[local-name()='Origin']/*[local-name()='countryOfOrigin']");
         if (coo) coo.textContent = String(p.origin || "DE");
 
-        // description
+        // description — trim() prevents COM00012 "nachgestellter Leerraum" rejection by ATLAS
         const dog = xFirst(g, ".//*[local-name()='Commodity']/*[local-name()='descriptionOfGoods']");
-        if (dog) dog.textContent = String(p.description || "");
+        if (dog) dog.textContent = String(p.description || "").trim();
 
         // HS split
         const {hs6, cn2} = parseHS(p.hs8);
