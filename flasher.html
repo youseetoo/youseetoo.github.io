@@ -76,134 +76,8 @@
       };
     </script>
 
-    <style>
-      :root {
-        --uc2-primary: #0d6efd;
-        --uc2-success: #198754;
-        --uc2-warning: #ffc107;
-        --uc2-danger: #dc3545;
-      }
-
-      /* Board selection styling */
-      .board-card {
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: 2px solid transparent;
-      }
-      .board-card:hover {
-        border-color: var(--uc2-primary);
-        transform: translateY(-2px);
-      }
-      .board-card.selected {
-        border-color: var(--uc2-primary);
-        background-color: rgba(13, 110, 253, 0.1);
-      }
-      .board-img {
-        width: 100px;
-        height: 100px;
-        object-fit: contain;
-      }
-
-      /* Console output styling */
-      .console-output {
-        background-color: #1e1e1e;
-        color: #d4d4d4;
-        font-family: 'Consolas', 'Monaco', monospace;
-        font-size: 12px;
-        padding: 1rem;
-        border-radius: 4px;
-        max-height: 300px;
-        overflow-y: auto;
-        white-space: pre-wrap;
-        word-break: break-all;
-      }
-      .console-output .success { color: #4ec9b0; }
-      .console-output .error { color: #f14c4c; }
-      .console-output .warning { color: #cca700; }
-      .console-output .info { color: #3794ff; }
-
-      /* Progress indicator */
-      .progress-step {
-        display: flex;
-        align-items: center;
-        padding: 0.5rem;
-        border-radius: 4px;
-        margin-bottom: 0.5rem;
-      }
-      .progress-step.active {
-        background-color: rgba(13, 110, 253, 0.1);
-      }
-      .progress-step.completed {
-        background-color: rgba(25, 135, 84, 0.1);
-      }
-      .progress-step .step-icon {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 0.75rem;
-        font-size: 12px;
-      }
-      .progress-step.pending .step-icon {
-        background-color: #6c757d;
-        color: white;
-      }
-      .progress-step.active .step-icon {
-        background-color: var(--uc2-primary);
-        color: white;
-      }
-      .progress-step.completed .step-icon {
-        background-color: var(--uc2-success);
-        color: white;
-      }
-
-      /* CAN ID configuration */
-      .can-preset {
-        cursor: pointer;
-        padding: 0.5rem 1rem;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        margin: 0.25rem;
-        transition: all 0.2s;
-      }
-      .can-preset:hover {
-        border-color: var(--uc2-primary);
-      }
-      .can-preset.selected {
-        border-color: var(--uc2-primary);
-        background-color: rgba(13, 110, 253, 0.1);
-      }
-
-      /* Version badge */
-      .version-badge {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-      }
-
-      /* Tab content padding */
-      .tab-pane {
-        padding: 1.5rem 0;
-      }
-
-      /* Loading spinner */
-      .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-      }
-
-      /* Hide by default */
-      .hidden { display: none !important; }
-    </style>
+    <!-- Flasher Styles -->
+    <link href="css/flasher.css" rel="stylesheet">
   </head>
   <body>
     <!-- NAVBAR -->
@@ -462,13 +336,19 @@
                     </esp-web-install-button>
                   </div>
 
+                  <!-- Firmware Availability Warning -->
+                  <div id="firmwareWarning" class="alert alert-warning py-2 hidden">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <small>Firmware not available for this board/version combination.</small>
+                  </div>
+
                   <!-- Post-Flash Options -->
                   <div class="form-check mb-3">
                     <input class="form-check-input" type="checkbox" id="postFlashConfig" checked>
                     <label class="form-check-label" for="postFlashConfig">
                       Configure after flash
                     </label>
-                    <small class="text-muted d-block">Send CAN ID or other settings after flashing</small>
+                    <small class="text-muted d-block">Switch to Configure tab after flashing to set CAN ID</small>
                   </div>
 
                   <!-- Direct Link -->
@@ -489,6 +369,12 @@
 
         <!-- CONFIGURE TAB -->
         <div class="tab-pane fade" id="configure-pane" role="tabpanel">
+          <!-- Post-Flash Banner -->
+          <div id="postFlashBanner" class="alert alert-success alert-dismissible mt-2 hidden">
+            <i class="bi bi-check-circle-fill"></i>
+            <strong>Flash complete!</strong> Connect to your device below to configure CAN ID and other settings.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
           <div class="row">
             <div class="col-lg-8">
               <!-- Serial Connection -->
@@ -847,6 +733,274 @@
                 </div>
               </div>
 
+              <!-- Motor Jog Control (per-axis quick buttons) -->
+              <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                  <h5 class="mb-0"><i class="bi bi-arrows-move"></i> Motor Jog Control</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <!-- A-Axis -->
+                    <div class="col-md-6 col-lg-3">
+                      <h6>A-Axis (0)</h6>
+                      <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text">Steps</span>
+                        <input type="number" class="form-control" id="hwStepA" value="1000">
+                      </div>
+                      <div class="btn-group btn-group-sm w-100 mb-1">
+                        <button class="btn btn-outline-success" id="hwAMinus"><i class="bi bi-dash"></i></button>
+                        <button class="btn btn-outline-success" id="hwAPlus"><i class="bi bi-plus"></i></button>
+                      </div>
+                      <div class="btn-group btn-group-sm w-100">
+                        <button class="btn btn-outline-warning" id="hwAForeverMinus">&infin;-</button>
+                        <button class="btn btn-outline-danger" id="hwAStop"><i class="bi bi-stop-fill"></i></button>
+                        <button class="btn btn-outline-warning" id="hwAForeverPlus">&infin;+</button>
+                      </div>
+                    </div>
+                    <!-- X-Axis -->
+                    <div class="col-md-6 col-lg-3">
+                      <h6>X-Axis (1)</h6>
+                      <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text">Steps</span>
+                        <input type="number" class="form-control" id="hwStepX" value="1000">
+                      </div>
+                      <div class="btn-group btn-group-sm w-100 mb-1">
+                        <button class="btn btn-outline-success" id="hwXMinus"><i class="bi bi-dash"></i></button>
+                        <button class="btn btn-outline-success" id="hwXPlus"><i class="bi bi-plus"></i></button>
+                      </div>
+                      <div class="btn-group btn-group-sm w-100">
+                        <button class="btn btn-outline-warning" id="hwXForeverMinus">&infin;-</button>
+                        <button class="btn btn-outline-danger" id="hwXStop"><i class="bi bi-stop-fill"></i></button>
+                        <button class="btn btn-outline-warning" id="hwXForeverPlus">&infin;+</button>
+                      </div>
+                    </div>
+                    <!-- Y-Axis -->
+                    <div class="col-md-6 col-lg-3">
+                      <h6>Y-Axis (2)</h6>
+                      <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text">Steps</span>
+                        <input type="number" class="form-control" id="hwStepY" value="1000">
+                      </div>
+                      <div class="btn-group btn-group-sm w-100 mb-1">
+                        <button class="btn btn-outline-success" id="hwYMinus"><i class="bi bi-dash"></i></button>
+                        <button class="btn btn-outline-success" id="hwYPlus"><i class="bi bi-plus"></i></button>
+                      </div>
+                      <div class="btn-group btn-group-sm w-100">
+                        <button class="btn btn-outline-warning" id="hwYForeverMinus">&infin;-</button>
+                        <button class="btn btn-outline-danger" id="hwYStop"><i class="bi bi-stop-fill"></i></button>
+                        <button class="btn btn-outline-warning" id="hwYForeverPlus">&infin;+</button>
+                      </div>
+                    </div>
+                    <!-- Z-Axis -->
+                    <div class="col-md-6 col-lg-3">
+                      <h6>Z-Axis (3)</h6>
+                      <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text">Steps</span>
+                        <input type="number" class="form-control" id="hwStepZ" value="1000">
+                      </div>
+                      <div class="btn-group btn-group-sm w-100 mb-1">
+                        <button class="btn btn-outline-success" id="hwZMinus"><i class="bi bi-dash"></i></button>
+                        <button class="btn btn-outline-success" id="hwZPlus"><i class="bi bi-plus"></i></button>
+                      </div>
+                      <div class="btn-group btn-group-sm w-100">
+                        <button class="btn btn-outline-warning" id="hwZForeverMinus">&infin;-</button>
+                        <button class="btn btn-outline-danger" id="hwZStop"><i class="bi bi-stop-fill"></i></button>
+                        <button class="btn btn-outline-warning" id="hwZForeverPlus">&infin;+</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Light Source / PWM Control -->
+              <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                  <h5 class="mb-0"><i class="bi bi-brightness-high"></i> Light Source / PWM Control</h5>
+                </div>
+                <div class="card-body">
+                  <!-- Channel 0 -->
+                  <div class="row align-items-center mb-2">
+                    <div class="col-auto"><strong>Ch 0</strong></div>
+                    <div class="col-auto">
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-success" id="hwLight0OnBtn">On</button>
+                        <button class="btn btn-outline-danger" id="hwLight0OffBtn">Off</button>
+                      </div>
+                    </div>
+                    <div class="col"><input type="range" class="form-range" id="hwLight0Slider" min="0" max="1023" value="0" disabled></div>
+                    <div class="col-auto"><input type="number" class="form-control form-control-sm" id="hwLight0Value" value="0" min="0" max="1023" style="width:80px" disabled></div>
+                  </div>
+                  <!-- Channel 1 -->
+                  <div class="row align-items-center mb-2">
+                    <div class="col-auto"><strong>Ch 1</strong></div>
+                    <div class="col-auto">
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-success" id="hwLight1OnBtn">On</button>
+                        <button class="btn btn-outline-danger" id="hwLight1OffBtn">Off</button>
+                      </div>
+                    </div>
+                    <div class="col"><input type="range" class="form-range" id="hwLight1Slider" min="0" max="1023" value="0" disabled></div>
+                    <div class="col-auto"><input type="number" class="form-control form-control-sm" id="hwLight1Value" value="0" min="0" max="1023" style="width:80px" disabled></div>
+                  </div>
+                  <!-- Channel 2 -->
+                  <div class="row align-items-center mb-2">
+                    <div class="col-auto"><strong>Ch 2</strong></div>
+                    <div class="col-auto">
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-success" id="hwLight2OnBtn">On</button>
+                        <button class="btn btn-outline-danger" id="hwLight2OffBtn">Off</button>
+                      </div>
+                    </div>
+                    <div class="col"><input type="range" class="form-range" id="hwLight2Slider" min="0" max="1023" value="0" disabled></div>
+                    <div class="col-auto"><input type="number" class="form-control form-control-sm" id="hwLight2Value" value="0" min="0" max="1023" style="width:80px" disabled></div>
+                  </div>
+                  <!-- Channel 3 -->
+                  <div class="row align-items-center mb-2">
+                    <div class="col-auto"><strong>Ch 3</strong></div>
+                    <div class="col-auto">
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-success" id="hwLight3OnBtn">On</button>
+                        <button class="btn btn-outline-danger" id="hwLight3OffBtn">Off</button>
+                      </div>
+                    </div>
+                    <div class="col"><input type="range" class="form-range" id="hwLight3Slider" min="0" max="1023" value="0" disabled></div>
+                    <div class="col-auto"><input type="number" class="form-control form-control-sm" id="hwLight3Value" value="0" min="0" max="1023" style="width:80px" disabled></div>
+                  </div>
+                  <!-- Channel 4 -->
+                  <div class="row align-items-center mb-2">
+                    <div class="col-auto"><strong>Ch 4</strong></div>
+                    <div class="col-auto">
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-success" id="hwLight4OnBtn">On</button>
+                        <button class="btn btn-outline-danger" id="hwLight4OffBtn">Off</button>
+                      </div>
+                    </div>
+                    <div class="col"><input type="range" class="form-range" id="hwLight4Slider" min="0" max="1023" value="0" disabled></div>
+                    <div class="col-auto"><input type="number" class="form-control form-control-sm" id="hwLight4Value" value="0" min="0" max="1023" style="width:80px" disabled></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- LED Array Control -->
+              <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="mb-0"><i class="bi bi-grid-3x3"></i> LED Array Control</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row g-2 mb-3">
+                    <div class="col-auto"><button class="btn btn-success btn-sm" id="hwLedFullOn"><i class="bi bi-lightbulb-fill"></i> All On</button></div>
+                    <div class="col-auto"><button class="btn btn-outline-danger btn-sm" id="hwLedFullOff"><i class="bi bi-lightbulb-off"></i> All Off</button></div>
+                  </div>
+                  <h6>Directional</h6>
+                  <div class="row g-2 mb-3">
+                    <div class="col-auto"><button class="btn btn-outline-primary btn-sm" id="hwLedLeft"><i class="bi bi-arrow-left"></i> Left</button></div>
+                    <div class="col-auto"><button class="btn btn-outline-primary btn-sm" id="hwLedRight"><i class="bi bi-arrow-right"></i> Right</button></div>
+                    <div class="col-auto"><button class="btn btn-outline-primary btn-sm" id="hwLedTop"><i class="bi bi-arrow-up"></i> Top</button></div>
+                    <div class="col-auto"><button class="btn btn-outline-primary btn-sm" id="hwLedBottom"><i class="bi bi-arrow-down"></i> Bottom</button></div>
+                  </div>
+                  <h6>Rings</h6>
+                  <div class="row g-2 mb-3">
+                    <div class="col-auto"><button class="btn btn-outline-info btn-sm" id="hwLedOuterRing">Outer Ring</button></div>
+                    <div class="col-auto"><button class="btn btn-outline-info btn-sm" id="hwLedMiddleRing">Middle Ring</button></div>
+                    <div class="col-auto"><button class="btn btn-outline-info btn-sm" id="hwLedInnerRing">Inner Ring</button></div>
+                  </div>
+                  <h6>8x8 LED Matrix</h6>
+                  <div class="led-matrix-grid" id="hwLedMatrix">
+                    <!-- Dynamically populated by hwtest.js -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- TMC Driver Settings -->
+              <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                  <h5 class="mb-0"><i class="bi bi-cpu"></i> TMC Driver Settings</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row g-2 mb-3">
+                    <div class="col-md-3">
+                      <label class="form-label form-label-sm">Microsteps</label>
+                      <input type="number" class="form-control form-control-sm" id="hwTmcMsteps" value="16">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label form-label-sm">RMS Current</label>
+                      <input type="number" class="form-control form-control-sm" id="hwTmcRms" value="700">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label form-label-sm">SG Threshold</label>
+                      <input type="number" class="form-control form-control-sm" id="hwTmcSgthrs" value="15">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label form-label-sm">Axis</label>
+                      <select class="form-select form-select-sm" id="hwTmcAxis">
+                        <option value="0">A (0)</option>
+                        <option value="1">X (1)</option>
+                        <option value="2" selected>Y (2)</option>
+                        <option value="3">Z (3)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row g-2 mb-3">
+                    <div class="col-md-3">
+                      <label class="form-label form-label-sm">SEMIN</label>
+                      <input type="number" class="form-control form-control-sm" id="hwTmcSemin" value="5">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label form-label-sm">SEMAX</label>
+                      <input type="number" class="form-control form-control-sm" id="hwTmcSemax" value="2">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label form-label-sm">Blank Time</label>
+                      <input type="number" class="form-control form-control-sm" id="hwTmcBlank" value="24">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label form-label-sm">TOFF</label>
+                      <input type="number" class="form-control form-control-sm" id="hwTmcToff" value="4">
+                    </div>
+                  </div>
+                  <button class="btn btn-primary btn-sm" id="hwTmcUpdate">
+                    <i class="bi bi-arrow-repeat"></i> Update TMC Settings
+                  </button>
+                </div>
+              </div>
+
+              <!-- CAN Address & Misc -->
+              <div class="card mb-4">
+                <div class="card-header">
+                  <h5 class="mb-0"><i class="bi bi-diagram-3"></i> CAN Address & Misc</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <h6>Set CAN Address</h6>
+                      <div class="input-group input-group-sm mb-2">
+                        <input type="number" class="form-control" id="hwCanAddress" value="256" min="0" max="65535">
+                        <button class="btn btn-primary" id="hwCanUpdate">Set</button>
+                      </div>
+                      <div class="d-flex flex-wrap gap-1">
+                        <button class="btn btn-outline-secondary btn-sm hw-can-preset" data-address="1">Master (1)</button>
+                        <button class="btn btn-outline-secondary btn-sm hw-can-preset" data-address="10">A (10)</button>
+                        <button class="btn btn-outline-secondary btn-sm hw-can-preset" data-address="11">X (11)</button>
+                        <button class="btn btn-outline-secondary btn-sm hw-can-preset" data-address="12">Y (12)</button>
+                        <button class="btn btn-outline-secondary btn-sm hw-can-preset" data-address="13">Z (13)</button>
+                        <button class="btn btn-outline-secondary btn-sm hw-can-preset" data-address="30">LED (30)</button>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <h6>Motor Enable</h6>
+                      <div class="btn-group btn-group-sm mb-3 w-100">
+                        <button class="btn btn-outline-success" id="hwMotorEnable"><i class="bi bi-power"></i> Auto Enable On</button>
+                        <button class="btn btn-outline-danger" id="hwMotorDisable"><i class="bi bi-power"></i> Auto Enable Off</button>
+                      </div>
+                      <h6>Bluetooth</h6>
+                      <button class="btn btn-outline-primary btn-sm" id="hwBtPair">
+                        <i class="bi bi-bluetooth"></i> BT Scan / Pair
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Quick Actions -->
               <div class="card mb-4">
                 <div class="card-header">
@@ -1074,1536 +1228,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Main Application Script -->
-    <script type="module">
-      // =====================================================
-      // UC2 Firmware Flasher Application
-      // =====================================================
-
-      const GITHUB_REPO = 'youseetoo/uc2-esp32';
-      const GITHUB_API = `https://api.github.com/repos/${GITHUB_REPO}`;
-      const BINARIES_REPO = 'youseetoo/uc2-esp32-binaries';
-      const RAW_BASE = `https://raw.githubusercontent.com/${BINARIES_REPO}/refs/heads`;
-      const IMSWITCH_REPO = 'openUC2/rpi-imswitch-os';
-      const IMSWITCH_API = `https://api.github.com/repos/${IMSWITCH_REPO}`;
-      
-      // Board configurations with images and metadata
-      // Categories: frame, electrobox, qbox, standalone
-      const BOARD_CONFIG = {
-        'esp32-uc2-wemos': {
-          name: 'ESP32 WEMOS D1 R32',
-          image: './IMAGES/esp32-uc2-wemos.jpg',
-          chip: 'ESP32',
-          description: 'Off-the-shelf board for use with CNC Shield v3',
-          canConfig: false,
-          category: 'standalone'
-        },
-        'esp32-uc2-standalone-2': {
-          name: 'Standalone Board V2',
-          image: './IMAGES/esp32-uc2-standalone-2.png',
-          chip: 'ESP32',
-          description: 'UC2 Standalone PCB Version 2',
-          canConfig: false,
-          category: 'standalone'
-        },
-        'esp32-uc2-standalone-3': {
-          name: 'Standalone Board V3',
-          image: './IMAGES/esp32-uc2-standalone-3.png',
-          chip: 'ESP32',
-          description: 'UC2 Standalone PCB Version 3',
-          canConfig: false,
-          category: 'standalone'
-        },
-        'esp32-uc2-standalone-4': {
-          name: 'Standalone Board V4',
-          image: './IMAGES/esp32-uc2-v4.png',
-          chip: 'ESP32',
-          description: 'UC2 Standalone PCB Version 4',
-          canConfig: true,
-          category: 'electrobox'
-        },
-        'esp32-uc2-v4-can': {
-          name: 'UC2 V4 CAN Master',
-          image: './IMAGES/esp32-uc2-v4.png',
-          chip: 'ESP32',
-          description: 'UC2 V4 with CAN bus master functionality',
-          canConfig: true,
-          defaultCanId: 1,
-          category: 'electrobox'
-        },
-        'esp32-uc2-v4-can-hybrid': {
-          name: 'UC2 V4 CAN Hybrid',
-          image: './IMAGES/esp32-uc2-v4.png',
-          chip: 'ESP32',
-          description: 'UC2 V4 with native and CAN motors',
-          canConfig: true,
-          defaultCanId: 1,
-          category: 'electrobox'
-        },
-        'can-hat-master-v2': {
-          name: 'CAN HAT Master V2 (FRAME)',
-          image: './IMAGES/openuc2-HATv1.png',
-          chip: 'ESP32',
-          description: 'Raspberry Pi HAT with CAN Master',
-          canConfig: true,
-          defaultCanId: 1,
-          category: 'frame'
-        },
-        'seeed_xiao_esp32s3': {
-          name: 'Xiao ESP32S3 ODMR',
-          image: 'https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png',
-          chip: 'ESP32-S3',
-          description: 'Seeed Xiao ESP32S3 for ODMR applications',
-          canConfig: false,
-          category: 'qbox'
-        },
-        'seeed_xiao_esp32s3_ledservo': {
-          name: 'Xiao LED & Servo',
-          image: './IMAGES/ledboard.jpg',
-          chip: 'ESP32-S3',
-          description: 'Xiao board for LED and servo control',
-          canConfig: false,
-          category: 'frame'
-        },
-        'seeed_xiao_esp32s3_ledring': {
-          name: 'Xiao LED Ring',
-          image: './IMAGES/esp32-uc2-ledring.jpg',
-          chip: 'ESP32-S3',
-          description: 'Xiao board with LED ring for brightfield',
-          canConfig: true,
-          category: 'frame'
-        },
-        'xiao-can-slave-motor': {
-          name: 'Xiao CAN Slave Motor',
-          image: './IMAGES/esp32s3-uc2-motor.jpg',
-          chip: 'ESP32-S3',
-          description: 'CAN slave for motor control',
-          canConfig: true,
-          canPresets: ['X-Axis', 'Y-Axis', 'Z-Axis', 'A-Axis'],
-          category: 'frame'
-        },
-        'xiao-can-slave-galvo': {
-          name: 'Xiao CAN Slave Galvo',
-          image: './IMAGES/esp32-uc2-xiao-can-galvo.png',
-          chip: 'ESP32-S3',
-          description: 'CAN slave for galvo mirror control',
-          canConfig: true,
-          defaultCanId: 15,
-          category: 'frame'
-        },
-        'xiao-can-slave-laser': {
-          name: 'Xiao CAN Slave Laser',
-          image: './IMAGES/esp32-uc2-xiao-can-laser.png',
-          chip: 'ESP32-S3',
-          description: 'CAN slave for laser control',
-          canConfig: true,
-          defaultCanId: 20,
-          category: 'frame'
-        },
-        'xiao-can-slave-led': {
-          name: 'Xiao CAN Slave LED',
-          image: './IMAGES/esp32-uc2-xiao-can-ledring.png',
-          chip: 'ESP32-S3',
-          description: 'CAN slave for LED control',
-          canConfig: true,
-          defaultCanId: 30,
-          category: 'frame'
-        },
-        'xiao-can-slave-illumination': {
-          name: 'Xiao CAN Slave Illumination',
-          image: './IMAGES/esp32-uc2-xiao-can-ledring.png',
-          chip: 'ESP32-S3',
-          description: 'CAN slave for LED array control',
-          canConfig: true,
-          defaultCanId: 30,
-          category: 'frame'
-        },
-        'odmr-xiao-esp32s3': {
-          name: 'ODMR Xiao ESP32S3',
-          image: 'https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png',
-          chip: 'ESP32-S3',
-          description: 'Quantum ODMR spectroscopy board (ESP32-S3)',
-          canConfig: false,
-          category: 'qbox'
-        },
-        'odmr-xiao-esp32c3': {
-          name: 'ODMR Xiao ESP32C3',
-          image: 'https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png',
-          chip: 'ESP32-C3',
-          description: 'Quantum ODMR spectroscopy board (ESP32-C3)',
-          canConfig: false,
-          category: 'qbox'
-        },
-        'waveshare_esp32s3_ledarray': {
-          name: 'Waveshare ESP32S3 Matrix',
-          image: './IMAGES/waveshare.webp',
-          chip: 'ESP32-S3',
-          description: 'Waveshare ESP32S3 with LED matrix',
-          canConfig: false,
-          category: 'electrobox'
-        }
-      };
-
-      // Application State
-      const state = {
-        releases: [],
-        imswitchReleases: [],
-        currentRelease: null,
-        selectedBoard: null,
-        serialPort: null,
-        serialReader: null,
-        serialWriter: null,
-        isConnected: false,
-        hwSerialPort: null,
-        hwSerialReader: null,
-        hwSerialWriter: null,
-        hwIsConnected: false,
-        currentCategory: 'all'
-      };
-
-      // DOM Elements
-      const elements = {
-        releaseSelect: document.getElementById('releaseSelect'),
-        imswitchReleaseSelect: document.getElementById('imswitchReleaseSelect'),
-        imswitchReleaseLink: document.getElementById('imswitchReleaseLink'),
-        currentVersion: document.getElementById('currentVersion'),
-        releaseDate: document.getElementById('releaseDate'),
-        boardGrid: document.getElementById('boardGrid'),
-        boardSearch: document.getElementById('boardSearch'),
-        boardCategory: document.getElementById('boardCategory'),
-        boardInfoCard: document.getElementById('boardInfoCard'),
-        boardInfo: document.getElementById('boardInfo'),
-        selectedBoardName: document.getElementById('selectedBoardName'),
-        selectedBoardChip: document.getElementById('selectedBoardChip'),
-        installButton: document.getElementById('installButton'),
-        directLink: document.getElementById('directLink'),
-        copyLinkBtn: document.getElementById('copyLinkBtn'),
-        postFlashConfig: document.getElementById('postFlashConfig'),
-        // Configure tab
-        connectSerialBtn: document.getElementById('connectSerialBtn'),
-        connectionStatus: document.getElementById('connectionStatus'),
-        baudRate: document.getElementById('baudRate'),
-        consoleOutput: document.getElementById('consoleOutput'),
-        clearConsoleBtn: document.getElementById('clearConsoleBtn'),
-        customCommand: document.getElementById('customCommand'),
-        sendCommandBtn: document.getElementById('sendCommandBtn'),
-        customCanId: document.getElementById('customCanId'),
-        setCustomCanBtn: document.getElementById('setCustomCanBtn'),
-        // Erase tab
-        eraseFlashBtn: document.getElementById('eraseFlashBtn'),
-        eraseProgress: document.getElementById('eraseProgress'),
-        eraseProgressBar: document.getElementById('eraseProgressBar'),
-        eraseStatus: document.getElementById('eraseStatus'),
-        eraseConsole: document.getElementById('eraseConsole'),
-        // Hardware test tab
-        hwConnectSerialBtn: document.getElementById('hwConnectSerialBtn'),
-        hwConnectionStatus: document.getElementById('hwConnectionStatus'),
-        hwBaudRate: document.getElementById('hwBaudRate'),
-        hwConsoleOutput: document.getElementById('hwConsoleOutput'),
-        hwClearConsoleBtn: document.getElementById('hwClearConsoleBtn'),
-        hwCustomCommand: document.getElementById('hwCustomCommand'),
-        hwSendCommandBtn: document.getElementById('hwSendCommandBtn'),
-        // Motor controls
-        motorStepperId: document.getElementById('motorStepperId'),
-        motorPosition: document.getElementById('motorPosition'),
-        motorSpeed: document.getElementById('motorSpeed'),
-        motorAccel: document.getElementById('motorAccel'),
-        motorMovePositive: document.getElementById('motorMovePositive'),
-        motorMoveNegative: document.getElementById('motorMoveNegative'),
-        motorStop: document.getElementById('motorStop'),
-        // Laser controls
-        laserId: document.getElementById('laserId'),
-        laserValue: document.getElementById('laserValue'),
-        laserValueDisplay: document.getElementById('laserValueDisplay'),
-        laserOn: document.getElementById('laserOn'),
-        laserOff: document.getElementById('laserOff'),
-        laserSetValue: document.getElementById('laserSetValue'),
-        // Homing controls
-        homeStepperId: document.getElementById('homeStepperId'),
-        homeTimeout: document.getElementById('homeTimeout'),
-        homeSpeed: document.getElementById('homeSpeed'),
-        homeDirection: document.getElementById('homeDirection'),
-        homeEndstopPolarity: document.getElementById('homeEndstopPolarity'),
-        homeEndstopRelease: document.getElementById('homeEndstopRelease'),
-        homeStart: document.getElementById('homeStart'),
-        // Loading
-        loadingOverlay: document.getElementById('loadingOverlay'),
-        loadingText: document.getElementById('loadingText'),
-        browserWarning: document.getElementById('browserWarning')
-      };
-
-      // =====================================================
-      // Initialization
-      // =====================================================
-
-      async function init() {
-        // Check WebSerial support
-        if (!('serial' in navigator)) {
-          elements.browserWarning.classList.remove('hidden');
-        }
-
-        // Parse URL parameters
-        parseUrlParams();
-
-        // Load releases from GitHub
-        await loadReleases();
-
-        // Setup event listeners
-        setupEventListeners();
-
-        // Render boards
-        renderBoards();
-
-        // Update direct link
-        updateDirectLink();
-      }
-
-      function parseUrlParams() {
-        const params = new URLSearchParams(window.location.search);
-        
-        // Firmware selection
-        if (params.has('firmware')) {
-          state.selectedBoard = params.get('firmware');
-        }
-        
-        // Version selection
-        if (params.has('release')) {
-          state.currentRelease = params.get('release');
-        }
-
-        // Tab selection
-        if (params.has('tab')) {
-          const tab = params.get('tab');
-          const tabBtn = document.getElementById(`${tab}-tab`);
-          if (tabBtn) {
-            new bootstrap.Tab(tabBtn).show();
-          }
-        }
-
-        // CAN ID preset
-        if (params.has('canid')) {
-          elements.customCanId.value = params.get('canid');
-        }
-      }
-
-      // =====================================================
-      // GitHub Release Loading
-      // =====================================================
-
-      async function loadReleases() {
-        try {
-          showLoading('Loading firmware releases...');
-          
-          // Load firmware releases
-          const fwResponse = await fetch(`${GITHUB_API}/releases`);
-          if (!fwResponse.ok) throw new Error('Failed to fetch firmware releases');
-          
-          const releases = await fwResponse.json();
-          state.releases = releases;
-          
-          // Load ImSwitch releases
-          try {
-            const imswitchResponse = await fetch(`${IMSWITCH_API}/releases`);
-            if (imswitchResponse.ok) {
-              state.imswitchReleases = await imswitchResponse.json();
-              console.log(`Loaded ${state.imswitchReleases.length} ImSwitch OS releases`);
-            }
-          } catch (err) {
-            console.warn('Failed to load ImSwitch releases:', err);
-          }
-          
-          // Populate firmware release dropdown
-          elements.releaseSelect.innerHTML = '';
-          
-          // Add latest option
-          const latestOpt = document.createElement('option');
-          latestOpt.value = 'latest';
-          latestOpt.textContent = 'Latest Stable';
-          elements.releaseSelect.appendChild(latestOpt);
-          
-          // Add all firmware releases
-          releases.forEach(release => {
-            const opt = document.createElement('option');
-            opt.value = release.tag_name;
-            opt.textContent = `${release.tag_name} ${release.prerelease ? '(beta)' : ''}`;
-            elements.releaseSelect.appendChild(opt);
-          });
-          
-          // Populate ImSwitch OS release dropdown (if available)
-          if (state.imswitchReleases && state.imswitchReleases.length > 0) {
-            elements.imswitchReleaseSelect.innerHTML = '<option value="">-- Select ImSwitch OS Release --</option>';
-            state.imswitchReleases.slice(0, 20).forEach(release => {
-              const opt = document.createElement('option');
-              opt.value = release.tag_name;
-              opt.textContent = `${release.tag_name} ${release.prerelease ? '(beta)' : ''}`;
-              elements.imswitchReleaseSelect.appendChild(opt);
-            });
-            logToConsole(`\u2713 Loaded ${state.imswitchReleases.length} ImSwitch OS releases`, 'info');
-          }
-          
-          // Select from URL or default
-          if (state.currentRelease) {
-            elements.releaseSelect.value = state.currentRelease;
-          }
-          
-          // Update version display
-          updateVersionDisplay();
-          
-          // Log info
-          logToConsole('\u2713 Firmware will be loaded from GitHub raw URLs', 'success');
-          
-        } catch (error) {
-          console.error('Error loading releases:', error);
-          logToConsole(`Error loading releases: ${error.message}`, 'error');
-          
-          // Fallback to static manifest files
-          elements.releaseSelect.innerHTML = '<option value="static">Local (static)</option>';
-        } finally {
-          hideLoading();
-        }
-      }
-      /*
-          releases.forEach(release => {
-            const opt = document.createElement('option');
-            opt.value = release.tag_name;
-            opt.textContent = `${release.tag_name} ${release.prerelease ? '(beta)' : ''}`;
-            fwGroup.appendChild(opt);
-          });
-          elements.releaseSelect.appendChild(fwGroup);
-          
-          // Select from URL or default
-          if (state.currentRelease) {
-            elements.releaseSelect.value = state.currentRelease;
-          }
-          
-          // Update version display
-          updateVersionDisplay();
-          
-          // Log info
-          logToConsole('\u2713 Firmware will be loaded from GitHub raw URLs', 'success');
-          
-        } catch (error) {
-          console.error('Error loading releases:', error);
-          logToConsole(`Error loading releases: ${error.message}`, 'error');
-          
-          // Fallback to static manifest files
-          elements.releaseSelect.innerHTML = '<option value="static">Local (static)</option>';
-        } finally {
-          hideLoading();
-        }
-      }
-      */
-
-      function updateVersionDisplay() {
-        const selectedValue = elements.releaseSelect.value;
-        let release;
-        
-        if (selectedValue === 'latest' || selectedValue === 'static') {
-          release = state.releases[0];
-        } else {
-          release = state.releases.find(r => r.tag_name === selectedValue);
-        }
-        
-        if (release) {
-          elements.currentVersion.textContent = release.tag_name;
-          elements.currentVersion.className = `badge version-badge ${release.prerelease ? 'bg-warning' : 'bg-success'}`;
-          elements.releaseDate.textContent = new Date(release.published_at).toLocaleDateString();
-          state.currentRelease = release.tag_name;
-        } else {
-          elements.currentVersion.textContent = 'Static';
-          elements.currentVersion.className = 'badge version-badge bg-secondary';
-          elements.releaseDate.textContent = '';
-        }
-        
-        // Update manifest URL if board is selected
-        if (state.selectedBoard) {
-          updateManifestUrl();
-        }
-      }
-
-      // =====================================================
-      // Board Rendering
-      // =====================================================
-
-      function renderBoards(filter = '', category = 'all') {
-        elements.boardGrid.innerHTML = '';
-        
-        const filterLower = filter.toLowerCase();
-        
-        Object.entries(BOARD_CONFIG).forEach(([boardId, config]) => {
-          // Apply category filter
-          if (category !== 'all' && config.category !== category) {
-            return;
-          }
-          
-          // Apply text filter
-          if (filter && !config.name.toLowerCase().includes(filterLower) && 
-              !boardId.toLowerCase().includes(filterLower)) {
-            return;
-          }
-          
-          const col = document.createElement('div');
-          col.className = 'col';
-          
-          const isSelected = state.selectedBoard === boardId;
-          
-          // Category badge colors
-          const categoryColors = {
-            'frame': 'primary',
-            'electrobox': 'warning',
-            'qbox': 'success',
-            'standalone': 'secondary'
-          };
-          const categoryBadge = config.category ? 
-            `<span class="badge bg-${categoryColors[config.category] || 'secondary'} ms-1" style="font-size: 0.6rem;">${config.category.toUpperCase()}</span>` : '';
-          
-          col.innerHTML = `
-            <div class="card board-card h-100 ${isSelected ? 'selected' : ''}" data-board="${boardId}">
-              <div class="card-body text-center p-2">
-                <img src="${config.image}" alt="${config.name}" class="board-img mb-2"
-                     onerror="this.src='./IMAGES/placeholder.svg'">
-                <h6 class="card-title mb-1" style="font-size: 0.85rem;">${config.name}</h6>
-                <div>
-                  <span class="badge bg-secondary" style="font-size: 0.7rem;">${config.chip}</span>
-                  ${config.canConfig ? '<span class="badge bg-info ms-1" style="font-size: 0.7rem;">CAN</span>' : ''}
-                  ${categoryBadge}
-                </div>
-              </div>
-            </div>
-          `;
-          
-          col.querySelector('.board-card').addEventListener('click', () => selectBoard(boardId));
-          elements.boardGrid.appendChild(col);
-        });
-        
-        // If a board was preselected from URL, select it
-        if (state.selectedBoard && !filter) {
-          selectBoard(state.selectedBoard);
-        }
-      }
-
-      function selectBoard(boardId) {
-        // Update state
-        state.selectedBoard = boardId;
-        const config = BOARD_CONFIG[boardId];
-        
-        // Update visual selection
-        document.querySelectorAll('.board-card').forEach(card => {
-          card.classList.toggle('selected', card.dataset.board === boardId);
-        });
-        
-        // Update sidebar
-        elements.selectedBoardName.textContent = config ? config.name : boardId;
-        elements.selectedBoardChip.textContent = config ? config.chip : '';
-        
-        // Enable install button
-        const activateBtn = elements.installButton.querySelector('button[slot="activate"]');
-        if (activateBtn) {
-          activateBtn.disabled = false;
-        }
-        
-        // Update manifest URL
-        updateManifestUrl();
-        
-        // Show board info
-        if (config) {
-          showBoardInfo(boardId, config);
-        }
-        
-        // Update direct link
-        updateDirectLink();
-      }
-
-      function showBoardInfo(boardId, config) {
-        elements.boardInfoCard.classList.remove('hidden');
-        
-        let canConfigHtml = '';
-        if (config.canConfig) {
-          canConfigHtml = `
-            <div class="mt-3">
-              <h6><i class="bi bi-diagram-3"></i> CAN Configuration</h6>
-              <p class="text-muted small">This board supports CAN bus. Configure after flashing in the "Configure" tab.</p>
-              ${config.defaultCanId ? `<p>Default CAN ID: <strong>${config.defaultCanId}</strong></p>` : ''}
-            </div>
-          `;
-        }
-        
-        let externalRepoHtml = '';
-        if (config.externalRepo) {
-          externalRepoHtml = `
-            <div class="mt-3">
-              <h6><i class="bi bi-github"></i> External Repository</h6>
-              <p class="text-muted small">
-                This firmware is built from: 
-                <a href="${config.externalRepo}" target="_blank" class="text-decoration-none">
-                  ${config.externalRepo.split('/').slice(-2).join('/')}
-                  <i class="bi bi-box-arrow-up-right"></i>
-                </a>
-              </p>
-            </div>
-          `;
-        }
-        
-        elements.boardInfo.innerHTML = `
-          <div class="row">
-            <div class="col-md-4 text-center">
-              <img src="${config.image}" alt="${config.name}" style="max-width: 150px;">
-            </div>
-            <div class="col-md-8">
-              <h5>${config.name}</h5>
-              <p class="text-muted">${config.description}</p>
-              <p><strong>Chip:</strong> ${config.chip}</p>
-              ${canConfigHtml}
-              ${externalRepoHtml}
-            </div>
-          </div>
-        `;
-      }
-
-      async function updateManifestUrl() {
-        if (!state.selectedBoard) return;
-        
-        const boardConfig = BOARD_CONFIG[state.selectedBoard];
-        let manifestUrl;
-        let releaseTag = state.currentRelease;
-        
-        // Handle ImSwitch release selection
-        if (releaseTag && releaseTag.startsWith('imswitch:')) {
-          const imswitchTag = releaseTag.replace('imswitch:', '');
-          logToConsole(`\u231B Resolving firmware version for ImSwitch ${imswitchTag}...`, 'info');
-          
-          try {
-            const fwVersion = await resolveFirmwareFromImSwitch(imswitchTag);
-            if (fwVersion) {
-              releaseTag = fwVersion;
-              logToConsole(`\u2713 Resolved to firmware version: ${fwVersion}`, 'success');
-            } else {
-              logToConsole(`\u26A0 Could not resolve firmware version, using latest`, 'warning');
-              releaseTag = 'latest';
-            }
-          } catch (err) {
-            console.error('Error resolving ImSwitch firmware:', err);
-            logToConsole(`\u2717 Error resolving firmware: ${err.message}`, 'error');
-            releaseTag = 'latest';
-          }
-        }
-        
-        // Handle 'latest' release selection
-        if (releaseTag === 'latest') {
-          const latestRelease = state.releases.find(r => !r.prerelease);
-          releaseTag = latestRelease ? latestRelease.tag_name : state.releases[0]?.tag_name;
-        }
-        
-        // Check if board is from external repo (ODMR firmware)
-        if (boardConfig.manifestPath) {
-          // Use local path for ODMR firmware uploaded by workflow
-          manifestUrl = `${window.location.origin}${boardConfig.manifestPath}${state.selectedBoard}-manifest.json`;
-          console.log('Using external repo manifest:', manifestUrl);
-        } else if (releaseTag) {
-          // Use raw.githubusercontent.com from mirror repository (CORS-enabled)
-          manifestUrl = `${RAW_BASE}/${releaseTag}/${state.selectedBoard}-manifest.json`;
-          console.log('Using GitHub raw manifest:', manifestUrl);
-          logToConsole(`\u2713 Loading from GitHub: ${releaseTag}/${state.selectedBoard}`, 'success');
-        } else {
-          // Fallback to static files
-          manifestUrl = `./static/firmware_build/${state.selectedBoard}-manifest.json`;
-          console.log('Using static manifest:', manifestUrl);
-        }
-        
-        elements.installButton.manifest = manifestUrl;
-        console.log('Final manifest URL:', manifestUrl);
-      }
-
-      async function resolveFirmwareFromImSwitch(imswitchTag) {
-        try {
-          // Fetch the deployment.compose.yml file from the ImSwitch release
-          const fileUrl = `https://raw.githubusercontent.com/${IMSWITCH_REPO}/refs/tags/${imswitchTag}/deployments/firmware.pkg/deployment.compose.yml`;
-          const response = await fetch(fileUrl);
-          
-          if (!response.ok) {
-            throw new Error(`Failed to fetch deployment file: ${response.statusText}`);
-          }
-          
-          const yamlContent = await response.text();
-          
-          // Extract Docker image tag (e.g., "sha-77ceeb1" or "v2026.01.19")
-          // Look for: image: ghcr.io/youseetoo/firmware-image-server:sha-XXXXXX or :vYYYY.MM.DD
-          const imageMatch = yamlContent.match(/image:\s+ghcr\.io\/youseetoo\/firmware-image-server:(\S+?)(?:@|\s|$)/);
-          
-          if (!imageMatch) {
-            throw new Error('Could not find firmware-image-server image in deployment file');
-          }
-          
-          let tag = imageMatch[1];
-          console.log('Found Docker image tag:', tag);
-          
-          // If it's a SHA tag (sha-XXXXXX), we need to find the corresponding version tag
-          if (tag.startsWith('sha-')) {
-            // Extract the SHA and look for a matching firmware release
-            const sha = tag.replace('sha-', '');
-            logToConsole(`\u2139 Docker image uses commit SHA: ${sha}`, 'info');
-            
-            // Check if there's a version tag in the firmware releases that matches this timeframe
-            const imswitchRelease = state.imswitchReleases.find(r => r.tag_name === imswitchTag);
-            if (imswitchRelease) {
-              const imswitchDate = new Date(imswitchRelease.published_at);
-              
-              // Find firmware release closest to this date
-              const closestFirmware = state.releases
-                .filter(r => !r.prerelease)
-                .map(r => ({
-                  ...r,
-                  dateDiff: Math.abs(new Date(r.published_at) - imswitchDate)
-                }))
-                .sort((a, b) => a.dateDiff - b.dateDiff)[0];
-              
-              if (closestFirmware) {
-                logToConsole(`\u2139 Matched to firmware release by date: ${closestFirmware.tag_name}`, 'info');
-                return closestFirmware.tag_name;
-              }
-            }
-            
-            return null;
-          } else if (tag.match(/^v\d{4}\.\d{2}\.\d{2}/)) {
-            // It's already a version tag
-            return tag;
-          }
-          
-          return null;
-        } catch (error) {
-          console.error('Error resolving firmware from ImSwitch:', error);
-          throw error;
-        }
-      }
-
-      function updateDirectLink() {
-        const params = new URLSearchParams();
-        
-        if (state.selectedBoard) {
-          params.set('firmware', state.selectedBoard);
-        }
-        if (state.currentRelease && state.currentRelease !== 'latest') {
-          params.set('release', state.currentRelease);
-        }
-        
-        const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-        elements.directLink.value = url;
-        
-        // Log raw GitHub URL for reference
-        if (state.selectedBoard && state.currentRelease) {
-          let releaseTag = state.currentRelease;
-          if (releaseTag === 'latest') {
-            const latestRelease = state.releases.find(r => !r.prerelease);
-            releaseTag = latestRelease ? latestRelease.tag_name : state.releases[0]?.tag_name;
-          }
-          if (releaseTag && !releaseTag.startsWith('imswitch:')) {
-            const rawUrl = `${RAW_BASE}/${releaseTag}/${state.selectedBoard}-manifest.json`;
-            console.log('Raw GitHub URL:', rawUrl);
-          }
-        }
-      }
-        /*
-        // Log raw GitHub URL for reference
-        if (state.selectedBoard && state.currentRelease) {
-          let releaseTag = state.currentRelease;
-          if (releaseTag === 'latest') {
-            const latestRelease = state.releases.find(r => !r.prerelease);
-            releaseTag = latestRelease ? latestRelease.tag_name : state.releases[0]?.tag_name;
-          }
-          if (releaseTag && !releaseTag.startsWith('imswitch:')) {
-            const rawUrl = `${RAW_BASE}/${releaseTag}/${state.selectedBoard}-manifest.json`;
-            console.log('Raw GitHub URL:', rawUrl);
-          }
-        }
-      }
-        */
-
-      // =====================================================
-      // Serial Communication
-      // =====================================================
-
-      async function connectSerial() {
-        try {
-          if (state.isConnected) {
-            await disconnectSerial();
-            return;
-          }
-          
-          const baudRate = parseInt(elements.baudRate.value);
-          state.serialPort = await navigator.serial.requestPort();
-          await state.serialPort.open({ baudRate });
-          
-          // Setup reader
-          const decoder = new TextDecoderStream();
-          state.serialPort.readable.pipeTo(decoder.writable);
-          state.serialReader = decoder.readable.getReader();
-          
-          // Setup writer
-          const encoder = new TextEncoderStream();
-          encoder.readable.pipeTo(state.serialPort.writable);
-          state.serialWriter = encoder.writable.getWriter();
-          
-          state.isConnected = true;
-          updateConnectionStatus(true);
-          
-          // Start reading
-          readSerialLoop();
-          
-          logToConsole('Connected to serial port', 'success');
-          
-        } catch (error) {
-          console.error('Serial connection error:', error);
-          logToConsole(`Connection error: ${error.message}`, 'error');
-          state.isConnected = false;
-          updateConnectionStatus(false);
-        }
-      }
-
-      async function disconnectSerial() {
-        try {
-          if (state.serialReader) {
-            await state.serialReader.cancel();
-            state.serialReader = null;
-          }
-          if (state.serialWriter) {
-            await state.serialWriter.close();
-            state.serialWriter = null;
-          }
-          if (state.serialPort) {
-            await state.serialPort.close();
-            state.serialPort = null;
-          }
-          
-          state.isConnected = false;
-          updateConnectionStatus(false);
-          logToConsole('Disconnected from serial port', 'info');
-          
-        } catch (error) {
-          console.error('Disconnect error:', error);
-        }
-      }
-
-      async function readSerialLoop() {
-        try {
-          while (state.isConnected && state.serialReader) {
-            const { value, done } = await state.serialReader.read();
-            if (done) break;
-            if (value) {
-              logToConsole(value, 'info');
-            }
-          }
-        } catch (error) {
-          if (error.name !== 'NetworkError') {
-            console.error('Read error:', error);
-            logToConsole(`Read error: ${error.message}`, 'error');
-          }
-        }
-      }
-
-      async function sendSerialCommand(command) {
-        if (!state.isConnected || !state.serialWriter) {
-          logToConsole('Not connected to serial port', 'error');
-          return false;
-        }
-        
-        try {
-          await state.serialWriter.write(command + '\n');
-          logToConsole(`> ${command}`, 'success');
-          return true;
-        } catch (error) {
-          console.error('Send error:', error);
-          logToConsole(`Send error: ${error.message}`, 'error');
-          return false;
-        }
-      }
-
-      async function setCanId(address) {
-        const command = JSON.stringify({ task: '/can_act', address: parseInt(address) });
-        return await sendSerialCommand(command);
-      }
-
-      function updateConnectionStatus(connected) {
-        elements.connectionStatus.textContent = connected ? 'Connected' : 'Disconnected';
-        elements.connectionStatus.className = `ms-2 badge ${connected ? 'bg-success' : 'bg-secondary'}`;
-        elements.connectSerialBtn.innerHTML = connected ? 
-          '<i class="bi bi-plug-fill"></i> Disconnect' : 
-          '<i class="bi bi-plug"></i> Connect';
-      }
-
-      // =====================================================
-      // Hardware Test Serial Communication
-      // =====================================================
-
-      async function connectHwSerial() {
-        try {
-          state.hwSerialPort = await navigator.serial.requestPort();
-          const baudRate = parseInt(elements.hwBaudRate.value);
-          
-          await state.hwSerialPort.open({ baudRate });
-          
-          const textDecoder = new TextDecoderStream();
-          state.hwSerialPort.readable.pipeTo(textDecoder.writable);
-          state.hwSerialReader = textDecoder.readable.getReader();
-          
-          const textEncoder = new TextEncoderStream();
-          textEncoder.readable.pipeTo(state.hwSerialPort.writable);
-          state.hwSerialWriter = textEncoder.writable.getWriter();
-          
-          state.hwIsConnected = true;
-          updateHwConnectionStatus(true);
-          
-          // Start reading
-          readHwSerialLoop();
-          
-          logToHwConsole('Connected to serial port', 'success');
-          
-        } catch (error) {
-          console.error('Hardware test serial connection error:', error);
-          logToHwConsole(`Connection error: ${error.message}`, 'error');
-          state.hwIsConnected = false;
-          updateHwConnectionStatus(false);
-        }
-      }
-
-      async function disconnectHwSerial() {
-        try {
-          if (state.hwSerialReader) {
-            await state.hwSerialReader.cancel();
-            state.hwSerialReader = null;
-          }
-          if (state.hwSerialWriter) {
-            await state.hwSerialWriter.close();
-            state.hwSerialWriter = null;
-          }
-          if (state.hwSerialPort) {
-            await state.hwSerialPort.close();
-            state.hwSerialPort = null;
-          }
-          
-          state.hwIsConnected = false;
-          updateHwConnectionStatus(false);
-          logToHwConsole('Disconnected from serial port', 'info');
-          
-        } catch (error) {
-          console.error('Hardware test disconnect error:', error);
-        }
-      }
-
-      async function readHwSerialLoop() {
-        try {
-          while (state.hwIsConnected && state.hwSerialReader) {
-            const { value, done } = await state.hwSerialReader.read();
-            if (done) break;
-            if (value) {
-              logToHwConsole(value, 'info');
-            }
-          }
-        } catch (error) {
-          if (error.name !== 'NetworkError') {
-            console.error('Hardware test read error:', error);
-            logToHwConsole(`Read error: ${error.message}`, 'error');
-          }
-        }
-      }
-
-      async function sendHwSerialCommand(command) {
-        if (!state.hwIsConnected || !state.hwSerialWriter) {
-          logToHwConsole('Not connected to serial port', 'error');
-          return false;
-        }
-        
-        try {
-          await state.hwSerialWriter.write(command + '\n');
-          logToHwConsole(`> ${command}`, 'success');
-          return true;
-        } catch (error) {
-          console.error('Hardware test send error:', error);
-          logToHwConsole(`Send error: ${error.message}`, 'error');
-          return false;
-        }
-      }
-
-      function updateHwConnectionStatus(connected) {
-        elements.hwConnectionStatus.textContent = connected ? 'Connected' : 'Disconnected';
-        elements.hwConnectionStatus.className = `ms-2 badge ${connected ? 'bg-success' : 'bg-secondary'}`;
-        elements.hwConnectSerialBtn.innerHTML = connected ? 
-          '<i class="bi bi-plug-fill"></i> Disconnect' : 
-          '<i class="bi bi-plug"></i> Connect';
-      }
-
-      function logToHwConsole(message, type = 'info') {
-        const console = elements.hwConsoleOutput;
-        const line = document.createElement('div');
-        line.className = type;
-        line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        console.appendChild(line);
-        console.scrollTop = console.scrollHeight;
-      }
-
-      function clearHwConsole() {
-        elements.hwConsoleOutput.innerHTML = '<span class="info">Console cleared.</span>';
-      }
-
-      // =====================================================
-      // Console Logging
-      // =====================================================
-
-      function logToConsole(message, type = 'info') {
-        const console = elements.consoleOutput;
-        const line = document.createElement('div');
-        line.className = type;
-        line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        console.appendChild(line);
-        console.scrollTop = console.scrollHeight;
-      }
-
-      function clearConsole() {
-        elements.consoleOutput.innerHTML = '<span class="info">Console cleared.</span>';
-      }
-
-      // =====================================================
-      // Erase Flash
-      // =====================================================
-
-      async function eraseFlash() {
-        const eraseType = document.querySelector('input[name="eraseType"]:checked').value;
-        let port = null;
-        
-        try {
-          elements.eraseProgress.classList.remove('hidden');
-          elements.eraseFlashBtn.disabled = true;
-          logToEraseConsole('Requesting serial port...', 'info');
-          
-          // Wait for ESPTool to be ready
-          try {
-            await window.waitForESPTool(5000);
-            logToEraseConsole('\u2713 ESPTool.js ready', 'success');
-          } catch (err) {
-            throw new Error('ESPTool.js failed to load. Please refresh the page and try again.');
-          }
-          
-          // Close any existing connections first
-          if (state.serialPort && state.serialPort.readable) {
-            logToEraseConsole('\u26A0 Closing existing serial connection...', 'warning');
-            try {
-              await disconnectSerial();
-              await new Promise(resolve => setTimeout(resolve, 500));
-            } catch (e) {
-              logToEraseConsole('Note: Could not close existing connection. Continuing...', 'warning');
-            }
-          }
-          if (state.hwSerialPort && state.hwSerialPort.readable) {
-            logToEraseConsole('\u26A0 Closing hardware test connection...', 'warning');
-            try {
-              await disconnectHwSerial();
-              await new Promise(resolve => setTimeout(resolve, 500));
-            } catch (e) {
-              logToEraseConsole('Note: Could not close hardware test connection. Continuing...', 'warning');
-            }
-          }
-          
-          port = await navigator.serial.requestPort();
-          
-          // Check if port is already open
-          if (port.readable) {
-            logToEraseConsole('\u26A0 Port already open. Please reload the page and try again.', 'error');
-            throw new Error('Port is already open. Please reload the page to reset connections.');
-          }
-          
-          await port.open({ baudRate: 115200 });
-          
-          logToEraseConsole('Connected. Starting erase...', 'info');
-          updateEraseProgress(10, 'Connecting to ESP32...');
-          
-          // Get ESPTool classes from the ES module
-          const Transport = window.Transport;
-          const ESPLoader = window.ESPLoader;
-          
-          if (!Transport || !ESPLoader) {
-            throw new Error('ESPTool.js classes not available. Please refresh the page.');
-          }
-          
-          // Use esptool.js for erasing (v0.5.0 API)
-          const transport = new Transport(port, true);  // true = enable debug logging
-          const loader = new ESPLoader({
-            transport: transport,
-            baudrate: 115200,
-            terminal: {
-              clean: () => {},
-              writeLine: (text) => {
-                logToEraseConsole(text, 'info');
-              },
-              write: (text) => {
-                logToEraseConsole(text, 'info');
-              }
-            }
-          });
-          
-          updateEraseProgress(20, 'Syncing...');
-          await loader.main();
-          
-          updateEraseProgress(40, 'Erasing flash...');
-          logToEraseConsole(`Erasing ${eraseType === 'all' ? 'entire flash' : 'NVS partition'}...`, 'warning');
-          
-          if (eraseType === 'all') {
-            await loader.eraseFlash();
-          } else {
-            // Erase NVS partition (typically at 0x9000, size 0x5000)
-            await loader.eraseRegion(0x9000, 0x5000);
-          }
-          
-          updateEraseProgress(100, 'Erase complete!');
-          logToEraseConsole('\u2713 Flash erased successfully!', 'success');
-          
-          await transport.disconnect();
-          await port.close();
-          
-        } catch (error) {
-          console.error('Erase error:', error);
-          logToEraseConsole(`\u2717 Error: ${error.message}`, 'error');
-          updateEraseProgress(0, 'Erase failed');
-          
-          // Try to close the port if it was opened
-          if (port) {
-            try {
-              if (port.readable) {
-                await port.close();
-              }
-            } catch (e) {
-              console.error('Failed to close port:', e);
-            }
-          }
-        } finally {
-          elements.eraseFlashBtn.disabled = false;
-        }
-      }
-
-      function logToEraseConsole(message, type = 'info') {
-        const console = elements.eraseConsole;
-        const line = document.createElement('div');
-        line.className = type;
-        line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        console.appendChild(line);
-        console.scrollTop = console.scrollHeight;
-      }
-
-      function updateEraseProgress(percent, status) {
-        elements.eraseProgressBar.style.width = `${percent}%`;
-        elements.eraseStatus.textContent = status;
-      }
-
-      // =====================================================
-      // Loading Overlay
-      // =====================================================
-
-      function showLoading(text = 'Loading...') {
-        elements.loadingText.textContent = text;
-        elements.loadingOverlay.classList.remove('hidden');
-      }
-
-      function hideLoading() {
-        elements.loadingOverlay.classList.add('hidden');
-      }
-
-      // =====================================================
-      // Event Listeners
-      // =====================================================
-
-      function setupEventListeners() {
-        // Release selection
-        elements.releaseSelect.addEventListener('change', () => {
-          // Clear ImSwitch selection when direct firmware release is selected
-          elements.imswitchReleaseSelect.value = '';
-          elements.imswitchReleaseLink.classList.add('hidden');
-          updateVersionDisplay();
-        });
-        
-        // ImSwitch release selection
-        elements.imswitchReleaseSelect.addEventListener('change', async () => {
-          const selectedImswitch = elements.imswitchReleaseSelect.value;
-          if (selectedImswitch) {
-            // Set currentRelease with imswitch: prefix for lookup
-            state.currentRelease = `imswitch:${selectedImswitch}`;
-            logToConsole(`\u231B Resolving firmware for ImSwitch ${selectedImswitch}...`, 'info');
-            
-            // Show download link for ImSwitch release
-            const imswitchRelease = state.imswitchReleases.find(r => r.tag_name === selectedImswitch);
-            if (imswitchRelease) {
-              const linkElem = elements.imswitchReleaseLink.querySelector('a');
-              linkElem.href = imswitchRelease.html_url;
-              linkElem.innerHTML = `<i class="bi bi-download"></i> Download ImSwitch OS ${selectedImswitch}`;
-              elements.imswitchReleaseLink.classList.remove('hidden');
-            }
-            
-            try {
-              const fwVersion = await resolveFirmwareFromImSwitch(selectedImswitch);
-              if (fwVersion) {
-                // Update the firmware dropdown to show the resolved version
-                elements.releaseSelect.value = fwVersion;
-                state.currentRelease = fwVersion;
-                logToConsole(`\u2713 Resolved to firmware ${fwVersion}`, 'success');
-              } else {
-                logToConsole(`\u26A0 Could not resolve firmware version`, 'warning');
-                elements.releaseSelect.value = 'latest';
-                state.currentRelease = 'latest';
-              }
-            } catch (err) {
-              console.error('Error resolving:', err);
-              logToConsole(`\u2717 Error: ${err.message}`, 'error');
-              elements.releaseSelect.value = 'latest';
-              state.currentRelease = 'latest';
-            }
-            
-            updateVersionDisplay();
-          } else {
-            elements.imswitchReleaseLink.classList.add('hidden');
-          }
-        });
-        
-        // Board category filter
-        elements.boardCategory.addEventListener('change', (e) => {
-          state.currentCategory = e.target.value;
-          renderBoards(elements.boardSearch.value, state.currentCategory);
-        });
-        
-        // Board search
-        elements.boardSearch.addEventListener('input', (e) => {
-          renderBoards(e.target.value, state.currentCategory);
-        });
-        
-        // Copy link button
-        elements.copyLinkBtn.addEventListener('click', () => {
-          elements.directLink.select();
-          navigator.clipboard.writeText(elements.directLink.value);
-          elements.copyLinkBtn.innerHTML = '<i class="bi bi-check"></i>';
-          setTimeout(() => {
-            elements.copyLinkBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
-          }, 2000);
-        });
-        
-        // Serial connection
-        elements.connectSerialBtn.addEventListener('click', connectSerial);
-        
-        // Clear console
-        elements.clearConsoleBtn.addEventListener('click', clearConsole);
-        
-        // Send custom command
-        elements.sendCommandBtn.addEventListener('click', () => {
-          const cmd = elements.customCommand.value.trim();
-          if (cmd) {
-            sendSerialCommand(cmd);
-            elements.customCommand.value = '';
-          }
-        });
-        
-        // Enter key for command input
-        elements.customCommand.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            elements.sendCommandBtn.click();
-          }
-        });
-        
-        // CAN presets
-        document.querySelectorAll('.can-preset').forEach(preset => {
-          preset.addEventListener('click', () => {
-            document.querySelectorAll('.can-preset').forEach(p => p.classList.remove('selected'));
-            preset.classList.add('selected');
-            const address = preset.dataset.address;
-            setCanId(address);
-          });
-        });
-        
-        // Custom CAN ID
-        elements.setCustomCanBtn.addEventListener('click', () => {
-          const id = elements.customCanId.value;
-          if (id) {
-            setCanId(id);
-          }
-        });
-        
-        // Quick commands
-        document.querySelectorAll('.quick-cmd').forEach(btn => {
-          btn.addEventListener('click', () => {
-            sendSerialCommand(btn.dataset.cmd);
-          });
-        });
-        
-        // Erase flash
-        elements.eraseFlashBtn.addEventListener('click', eraseFlash);
-        
-        // =====================================================
-        // Hardware Test Tab Event Listeners
-        // =====================================================
-        
-        // Hardware test serial connection
-        elements.hwConnectSerialBtn.addEventListener('click', async () => {
-          if (state.hwIsConnected) {
-            await disconnectHwSerial();
-          } else {
-            await connectHwSerial();
-          }
-        });
-        
-        elements.hwClearConsoleBtn.addEventListener('click', clearHwConsole);
-        
-        // Hardware test send command
-        elements.hwSendCommandBtn.addEventListener('click', () => {
-          const cmd = elements.hwCustomCommand.value.trim();
-          if (cmd) {
-            sendHwSerialCommand(cmd);
-            elements.hwCustomCommand.value = '';
-          }
-        });
-        
-        elements.hwCustomCommand.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            elements.hwSendCommandBtn.click();
-          }
-        });
-        
-        // Hardware quick commands
-        document.querySelectorAll('.hw-quick-cmd').forEach(btn => {
-          btn.addEventListener('click', () => {
-            sendHwSerialCommand(btn.dataset.cmd);
-          });
-        });
-        
-        // Laser value slider
-        elements.laserValue.addEventListener('input', (e) => {
-          elements.laserValueDisplay.textContent = e.target.value;
-        });
-        
-        // Motor controls
-        elements.motorMovePositive.addEventListener('click', () => {
-          const stepperId = parseInt(elements.motorStepperId.value);
-          const position = parseInt(elements.motorPosition.value);
-          const speed = parseInt(elements.motorSpeed.value);
-          const accel = parseInt(elements.motorAccel.value);
-          const cmd = {
-            task: "/motor_act",
-            motor: {
-              steppers: [{
-                stepperid: stepperId,
-                position: position,
-                speed: speed,
-                isabs: 0,
-                isaccel: 1,
-                accel: accel,
-                qid: 1
-              }]
-            }
-          };
-          sendHwSerialCommand(JSON.stringify(cmd));
-        });
-        
-        elements.motorMoveNegative.addEventListener('click', () => {
-          const stepperId = parseInt(elements.motorStepperId.value);
-          const position = parseInt(elements.motorPosition.value);
-          const speed = parseInt(elements.motorSpeed.value);
-          const accel = parseInt(elements.motorAccel.value);
-          const cmd = {
-            task: "/motor_act",
-            motor: {
-              steppers: [{
-                stepperid: stepperId,
-                position: -position,
-                speed: speed,
-                isabs: 0,
-                isaccel: 1,
-                accel: accel,
-                qid: 1
-              }]
-            }
-          };
-          sendHwSerialCommand(JSON.stringify(cmd));
-        });
-        
-        elements.motorStop.addEventListener('click', () => {
-          const stepperId = parseInt(elements.motorStepperId.value);
-          const cmd = {
-            task: "/motor_act",
-            motor: {
-              steppers: [{
-                stepperid: stepperId,
-                position: 0,
-                speed: 0,
-                isabs: 0,
-                stop: 1
-              }]
-            }
-          };
-          sendHwSerialCommand(JSON.stringify(cmd));
-        });
-        
-        // Laser controls
-        elements.laserOn.addEventListener('click', () => {
-          const laserId = parseInt(elements.laserId.value);
-          const cmd = { task: "/laser_act", LASERid: laserId, LASERval: 1000 };
-          sendHwSerialCommand(JSON.stringify(cmd));
-        });
-        
-        elements.laserOff.addEventListener('click', () => {
-          const laserId = parseInt(elements.laserId.value);
-          const cmd = { task: "/laser_act", LASERid: laserId, LASERval: 0 };
-          sendHwSerialCommand(JSON.stringify(cmd));
-        });
-        
-        elements.laserSetValue.addEventListener('click', () => {
-          const laserId = parseInt(elements.laserId.value);
-          const laserVal = parseInt(elements.laserValue.value);
-          const cmd = { task: "/laser_act", LASERid: laserId, LASERval: laserVal };
-          sendHwSerialCommand(JSON.stringify(cmd));
-        });
-        
-        // Homing control
-        elements.homeStart.addEventListener('click', () => {
-          const cmd = {
-            task: "/home_act",
-            home: {
-              steppers: [{
-                stepperid: parseInt(elements.homeStepperId.value),
-                timeout: parseInt(elements.homeTimeout.value),
-                speed: parseInt(elements.homeSpeed.value),
-                direction: parseInt(elements.homeDirection.value),
-                endstoppolarity: parseInt(elements.homeEndstopPolarity.value),
-                endstoprelease: parseInt(elements.homeEndstopRelease.value)
-              }]
-            }
-          };
-          sendHwSerialCommand(JSON.stringify(cmd));
-        });
-        
-        // ESP Web Tools install events
-        elements.installButton.addEventListener('state-changed', (e) => {
-          console.log('Install state:', e.detail);
-          
-          if (e.detail.state === 'finished') {
-            logToConsole('\u2713 Firmware flashed successfully!', 'success');
-            
-            // Check if we should auto-switch to configure tab
-            if (elements.postFlashConfig && elements.postFlashConfig.checked) {
-              console.log('Auto-switching to configure tab...');
-              
-              // Wait a moment for the flash process to fully complete
-              setTimeout(() => {
-                const configTab = document.getElementById('configure-tab');
-                if (configTab) {
-                  const tabTrigger = new bootstrap.Tab(configTab);
-                  tabTrigger.show();
-                  logToConsole('\u2192 Switched to Configure tab. Connect to your device to continue.', 'info');
-                } else {
-                  console.error('Configure tab not found');
-                }
-              }, 500);
-            }
-          }
-        });
-      }
-      
-      // =====================================================
-      // Hardware Test Serial Functions
-      // =====================================================
-      
-      async function hwConnectSerial() {
-        if (state.hwIsConnected) {
-          await hwDisconnectSerial();
-          return;
-        }
-        
-        try {
-          const baudRate = parseInt(elements.hwBaudRate.value);
-          state.hwSerialPort = await navigator.serial.requestPort();
-          await state.hwSerialPort.open({ baudRate });
-          
-          state.hwIsConnected = true;
-          hwUpdateConnectionStatus(true);
-          hwLogToConsole('Connected to device', 'success');
-          
-          // Start reading
-          hwReadSerialLoop();
-          
-        } catch (error) {
-          console.error('Connection error:', error);
-          hwLogToConsole(`Connection failed: ${error.message}`, 'error');
-        }
-      }
-      
-      async function hwDisconnectSerial() {
-        try {
-          if (state.hwSerialReader) {
-            await state.hwSerialReader.cancel();
-            state.hwSerialReader = null;
-          }
-          if (state.hwSerialPort) {
-            await state.hwSerialPort.close();
-            state.hwSerialPort = null;
-          }
-          state.hwIsConnected = false;
-          hwUpdateConnectionStatus(false);
-          hwLogToConsole('Disconnected', 'info');
-        } catch (error) {
-          console.error('Disconnect error:', error);
-        }
-      }
-      
-      async function hwReadSerialLoop() {
-        const decoder = new TextDecoderStream();
-        const readableStreamClosed = state.hwSerialPort.readable.pipeTo(decoder.writable);
-        state.hwSerialReader = decoder.readable.getReader();
-        
-        try {
-          while (true) {
-            const { value, done } = await state.hwSerialReader.read();
-            if (done) break;
-            if (value) {
-              hwLogToConsole(value, 'info');
-            }
-          }
-        } catch (error) {
-          console.error('Read error:', error);
-        }
-      }
-      
-      async function hwSendSerialCommand(command) {
-        if (!state.hwIsConnected || !state.hwSerialPort) {
-          hwLogToConsole('Not connected! Please connect first.', 'error');
-          return;
-        }
-        
-        try {
-          const encoder = new TextEncoder();
-          const writer = state.hwSerialPort.writable.getWriter();
-          await writer.write(encoder.encode(command + '\n'));
-          writer.releaseLock();
-          hwLogToConsole(`> ${command}`, 'info');
-        } catch (error) {
-          console.error('Send error:', error);
-          hwLogToConsole(`Send failed: ${error.message}`, 'error');
-        }
-      }
-      
-      function hwUpdateConnectionStatus(connected) {
-        elements.hwConnectionStatus.textContent = connected ? 'Connected' : 'Disconnected';
-        elements.hwConnectionStatus.className = `ms-2 badge ${connected ? 'bg-success' : 'bg-secondary'}`;
-        elements.hwConnectSerialBtn.innerHTML = connected ?
-          '<i class="bi bi-x-circle"></i> Disconnect' :
-          '<i class="bi bi-plug"></i> Connect';
-      }
-      
-      function hwLogToConsole(message, type = 'info') {
-        const console = elements.hwConsoleOutput;
-        const line = document.createElement('div');
-        line.className = type;
-        line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        console.appendChild(line);
-        console.scrollTop = console.scrollHeight;
-      }
-
-
-      // =====================================================
-      // Start Application
-      // =====================================================
-
-      init();
-    </script>
+    <script type="module" src="js/flasher/app.js"></script>
   </body>
 </html>
