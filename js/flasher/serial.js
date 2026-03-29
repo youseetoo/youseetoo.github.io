@@ -75,22 +75,24 @@ export async function connectSerial() {
 export async function disconnectSerial() {
   try {
     if (state.serialReader) {
-      await state.serialReader.cancel();
-      state.serialReader = null;
+      try { await state.serialReader.cancel(); } catch (e) { /* device may be lost */ }
     }
     if (state.serialWriter) {
-      await state.serialWriter.close();
-      state.serialWriter = null;
+      try { await state.serialWriter.close(); } catch (e) { /* device may be lost */ }
     }
     if (state.serialPort) {
-      await state.serialPort.close();
-      state.serialPort = null;
+      try { await state.serialPort.close(); } catch (e) { /* device may be lost */ }
     }
-    state.isConnected = false;
-    updateConnectionStatus(false);
     logToConsole('Disconnected from serial port', 'info');
   } catch (error) {
     console.error('Disconnect error:', error);
+  } finally {
+    // Always clean up state, even if the device was lost
+    state.serialReader = null;
+    state.serialWriter = null;
+    state.serialPort = null;
+    state.isConnected = false;
+    updateConnectionStatus(false);
   }
 }
 
@@ -181,22 +183,24 @@ export async function connectHwSerial() {
 export async function disconnectHwSerial() {
   try {
     if (state.hwSerialReader) {
-      await state.hwSerialReader.cancel();
-      state.hwSerialReader = null;
+      try { await state.hwSerialReader.cancel(); } catch (e) { /* device may be lost */ }
     }
     if (state.hwSerialWriter) {
-      await state.hwSerialWriter.close();
-      state.hwSerialWriter = null;
+      try { await state.hwSerialWriter.close(); } catch (e) { /* device may be lost */ }
     }
     if (state.hwSerialPort) {
-      await state.hwSerialPort.close();
-      state.hwSerialPort = null;
+      try { await state.hwSerialPort.close(); } catch (e) { /* device may be lost */ }
     }
-    state.hwIsConnected = false;
-    updateHwConnectionStatus(false);
     logToHwConsole('Disconnected from serial port', 'info');
   } catch (error) {
     console.error('HW disconnect error:', error);
+  } finally {
+    // Always clean up state, even if the device was lost
+    state.hwSerialReader = null;
+    state.hwSerialWriter = null;
+    state.hwSerialPort = null;
+    state.hwIsConnected = false;
+    updateHwConnectionStatus(false);
   }
 }
 

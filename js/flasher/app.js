@@ -624,6 +624,17 @@ function setupEventListeners() {
   installButton.addEventListener('state-changed', (e) => {
     console.log('Install state:', e.detail);
 
+    // When flashing starts, disconnect any existing serial connections
+    // so they don't become stale after the device resets
+    if (e.detail.state === 'initializing' || e.detail.state === 'preparing') {
+      if (state.isConnected) {
+        disconnectSerial().catch(() => {});
+      }
+      if (state.hwIsConnected) {
+        disconnectHwSerial().catch(() => {});
+      }
+    }
+
     if (e.detail.state === 'finished') {
       logToConsole('\u2713 Firmware flashed successfully!', 'success');
 
