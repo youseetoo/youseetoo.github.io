@@ -1,0 +1,12 @@
+{
+  "name": "Arkitekt ESP32S3 Client",
+  "version": "arkitekt-esp32s3",
+  "home_assistant_domain": "UC2-ESP32",
+  "funding_url": "https://github.com/youseetoo/uc2-esp32",
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [{ "path": "arkitekt/arkitekt-esp32s3.bin", "offset": 0 }]
+    }
+  ]
+}
