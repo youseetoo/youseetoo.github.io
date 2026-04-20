@@ -6,7 +6,7 @@
   "builds": [
     {
       "chipFamily": "ESP32-S3",
-      "parts": [{ "path": "arkitekt/arkitekt-esp32s3.bin", "offset": 0 }]
+      "parts": [{ "path": "arkitekt/seeed_xiao_esp32s3.bin", "offset": 0 }]
     }
   ]
 }

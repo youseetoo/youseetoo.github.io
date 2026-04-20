@@ -6,7 +6,7 @@
   "builds": [
     {
       "chipFamily": "ESP32",
-      "parts": [{ "path": "arkitekt/arkitekt-esp32.bin", "offset": 0 }]
+      "parts": [{ "path": "arkitekt/esp32_az-delivery-devkit-v4.bin", "offset": 0 }] 
     }
   ]
 }
