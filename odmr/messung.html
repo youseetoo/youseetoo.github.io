@@ -32,7 +32,8 @@
         const fMin=2200, fMax=4400, stepMin=0.2, stepMax=5; 
         const IntMin=0, IntMax=65535, IntRangeMin=200;
         var stopRequested = false;  // Global stop flag (P0 #5)
-        var continuousTimeout = null; // Track setTimeout for continuous mode  
+        var continuousTimeout = null; // Track setTimeout for continuous mode
+        var currentEventSource = null; // Track SSE connection for streaming sweep
         const XPlotSize=1600, YPlotSize=800; 
         var AutoMessung=0;  
         const PlotViewBox="-200 -" + (YPlotSize+75) + " " + (XPlotSize+200+150) + " " + (YPlotSize+75+150);
@@ -51,51 +52,112 @@
     </script>
     
     <script> 
-        async function MessungStarten(){ 
+        // Start measurement using SSE (Server-Sent Events) streaming.
+        // The ESP32 performs the frequency sweep and streams each data point
+        // back in real time. No individual HTTP requests per frequency needed.
+        function MessungStarten(){
             stopRequested = false;
             ToggleStart(0);
             setLEDStatus('measuring', 'Messung läuft');
-            enableADF();
             
             deleteScaleGroup("DataGroupID");    
             AngezeigteDatenpunkte=[];
-            _YMax=0, _YMin=65535;
+            _YMax=0; _YMin=65535;
             prepareFreqs();             
             prepareXSkala(fBegin,fEnd);
-            while(Frequenzen.length!=0 && !stopRequested){   
+
+            // Build SSE URL from current sweep parameters
+            var url = '/sweep?f_begin=' + fBegin + '&f_end=' + fEnd + '&f_step=' + fStep;
+            currentEventSource = new EventSource(url);
+            
+            currentEventSource.onmessage = function(event) {
                 try {
-                    var response=await freqMessung(Frequenzen.shift()); 
-                    Messreihe.push(response);  
-                    _YMin=Math.min(_YMin,response[1]-100);
-                    _YMax=Math.max(_YMax,response[1]+100);
+                    var data = JSON.parse(event.data);
+                    if (data.done) {
+                        currentEventSource.close();
+                        currentEventSource = null;
+                        addDataGroup();
+                        Messreihe = [];
+                        setLEDStatus('ready', 'Messungen abgeschlossen');
+                        if (AutoMessung && !stopRequested) {
+                            continuousTimeout = setTimeout(MessungStarten, 600);
+                        } else {
+                            ToggleStart(1);
+                            disableADF();
+                            stopRequested = false;
+                        }
+                        return;
+                    }
+                    // Process streamed data point [freq, intensity, magnetic_field_placeholder]
+                    var response = [data.f, data.I, 0];
+                    Messreihe.push(response);
+                    _YMin = Math.min(_YMin, response[1] - 100);
+                    _YMax = Math.max(_YMax, response[1] + 100);
                     autoScale();
-                    drawCircle(response,+200,"black");
+                    drawCircle(response, +200, "black");
                 } catch(e) {
-                    console.warn('Skipped point:', e);
-                    Messreihe.push([NaN, NaN, NaN]);
+                    console.warn('SSE parse error:', e);
                 }
-            }
-            addDataGroup(); 
-            Messreihe=[];
+            };
             
-            setLEDStatus('ready', 'Messungen abgeschlossen');
-            
-            if(AutoMessung && !stopRequested){
-                continuousTimeout = setTimeout(MessungStarten, 600);
-            } else {
+            currentEventSource.onerror = function(e) {
+                console.warn('SSE connection error:', e);
+                if (currentEventSource) {
+                    currentEventSource.close();
+                    currentEventSource = null;
+                }
+                // Try to recover buffered data from server
+                recoverSweepBuffer();
+                setLEDStatus('error', T('status_conn_error'));
                 ToggleStart(1);
-                disableADF();
                 stopRequested = false;
-            }  
+            };
         }
-        // Stop measurement handler (P0 #5)
+        // Stop measurement handler - calls server /sweep_stop endpoint AND
+        // closes SSE connection to ensure the ESP32 stops immediately
         function MessungStoppen(){
             stopRequested = true;
+            // Signal the server to stop the sweep
+            fetch('/sweep_stop', {method:'POST'}).catch(e=>console.warn('sweep_stop:',e));
+            if (currentEventSource) {
+                currentEventSource.close();
+                currentEventSource = null;
+            }
             if(continuousTimeout) { clearTimeout(continuousTimeout); continuousTimeout = null; }
             AutoMessung = 0;
-            setLEDStatus('ready', 'Messung gestoppt');
+            addDataGroup();
+            Messreihe = [];
+            setLEDStatus('ready', T('status_stopped'));
             ToggleStart(1);
             disableADF();
+        }
+        // Recover sweep data from server buffer after connection drop
+        function recoverSweepBuffer() {
+            fetch('/sweep_buffer').then(r=>r.json()).then(data=>{
+                if(data.data && data.data.length > 0) {
+                    console.log('Recovered ' + data.data.length + ' buffered data points');
+                    // Merge buffered data into current measurement
+                    Messreihe = [];
+                    data.data.forEach(pt => {
+                        var response = [pt.f, pt.I, 0];
+                        Messreihe.push(response);
+                        _YMin = Math.min(_YMin, pt.I - 100);
+                        _YMax = Math.max(_YMax, pt.I + 100);
+                        drawCircle(response, +200, '#e67e22');
+                    });
+                    autoScale();
+                    addDataGroup();
+                    Messreihe = [];
+                    setLEDStatus('ready', T('status_recovered'));
+                } else {
+                    addDataGroup();
+                    Messreihe = [];
+                }
+            }).catch(e=>{
+                console.warn('Buffer recovery failed:', e);
+                addDataGroup();
+                Messreihe = [];
+            });
         }
         function autoScale(){
             if(ById("YMidAuto").checked){
@@ -624,18 +686,22 @@
               </div>
               <div class="card-body py-2">
                 <div class="mb-2">
-                  <label for="gainSelect" class="form-label small" data-lang-key="gain">Verstärkung (Gain):</label>
+                  <label for="gainSelect" class="form-label small uc2-tooltip" data-lang-key="gain">Verstärkung (Gain):
+                    <span class="uc2-tooltip-text" data-lang-key="gain_tooltip">Höhere Verstärkung = empfindlicher, aber schneller Sättigung bei starkem Licht.</span>
+                  </label>
                   <select id="gainSelect" class="form-select form-select-sm"
                           title="Bestimmt die Verstärkung des TSL2591 Lichtsensors" 
                           data-bs-toggle="tooltip">
                     <option value="0x00">Low (1x)</option>
                     <option value="0x10">Medium (25x)</option>
-                    <option value="0x20">High (428x)</option>
-                    <option value="0x30" selected>Max (9876x)</option>
+                    <option value="0x20" selected>High (428x)</option>
+                    <option value="0x30">Max (9876x)</option>
                   </select>
                 </div>
                 <div class="mb-3">
-                  <label for="integrationSelect" class="form-label small" data-lang-key="integration_time">Integrationszeit:</label>
+                  <label for="integrationSelect" class="form-label small uc2-tooltip" data-lang-key="integration_time">Integrationszeit:
+                    <span class="uc2-tooltip-text" data-lang-key="integration_tooltip">Längere Integration = genauere Messung, aber langsamere Aktualisierung.</span>
+                  </label>
                   <select id="integrationSelect" class="form-select form-select-sm"
                           title="Bestimmt die Belichtungszeit des Sensors" 
                           data-bs-toggle="tooltip">
@@ -913,7 +979,7 @@
                     const r = await fetch('/webserial_check');
                     const d = await r.json();
                     if (!d.webserial_enabled) wsNav.style.display = 'none';
-                } catch(e) { wsNav.style.display = 'none'; }
+                } catch(e) { /* hosted site – keep WebSerial nav visible */ }
             })();
             
             // Initialize parameter summary
@@ -998,59 +1064,59 @@
   </script>
 
   <script>
-    // Multi-language support
+    // Multi-language support (complete DE + EN)
     const translations = {
       de: {
-        "nav_start": "Start",
-        "nav_measurement_device": "Messung (on Device)",
-        "nav_measurement_webserial": "Messung (WebSerial)",
-        "nav_alignment": "Justage",
-        "nav_info": "Weitere Infos",
-        "title": "NV Experimente - Messung durchführen",
-        "page_title": "Messung der Lichtintensität in Abhängigkeit von der Frequenz",
-        "scan_params": "Scan-Parameter",
-        "start_freq": "Startfrequenz (MHz)",
-        "end_freq": "Endfrequenz (MHz)",
-        "step_size": "Schrittweite (MHz)",
-        "apply_data": "Daten übernehmen",
-        "reset": "Zurücksetzen",
-        "download_csv": "Download CSV",
-        "clear": "Leeren",
-        "start_measurement": "Messung starten",
-        "measurement_running": "Messung läuft",
-        "single_measurement": "Einzelmessung",
-        "continuous_measurement": "Dauermessung",
-        "sensor_settings": "Sensor-Einstellungen",
-        "gain": "Verstärkung (Gain)",
-        "integration_time": "Integrationszeit",
-        "apply_settings": "Einstellungen anwenden"
+        nav_start:"Start",nav_measurement_device:"Messung (on Device)",nav_measurement_webserial:"Messung (WebSerial)",
+        nav_alignment:"Justage",nav_info:"Weitere Infos",nav_ratio:"B-Field Monitor",
+        title:"NV Experimente - Messung durchführen",
+        page_title:"Messung der Lichtintensität in Abhängigkeit von der Frequenz",
+        scan_params:"Scan-Parameter",start_freq:"Startfrequenz (MHz)",end_freq:"Endfrequenz (MHz)",
+        step_size:"Schrittweite (MHz)",apply_data:"Daten übernehmen",reset:"Zurücksetzen",
+        download_csv:"Download CSV",clear:"Leeren",
+        start_measurement:"Messung starten",measurement_running:"Messung läuft",
+        stop_measurement:"Messung stoppen",
+        single_measurement:"Einzelmessung",continuous_measurement:"Dauermessung",
+        sensor_settings:"Sensor-Einstellungen",gain:"Verstärkung (Gain):",
+        gain_tooltip:"Höhere Verstärkung = empfindlicher, aber schneller Sättigung bei starkem Licht.",
+        integration_time:"Integrationszeit:",
+        integration_tooltip:"Längere Integration = genauere Messung, aber langsamere Aktualisierung.",
+        apply_settings:"Einstellungen anwenden",
+        status_stopped:"Messung gestoppt",status_conn_error:"Verbindungsfehler",
+        status_recovered:"Daten wiederhergestellt",
+        measurements_done:"Messungen abgeschlossen",
+        freq_range_label:"Frequenzbereich",step_size_label:"Schrittweite",
+        data_points_label:"Datenpunkte",scan_duration_label:"Scan-Dauer",
+        completed_measurements:"Durchgeführte Messungen",
+        delete_series:"Messreihe Löschen",show:"Anzeigen"
       },
       en: {
-        "nav_start": "Start",
-        "nav_measurement_device": "Measurement (on Device)",
-        "nav_measurement_webserial": "Measurement (WebSerial)",
-        "nav_alignment": "Alignment",
-        "nav_info": "More Info",
-        "title": "NV Experiments - Perform Measurement",
-        "page_title": "Measurement of Light Intensity as a Function of Frequency",
-        "scan_params": "Scan Parameters",
-        "start_freq": "Start Frequency (MHz)",
-        "end_freq": "End Frequency (MHz)",
-        "step_size": "Step Size (MHz)",
-        "apply_data": "Apply Data",
-        "reset": "Reset",
-        "download_csv": "Download CSV",
-        "clear": "Clear",
-        "start_measurement": "Start Measurement",
-        "measurement_running": "Measurement Running",
-        "single_measurement": "Single Measurement",
-        "continuous_measurement": "Continuous Measurement",
-        "sensor_settings": "Sensor Settings",
-        "gain": "Gain",
-        "integration_time": "Integration Time",
-        "apply_settings": "Apply Settings"
+        nav_start:"Start",nav_measurement_device:"Measurement (on Device)",nav_measurement_webserial:"Measurement (WebSerial)",
+        nav_alignment:"Alignment",nav_info:"More Info",nav_ratio:"B-Field Monitor",
+        title:"NV Experiments - Perform Measurement",
+        page_title:"Measurement of Light Intensity as a Function of Frequency",
+        scan_params:"Scan Parameters",start_freq:"Start Frequency (MHz)",end_freq:"End Frequency (MHz)",
+        step_size:"Step Size (MHz)",apply_data:"Apply Data",reset:"Reset",
+        download_csv:"Download CSV",clear:"Clear",
+        start_measurement:"Start Measurement",measurement_running:"Measurement Running",
+        stop_measurement:"Stop Measurement",
+        single_measurement:"Single Measurement",continuous_measurement:"Continuous Measurement",
+        sensor_settings:"Sensor Settings",gain:"Gain:",
+        gain_tooltip:"Higher gain = more sensitive, but saturates faster with strong light.",
+        integration_time:"Integration Time:",
+        integration_tooltip:"Longer integration = more accurate, but slower updates.",
+        apply_settings:"Apply Settings",
+        status_stopped:"Measurement stopped",status_conn_error:"Connection error",
+        status_recovered:"Data recovered",
+        measurements_done:"Measurements completed",
+        freq_range_label:"Frequency Range",step_size_label:"Step Size",
+        data_points_label:"Data Points",scan_duration_label:"Scan Duration",
+        completed_measurements:"Completed Measurements",
+        delete_series:"Delete Series",show:"Show"
       }
     };
+    // Translation helper
+    function T(key) { const lang = localStorage.getItem('language')||'de'; return (translations[lang]||translations.de)[key]||key; }
     
     function setLanguage(lang) {
       localStorage.setItem('language', lang);

@@ -43,6 +43,21 @@
 
   <!-- ░░ Main content ░░------------------------------------------------------ -->
   <main class="container">
+
+    <!-- Firmware flash notice -->
+    <div class="alert mb-4" role="alert"
+         style="background:linear-gradient(135deg,var(--uc2-blue,#0266a0),#0a4d8e);color:#fff;border:none;">
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div>
+          <strong data-lang-key="flash_notice_title">&#x1F527; Neue Firmware verfügbar!</strong>&nbsp;
+          <span data-lang-key="flash_notice_text">Flashen Sie die aktuelle Version direkt im Browser auf youseetoo.github.io:</span>
+        </div>
+        <a href="https://youseetoo.github.io/odmr/" target="_blank" rel="noopener"
+           class="btn btn-light btn-sm" style="white-space:nowrap;color:#0a4d8e;font-weight:600;"
+           data-lang-key="flash_notice_btn">Firmware flashen →</a>
+      </div>
+    </div>
+
     <section class="mb-5">
       <h1 class="display-5 mb-3" data-lang-key="welcome_title">Low-Cost Experimente mit NV-Zentren</h1>
       
@@ -87,7 +102,7 @@
         </div>
         <div class="col-lg-6">
           <figure class="text-center">
-            <img src="NVGitter.png" class="img-fluid rounded shadow" alt="NV Center Structure" data-lang-key="nv_structure_alt">
+            <img src="NVGitter.png" class="img-fluid rounded shadow" alt="NV Center Structure" data-lang-key="nv_structure_alt" width="200">
             <figcaption class="mt-2 small text-muted" data-lang-key="nv_structure_caption">
               Struktur des NV-Zentrums im Diamantgitter
             </figcaption>
@@ -174,20 +189,20 @@
           <div class="row">
             <div class="col-md-6">
               <ul class="list-unstyled">
-                <li data-lang-key="component_1">• Grundplatte für Montage</li>
-                <li data-lang-key="component_2">• Grüne Laserdiode (532 nm)</li>
-                <li data-lang-key="component_3">• 45° Spiegel für Strahlführung</li>
-                <li data-lang-key="component_4">• Strahlteiler mit Filter</li>
-                <li data-lang-key="component_5">• Konvergente Linse</li>
+                <li data-lang-key="component_1">Grundplatte für Montage</li>
+                <li data-lang-key="component_2">Grüne Laserdiode (532 nm)</li>
+                <li data-lang-key="component_3">45° Spiegel für Strahlführung</li>
+                <li data-lang-key="component_4">Strahlteiler mit Filter</li>
+                <li data-lang-key="component_5">Konvergente Linse</li>
               </ul>
             </div>
             <div class="col-md-6">
               <ul class="list-unstyled">
-                <li data-lang-key="component_6">• Lichtsensor (Photodiode)</li>
-                <li data-lang-key="component_7">• Elektronik-Box mit Mikrowellenerzeugung</li>
-                <li data-lang-key="component_8">• XY-Bühnensystem mit NV-Diamant</li>
-                <li data-lang-key="component_9">• Magnet für externes Magnetfeld</li>
-                <li data-lang-key="component_10">• Mikrowellenantenne</li>
+                <li data-lang-key="component_6">Lichtsensor (Photodiode)</li>
+                <li data-lang-key="component_7">Elektronik-Box mit Mikrowellenerzeugung</li>
+                <li data-lang-key="component_8">XY-Bühnensystem mit NV-Diamant</li>
+                <li data-lang-key="component_9">Magnet für externes Magnetfeld</li>
+                <li data-lang-key="component_10">Mikrowellenantenne</li>
               </ul>
             </div>
           </div>
@@ -273,23 +288,26 @@
         setup_overview_title: "Versuchsaufbau",
         setup_overview_text: "Der ODMR-Aufbau folgt konfokalen Mikroskopieprinzipien und kombiniert optische Anregung, Mikrowellenmanipulation und Fluoreszenzdetektion für hochpräzise Quantensensing.",
         components_needed: "Benötigte Komponenten:",
-        component_1: "• Grundplatte für Montage",
-        component_2: "• Grüne Laserdiode (532 nm)",
-        component_3: "• 45° Spiegel für Strahlführung",
-        component_4: "• Strahlteiler mit Filter",
-        component_5: "• Konvergente Linse",
-        component_6: "• Lichtsensor (Photodiode)",
-        component_7: "• Elektronik-Box mit Mikrowellenerzeugung",
-        component_8: "• XY-Bühnensystem mit NV-Diamant",
-        component_9: "• Magnet für externes Magnetfeld",
-        component_10: "• Mikrowellenantenne",
+        component_1: "Grundplatte für Montage",
+        component_2: "Grüne Laserdiode (532 nm)",
+        component_3: "45° Spiegel für Strahlführung",
+        component_4: "Strahlteiler mit Filter",
+        component_5: "Konvergente Linse",
+        component_6: "Lichtsensor (Photodiode)",
+        component_7: "Elektronik-Box mit Mikrowellenerzeugung",
+        component_8: "XY-Bühnensystem mit NV-Diamant",
+        component_9: "Magnet für externes Magnetfeld",
+        component_10: "Mikrowellenantenne",
         safety_title: "⚠️ Sicherheitshinweise",
         safety_laser: "Niemals direkt in den Laser blicken",
         safety_magnet: "Vorsicht bei Implantaten und elektronischen Geräten",
         safety_power: "Stromversorgung vor Verkabelungsänderungen trennen",
         quantumminilabs_title: "Das QuantumMiniLabs Projekt",
         quantumminilabs_text: "Das QuantumMiniLabs-Projekt entwickelt ein Open-Source-Ökosystem, das kostengünstige, skalierbare, modulare und reparable Quantentechnologie-Experimente ermöglicht. Das Ziel ist es, das System an 100 Bildungsstandorten in Deutschland einzusetzen.",
-        quantumminilabs_vision: "QuantumMiniLabs bietet die erste erschwingliche DIY-Plattform für Experimente mit Quantensystemen der zweiten Generation. NV-Diamanten ermöglichen stabile Experimente bei Raumtemperatur."
+        quantumminilabs_vision: "QuantumMiniLabs bietet die erste erschwingliche DIY-Plattform für Experimente mit Quantensystemen der zweiten Generation. NV-Diamanten ermöglichen stabile Experimente bei Raumtemperatur.",
+        flash_notice_title: "\uD83D\uDD27 Neue Firmware verfügbar!",
+        flash_notice_text: "Flashen Sie die aktuelle Version direkt im Browser auf youseetoo.github.io:",
+        flash_notice_btn: "Firmware flashen \u2192"
       },
       en: {
         nav_start: "Start",
@@ -329,23 +347,26 @@
         setup_overview_title: "Experimental Setup",
         setup_overview_text: "The ODMR setup follows confocal microscopy principles and combines optical excitation, microwave manipulation, and fluorescence detection for high-precision quantum sensing.",
         components_needed: "Required Components:",
-        component_1: "• Base plate for mounting",
-        component_2: "• Green laser diode (532 nm)",
-        component_3: "• 45° mirrors for beam steering",
-        component_4: "• Beam splitter with filter",
-        component_5: "• Converging lens",
-        component_6: "• Light sensor (photodiode)",
-        component_7: "• Electronics box with microwave generation",
-        component_8: "• XY-stage with NV diamond sample",
-        component_9: "• Magnet for external magnetic field",
-        component_10: "• Microwave antenna",
+        component_1: "Base plate for mounting",
+        component_2: "Green laser diode (532 nm)",
+        component_3: "45° mirrors for beam steering",
+        component_4: "Beam splitter with filter",
+        component_5: "Converging lens",
+        component_6: "Light sensor (photodiode)",
+        component_7: "Electronics box with microwave generation",
+        component_8: "XY-stage with NV diamond sample",
+        component_9: "Magnet for external magnetic field",
+        component_10: "Microwave antenna",
         safety_title: "⚠️ Safety Instructions",
         safety_laser: "Never look directly into the laser",
         safety_magnet: "Caution with implants and electronic devices",
         safety_power: "Disconnect power before changing connections",
         quantumminilabs_title: "The QuantumMiniLabs Project",
         quantumminilabs_text: "The QuantumMiniLabs project is developing an open-source ecosystem that enables low-cost, scalable, modular, and repairable quantum tech experiments. The goal is to deploy the system at 100 educational locations across Germany.",
-        quantumminilabs_vision: "QuantumMiniLabs offer the first affordable DIY platform for experimenting with second-generation quantum systems. NV diamonds allow for stable experiments at room temperature."
+        quantumminilabs_vision: "QuantumMiniLabs offer the first affordable DIY platform for experimenting with second-generation quantum systems. NV diamonds allow for stable experiments at room temperature.",
+        flash_notice_title: "\uD83D\uDD27 New Firmware Available!",
+        flash_notice_text: "Flash the latest version directly in your browser at youseetoo.github.io:",
+        flash_notice_btn: "Flash Firmware \u2192"
       }
     };
     
@@ -387,7 +408,7 @@
               const r = await fetch('/webserial_check');
               const d = await r.json();
               if (!d.webserial_enabled) wsNav.style.display = 'none';
-          } catch(e) { wsNav.style.display = 'none'; }
+          } catch(e) { /* hosted site – keep WebSerial nav visible */ }
       })();
       
       // Fetch and display version information

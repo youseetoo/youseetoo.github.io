@@ -10,154 +10,14 @@
 
     <!-- Page-specific styles -->
     <style>
-      /* Custom styles for this page */
-      body {
-        overflow-x: hidden;
-      }
-      
-      .container-fluid {
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
-      
-      #measurementTabContent {
-        flex: 1;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
-      
-      .tab-pane {
-        flex: 1;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
-      
-      .grid-container {
-          grid-template-columns: 1fr 350px;
-          flex: 1;
-          min-height: 0;
-      }
-      .grid1 {
-          grid-area: 1 / 1 / 4 / 2;
-          height: 100%;
-          min-height: 0;
-          overflow: hidden;
-      }
-      .grid2, .grid3, .grid4, .grid5, .grid6 {
-          min-width: 0;
-      }
-      
-      /* Fixed height containers for measurement sections */
-      .measurement-section {
-        max-height: 50vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-      }
-      
-      .measurement-history-section {
-        max-height: 40vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
-        margin-top: 1rem;
-      }
-      
-      .table-responsive {
-        max-height: 35vh;
-        overflow-y: auto;
-        overflow-x: auto;
-      }
-      
-      /* Sticky table header */
-      .table thead th {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background-color: var(--uc2-blue) !important;
-        color: #fff;
-      }
-      
-      .StopButton {
-          background-color: #dc3545 !important;
-          color: white;
-          border: none;
-          padding: 8px 16px;
-          margin: 4px;
-          border-radius: 4px;
-          cursor: pointer;
-      }
-      .StopButton:hover {
-          background-color: #c82333 !important;
-      }
-      
+      /* Match messung.html styling */
       .svg {
           width: 100%;
-          height: calc(100vh - 300px);
-          max-height: 600px;
+          height: auto;
       }
-      
-      /* Measurement table styles */
-      .measurement-row:hover {
-          background-color: var(--uc2-light);
-      }
-      
-      /* Live chart styles */
-      #liveChart {
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background-color: #fff;
-          display: block;
-      }
-      
-      /* Tab content spacing */
-      .tab-pane .row {
-          height: 100%;
-      }
-      
-      .card.h-100 {
-          height: 100% !important;
-      }
-      
-      /* Ensure cards fill available space */
-      .card-body canvas {
-          flex: 1;
-      }
-      
-      /* Responsive design improvements */
-      @media (max-width: 1200px) {
-          .grid-container {
-              grid-template-columns: 1fr 300px;
-          }
-      }
-      
-      @media (max-width: 992px) {
-          .grid-container {
-              grid-template-columns: 1fr 280px;
-          }
-      }
-      
       @media (max-width: 768px) {
           .grid-container {
               grid-template-columns: 1fr;
-              height: auto;
-          }
-          .grid1 {
-              grid-area: auto;
-          }
-          .input-group .btn {
-              padding: 0.25rem 0.5rem;
-              font-size: 0.875rem;
-          }
-          .svg {
-              height: 400px;
-          }
-          .tab-pane {
-              height: auto;
-              overflow: visible;
           }
       }
     </style>
@@ -870,20 +730,20 @@
 
     <!-- ░░ Main content ░░------------------------------------------------------ -->
     <div class="container-fluid">
-      <h1 class="display-6 mb-4 text-center">Messung der Lichtintensität in Abhängigkeit von der Frequenz</h1>
+      <h1 class="display-6 mb-4 text-center" data-lang-key="page_title">Messung der Lichtintensität in Abhängigkeit von der Frequenz</h1>
       
       <!-- ░░ Tabs Navigation ░░------------------------------------------------- -->
       <ul class="nav nav-tabs mb-4" id="measurementTabs" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active" id="sweep-tab" data-bs-toggle="tab" 
                   data-bs-target="#sweep-pane" type="button" role="tab">
-            Frequenz-Sweep
+            <span data-lang-key="freq_sweep">Frequenz-Sweep</span>
           </button>
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="live-tab" data-bs-toggle="tab" 
                   data-bs-target="#live-pane" type="button" role="tab">
-            Live Monitor
+            <span data-lang-key="live_monitor">Live Monitor</span>
           </button>
         </li>
       </ul>
@@ -1038,95 +898,81 @@
               </svg>
             </div>
             <div class="grid2">
-              <!-- Laser button removed (P2 #11) -->
+              <!-- Serial connection status indicator (matches messung.html LED status) -->
+              <div class="d-flex align-items-center justify-content-center mt-2">
+                <div id="statusLED" class="me-2" style="width:12px;height:12px;border-radius:50%;background-color:#6c757d;border:2px solid #dee2e6;"></div>
+                <small id="statusText" class="text-muted" data-lang-key="not_connected">Nicht verbunden</small>
+              </div>
             </div>
             <div class="grid3">
-              <div
-                class="inputField inputFieldWide"
-                id="Y-Controll"
-                style="background-color: #fff"
-              >
+              <div class="inputField inputFieldWide" id="Y-Controll" style="background-color:#fff">
                 <label for="YMid1">Y-Abschnitt: </label>
-                <input
-                  type="text"
-                  id="YMid1"
-                  value="18000"
-                  onchange="YMidContr(this);adaptYScale();"
-                />
-                <input
-                  type="range"
-                  class="slider"
-                  id="YMid2"
-                  min="9000"
-                  max="27000"
-                  step="100"
-                  value="18000"
-                  oninput="YMidContr(this);adaptYScale();"
-                />
-                <input
-                  type="checkbox"
-                  id="YMidAuto"
-                  checked="true"
-                  onchange="autoScale()"
-                  style="display: block"
-                />
+                <input type="text" id="YMid1" value="18000" onchange="YMidContr(this);adaptYScale();" />
+                <input type="range" class="slider" id="YMid2" min="9000" max="27000" step="100" value="18000" oninput="YMidContr(this);adaptYScale();" />
+                <input type="checkbox" id="YMidAuto" checked="true" onchange="autoScale()" style="display:block" />
               </div>
-              <div
-                class="inputField inputFieldWide"
-                id="YR-Controll"
-                style="background-color: #fff"
-              >
+              <div class="inputField inputFieldWide" id="YR-Controll" style="background-color:#fff">
                 <label for="YRange2">Y-Bereich: </label>
-                <input
-                  type="text"
-                  id="YRange1"
-                  value="18000"
-                  onchange="YRangeContr(this);adaptYScale();"
-                />
-                <input
-                  type="range"
-                  class="slider"
-                  id="YRange2"
-                  min="0"
-                  max="8.5"
-                  step="0.1"
-                  value="7"
-                  oninput="YRangeContr2(this);adaptYScale();"
-                />
-                <input
-                  type="checkbox"
-                  id="YRangeAuto"
-                  checked="true"
-                  onchange="autoScale()"
-                  style="display: flex"
-                />
+                <input type="text" id="YRange1" value="18000" onchange="YRangeContr(this);adaptYScale();" />
+                <input type="range" class="slider" id="YRange2" min="0" max="8.5" step="0.1" value="7" oninput="YRangeContr2(this);adaptYScale();" />
+                <input type="checkbox" id="YRangeAuto" checked="true" onchange="autoScale()" style="display:flex" />
               </div>
             </div>
 
             <div class="grid4">
-              <input
-                type="button"
-                class="Button"
-                id="ConnectSerial"
-                value="Serial verbinden"
-              />
-              <input
-                type="button"
-                class="Button StartButton"
-                id="StartStop"
-                value="Messung starten"
-              />
-              <input
-                type="button"
-                class="Button Toggle"
-                id="AutoMessung"
-                value="Einzelmessung"
-              />
+              <div class="d-grid gap-2">
+                <!-- Serial connect button -->
+                <button type="button" class="btn btn-secondary btn-lg" id="ConnectSerial"
+                        title="Verbindet mit dem seriellen Port des ESP32">
+                  &#x1F50C; <span data-lang-key="connect_serial">Serial verbinden</span>
+                </button>
+                <!-- Start/stop button matching messung.html style -->
+                <button type="button" class="btn btn-success btn-lg" id="StartStop"
+                        title="Startet die ODMR-Messung über den gewählten Frequenzbereich">
+                  <span data-lang-key="start_measurement">Messung starten</span>
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="AutoMessung"
+                        title="Wechselt zwischen Einzel- und Dauermessung">
+                  <span data-lang-key="single_measurement">Einzelmessung</span>
+                </button>
+              </div>
               <!-- Serial Status Indicator -->
-              <div id="serialStatus" class="mt-2 p-2 border rounded" style="background-color: #f8f9fa; font-size: 12px; max-height: 150px; overflow-y: auto;">
-                <div class="fw-bold mb-1">Serial Status:</div>
-                <div id="serialMessages" style="font-family: monospace; font-size: 11px;">
-                  <span class="text-muted">Nicht verbunden</span>
+              <div id="serialStatus" class="mt-2 p-2 border rounded" style="background-color:#f8f9fa;font-size:12px;max-height:120px;overflow-y:auto;">
+                <div class="fw-bold mb-1" data-lang-key="serial_status">Serial Status:</div>
+                <div id="serialMessages" style="font-family:monospace;font-size:11px;">
+                  <span class="text-muted" data-lang-key="not_connected">Nicht verbunden</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sensor settings panel matching messung.html -->
+            <div class="grid5">
+              <div class="card">
+                <div class="card-header py-2">
+                  <h6 class="mb-0" data-lang-key="sensor_settings">Sensor-Einstellungen</h6>
+                </div>
+                <div class="card-body py-2">
+                  <div class="mb-2">
+                    <label class="form-label small" data-lang-key="gain">Verstärkung (Gain):</label>
+                    <select id="gainSelect" class="form-select form-select-sm">
+                      <option value="0x00">Low (1x)</option>
+                      <option value="0x10">Medium (25x)</option>
+                      <option value="0x20" selected>High (428x)</option>
+                      <option value="0x30">Max (9876x)</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label small" data-lang-key="integration_time">Integrationszeit:</label>
+                    <select id="integrationSelect" class="form-select form-select-sm">
+                      <option value="0x00" selected>100 ms</option>
+                      <option value="0x01">200 ms</option>
+                      <option value="0x02">300 ms</option>
+                      <option value="0x03">400 ms</option>
+                      <option value="0x04">500 ms</option>
+                      <option value="0x05">600 ms</option>
+                    </select>
+                  </div>
+                  <p class="small text-muted mb-0" data-lang-key="sensor_note">Einstellungen werden via Serial an den ESP32 übertragen.</p>
                 </div>
               </div>
             </div>
@@ -1141,7 +987,7 @@
             <div class="col-md-9">
               <div class="card h-100">
                 <div class="card-header">
-                  <h5 class="mb-0">Live Intensität Monitor</h5>
+                  <h5 class="mb-0" data-lang-key="live_intensity_monitor">Live Intensität Monitor</h5>
                 </div>
                 <div class="card-body p-2">
                   <canvas id="liveChart" class="w-100" style="height: 60vh;"></canvas>
@@ -1151,11 +997,11 @@
             <div class="col-md-3">
               <div class="card h-100">
                 <div class="card-header">
-                  <h5 class="mb-0">Live Kontrolle</h5>
+                  <h5 class="mb-0" data-lang-key="live_control">Live Kontrolle</h5>
                 </div>
                 <div class="card-body">
                   <div class="mb-3">
-                    <button id="startLiveBtn" class="btn btn-success w-100">
+                    <button id="startLiveBtn" class="btn btn-success w-100" data-lang-key="start_live">
                       Live Monitor starten
                     </button>
                   </div>
@@ -1188,8 +1034,15 @@
                       </div>
                     </div>
                   </div>
+                  <div class="mb-3">
+                    <label class="form-label small" data-lang-key="live_freq_label">Frequenz (MHz):</label>
+                    <div class="input-group input-group-sm">
+                      <input type="number" class="form-control form-control-sm" id="liveFreq" value="2870" min="2200" max="4400" step="0.1">
+                      <button id="setFreqBtn" class="btn btn-primary btn-sm" type="button" data-lang-key="set_freq_btn">Setzen</button>
+                    </div>
+                  </div>
                   <div class="mt-3">
-                    <button id="resetLiveBtn" class="btn btn-warning btn-sm w-100">
+                    <button id="resetLiveBtn" class="btn btn-warning btn-sm w-100" data-lang-key="reset_live">
                       Daten zurücksetzen
                     </button>
                   </div>
@@ -1203,13 +1056,13 @@
       <!-- ░░ Scan Range Controls ░░------------------------------------------- -->
       <div class="card mt-2 measurement-section">
         <div class="card-header py-2">
-          <h6 class="mb-0">Scan-Parameter einstellen</h6>
+          <h6 class="mb-0" data-lang-key="scan_params">Scan-Parameter einstellen</h6>
         </div>
         <div class="card-body py-2">
           <div class="row g-2">
             <!-- Start Frequency -->
             <div class="col-md-4">
-              <label for="f_begin" class="form-label small">Startfrequenz (MHz)</label>
+              <label for="f_begin" class="form-label small" data-lang-key="start_freq">Startfrequenz (MHz)</label>
               <div class="input-group input-group-sm">
                 <button class="btn btn-outline-secondary btn-sm" type="button" 
                         onclick="addValue('-100', 'f_begin')">-100</button>
@@ -1226,7 +1079,7 @@
             
             <!-- End Frequency -->
             <div class="col-md-4">
-              <label for="f_end" class="form-label small">Endfrequenz (MHz)</label>
+              <label for="f_end" class="form-label small" data-lang-key="end_freq">Endfrequenz (MHz)</label>
               <div class="input-group input-group-sm">
                 <button class="btn btn-outline-secondary btn-sm" type="button" 
                         onclick="addValue('-100', 'f_end')">-100</button>
@@ -1243,7 +1096,7 @@
             
             <!-- Step Size -->
             <div class="col-md-4">
-              <label for="f_step" class="form-label small">Schrittweite (MHz)</label>
+              <label for="f_step" class="form-label small" data-lang-key="step_size">Schrittweite (MHz)</label>
               <div class="input-group input-group-sm">
                 <button class="btn btn-outline-secondary btn-sm" type="button" 
                         onclick="addValue('-1', 'f_step')">-1</button>
@@ -1279,7 +1132,7 @@
       <!-- ░░ Measurement History ░░------------------------------------------- -->
       <div class="card mt-4">
         <div class="card-header">
-          <h5 class="mb-0">Durchgeführte Messungen</h5>
+          <h5 class="mb-0" data-lang-key="completed_measurements">Durchgeführte Messungen</h5>
         </div>
         <div class="card-body">
           <div class="table-responsive">
@@ -1829,7 +1682,6 @@
           ["AutoMessung", AutoToggle],
           ["startLiveBtn", startLiveMonitor],
           ["resetLiveBtn", resetLiveData],
-          ["setFreqBtn", setFrequency],
           [
             "Clear",
             () => {
@@ -1840,6 +1692,9 @@
           ],
           ["MessreiheHerunterladen", DownloadCSV],
         ];
+        // setFreqBtn handled separately (may not exist in all layouts)
+        const setFreqBtnEl = ById("setFreqBtn");
+        if (setFreqBtnEl) setFreqBtnEl.addEventListener("click", setFrequency);
         ChangeListeners.forEach((element) =>
           ById(element[0]).addEventListener("change", element[1])
         );
@@ -1877,6 +1732,7 @@
         "nav_measurement_webserial": "Messung (WebSerial)",
         "nav_alignment": "Justage",
         "nav_info": "Weitere Infos",
+        "nav_ratio": "B-Field Monitor",
         "title": "NV Experimente - Messung durchführen",
         "page_title": "Messung der Lichtintensität in Abhängigkeit von der Frequenz",
         "freq_sweep": "Frequenz-Sweep",
@@ -1885,7 +1741,29 @@
         "start_measurement": "Messung starten",
         "stop_measurement": "Messung stoppen",
         "serial_status": "Serial Status:",
-        "not_connected": "Nicht verbunden"
+        "not_connected": "Nicht verbunden",
+        "live_intensity_monitor": "Live Intensität Monitor",
+        "live_control": "Live Kontrolle",
+        "start_live": "Live Monitor starten",
+        "stop_live": "Live Monitor stoppen",
+        "live_freq_label": "Frequenz (MHz):",
+        "set_freq_btn": "Setzen",
+        "reset_live": "Daten zurücksetzen",
+        "scan_params": "Scan-Parameter einstellen",
+        "start_freq": "Startfrequenz (MHz)",
+        "end_freq": "Endfrequenz (MHz)",
+        "step_size": "Schrittweite (MHz)",
+        "completed_measurements": "Durchgeführte Messungen",
+        "waiting_data": "Warten auf Daten...",
+        "webserial_warning": "Ihr Browser unterstützt die WebSerial API nicht. Bitte verwenden Sie Chrome/Edge oder die \"Messung (on Device)\" Seite.",
+        "timeout_warning": "Messungen wurden wegen Timeout übersprungen",
+        "confirm_delete": "Messung wirklich löschen?",
+        "no_measurements": "Noch keine Messungen durchgeführt",
+        "single_measurement": "Einzelmessung",
+        "sensor_settings": "Sensor-Einstellungen",
+        "gain": "Verstärkung (Gain)",
+        "integration_time": "Integrationszeit",
+        "sensor_note": "Einstellungen werden via Serial an den ESP32 übertragen."
       },
       en: {
         "nav_start": "Start",
@@ -1893,6 +1771,7 @@
         "nav_measurement_webserial": "Measurement (WebSerial)",
         "nav_alignment": "Alignment",
         "nav_info": "More Info",
+        "nav_ratio": "B-Field Monitor",
         "title": "NV Experiments - Perform Measurement",
         "page_title": "Measurement of Light Intensity as a Function of Frequency",
         "freq_sweep": "Frequency Sweep",
@@ -1901,7 +1780,29 @@
         "start_measurement": "Start Measurement",
         "stop_measurement": "Stop Measurement",
         "serial_status": "Serial Status:",
-        "not_connected": "Not connected"
+        "not_connected": "Not connected",
+        "live_intensity_monitor": "Live Intensity Monitor",
+        "live_control": "Live Control",
+        "start_live": "Start Live Monitor",
+        "stop_live": "Stop Live Monitor",
+        "live_freq_label": "Frequency (MHz):",
+        "set_freq_btn": "Set",
+        "reset_live": "Reset Data",
+        "scan_params": "Set Scan Parameters",
+        "start_freq": "Start Frequency (MHz)",
+        "end_freq": "End Frequency (MHz)",
+        "step_size": "Step Size (MHz)",
+        "completed_measurements": "Completed Measurements",
+        "waiting_data": "Waiting for data...",
+        "webserial_warning": "Your browser does not support the WebSerial API. Please use Chrome/Edge or the \"Measurement (on Device)\" page.",
+        "timeout_warning": "Measurements were skipped due to timeout",
+        "confirm_delete": "Really delete measurement?",
+        "no_measurements": "No measurements performed yet",
+        "single_measurement": "Single Measurement",
+        "sensor_settings": "Sensor Settings",
+        "gain": "Gain",
+        "integration_time": "Integration Time",
+        "sensor_note": "Settings will be sent to the ESP32 via Serial."
       }
     };
     
