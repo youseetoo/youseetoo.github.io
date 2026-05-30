@@ -128,7 +128,8 @@ export async function sendSerialCommand(command) {
 }
 
 export async function setCanId(address) {
-  return await sendSerialCommand(JSON.stringify({ task: '/can_act', address: parseInt(address) }));
+  const addr = parseInt(address);
+  return await sendSerialCommand(JSON.stringify({ task: '/can_act', address: addr, nodeId: addr, canMotorAxis: 1 }));
 }
 
 function updateConnectionStatus(connected) {
@@ -152,6 +153,15 @@ function updateConnectionStatus(connected) {
 export async function connectHwSerial() {
   if (state.hwIsConnected) {
     await disconnectHwSerial();
+    return;
+  }
+
+  // Reuse Configure tab connection if already open
+  if (state.isConnected && state.serialWriter) {
+    state.hwIsConnected = true;
+    state.hwSerialPort = null;  // mark as shared (no own port)
+    updateHwConnectionStatus(true);
+    logToHwConsole('Using existing serial connection from Configure tab', 'success');
     return;
   }
 
@@ -181,21 +191,24 @@ export async function connectHwSerial() {
 }
 
 export async function disconnectHwSerial() {
+  const isShared = state.hwIsConnected && !state.hwSerialPort;
   try {
-    if (state.hwSerialReader) {
-      try { await state.hwSerialReader.cancel(); } catch (e) { /* device may be lost */ }
-    }
-    if (state.hwSerialWriter) {
-      try { await state.hwSerialWriter.close(); } catch (e) { /* device may be lost */ }
-    }
-    if (state.hwSerialPort) {
-      try { await state.hwSerialPort.close(); } catch (e) { /* device may be lost */ }
+    if (!isShared) {
+      // Only close own port/streams; shared port is owned by Configure tab
+      if (state.hwSerialReader) {
+        try { await state.hwSerialReader.cancel(); } catch (e) { /* device may be lost */ }
+      }
+      if (state.hwSerialWriter) {
+        try { await state.hwSerialWriter.close(); } catch (e) { /* device may be lost */ }
+      }
+      if (state.hwSerialPort) {
+        try { await state.hwSerialPort.close(); } catch (e) { /* device may be lost */ }
+      }
     }
     logToHwConsole('Disconnected from serial port', 'info');
   } catch (error) {
     console.error('HW disconnect error:', error);
   } finally {
-    // Always clean up state, even if the device was lost
     state.hwSerialReader = null;
     state.hwSerialWriter = null;
     state.hwSerialPort = null;
@@ -220,12 +233,14 @@ async function readHwSerialLoop() {
 }
 
 export async function sendHwSerialCommand(command) {
-  if (!state.hwIsConnected || !state.hwSerialWriter) {
+  // Fall back to Configure tab's writer when sharing that connection
+  const writer = state.hwSerialWriter || (state.hwIsConnected ? state.serialWriter : null);
+  if (!state.hwIsConnected || !writer) {
     logToHwConsole('Not connected to serial port', 'error');
     return false;
   }
   try {
-    await state.hwSerialWriter.write(command + '\n');
+    await writer.write(command + '\n');
     logToHwConsole(`> ${command}`, 'success');
     return true;
   } catch (error) {

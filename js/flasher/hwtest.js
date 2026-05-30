@@ -204,7 +204,7 @@ export function initHardwareTest() {
   document.getElementById('hwCanUpdate')?.addEventListener('click', () => {
     const address = parseInt(document.getElementById('hwCanAddress').value);
     if (!isNaN(address)) {
-      sendHwSerialCommand(JSON.stringify({ task: '/can_act', address }));
+      sendHwSerialCommand(JSON.stringify({ task: '/can_act', address, nodeId: address, canMotorAxis: 1 }));
     }
   });
   // CAN Address presets
@@ -214,7 +214,7 @@ export function initHardwareTest() {
       preset.classList.add('selected');
       const address = parseInt(preset.dataset.address);
       document.getElementById('hwCanAddress').value = address;
-      sendHwSerialCommand(JSON.stringify({ task: '/can_act', address }));
+      sendHwSerialCommand(JSON.stringify({ task: '/can_act', address, nodeId: address, canMotorAxis: 1 }));
     });
   });
 

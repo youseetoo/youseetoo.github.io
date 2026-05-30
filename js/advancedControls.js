@@ -31,13 +31,15 @@ function updateTMC() {
   
   /**
    * Reads the CAN address from user input, sends:
-   * {"task":"/can_act", "address": 256}
+   * {"task":"/can_act", "address": 12, "nodeId": 12, "canMotorAxis": 1}
    */
   function updateCANAddress() {
     const address = parseInt(document.getElementById("can_address").value, 10) || 256;
     const cmdObj = {
       task: "/can_act",
       address: address,
+      nodeId: address, 
+      canMotorAxis: 1 
     };
     sendCMD(JSON.stringify(cmdObj));
   }
