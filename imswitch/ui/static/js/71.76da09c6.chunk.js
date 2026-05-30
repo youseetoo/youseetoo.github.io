@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkimswitch_frontend=self.webpackChunkimswitch_frontend||[]).push([[71],{71:(e,n,s)=>{s.d(n,{default:()=>c});var t=s(6272),r=s(6659);class c extends r.A{decodeBlock(e){return(0,t.UD)(new Uint8Array(e)).buffer}}}}]);
+//# sourceMappingURL=71.76da09c6.chunk.js.map
