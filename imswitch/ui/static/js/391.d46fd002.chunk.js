@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkimswitch_frontend=self.webpackChunkimswitch_frontend||[]).push([[391],{3391:(e,t,n)=>{n.d(t,{default:()=>r});var s=n(6659);class r extends s.A{decodeBlock(e){const t=new DataView(e),n=[];for(let s=0;s<e.byteLength;++s){let e=t.getInt8(s);if(e<0){const r=t.getUint8(s+1);e=-e;for(let t=0;t<=e;++t)n.push(r);s+=1}else{for(let r=0;r<=e;++r)n.push(t.getUint8(s+r+1));s+=e+1}}return new Uint8Array(n).buffer}}}}]);
-//# sourceMappingURL=391.d46fd002.chunk.js.map

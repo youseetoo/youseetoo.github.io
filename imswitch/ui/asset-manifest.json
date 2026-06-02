@@ -1,40 +1,24 @@
 {
   "files": {
     "main.css": "/imswitch/ui/static/css/main.ac93c538.css",
-    "main.js": "/imswitch/ui/static/js/main.ea658235.js",
+    "main.js": "/imswitch/ui/static/js/main.884135be.js",
     "static/js/893.ea5e5703.chunk.js": "/imswitch/ui/static/js/893.ea5e5703.chunk.js",
     "static/js/646.a843c3e3.chunk.js": "/imswitch/ui/static/js/646.a843c3e3.chunk.js",
     "static/js/285.5eb60c33.chunk.js": "/imswitch/ui/static/js/285.5eb60c33.chunk.js",
-    "static/js/426.844a35b6.chunk.js": "/imswitch/ui/static/js/426.844a35b6.chunk.js",
-    "static/js/899.e99f9f72.chunk.js": "/imswitch/ui/static/js/899.e99f9f72.chunk.js",
-    "static/js/760.ec022e4c.chunk.js": "/imswitch/ui/static/js/760.ec022e4c.chunk.js",
-    "static/js/71.76da09c6.chunk.js": "/imswitch/ui/static/js/71.76da09c6.chunk.js",
-    "static/js/391.d46fd002.chunk.js": "/imswitch/ui/static/js/391.d46fd002.chunk.js",
-    "static/js/547.1ae0f2da.chunk.js": "/imswitch/ui/static/js/547.1ae0f2da.chunk.js",
-    "static/js/385.04796c23.chunk.js": "/imswitch/ui/static/js/385.04796c23.chunk.js",
     "static/js/453.7889dd48.chunk.js": "/imswitch/ui/static/js/453.7889dd48.chunk.js",
-    "static/js/272.6d870e71.chunk.js": "/imswitch/ui/static/js/272.6d870e71.chunk.js",
     "static/media/illumination_ring.png": "/imswitch/ui/static/media/illumination_ring.54bd2afbc0dad2fd423a.png",
     "static/media/illumination_circle.png": "/imswitch/ui/static/media/illumination_circle.60984d7405fab18873e8.png",
     "static/media/illumination_halves.png": "/imswitch/ui/static/media/illumination_halves.27b029147851ccf5b1b4.png",
     "index.html": "/imswitch/ui/index.html",
     "main.ac93c538.css.map": "/imswitch/ui/static/css/main.ac93c538.css.map",
-    "main.ea658235.js.map": "/imswitch/ui/static/js/main.ea658235.js.map",
+    "main.884135be.js.map": "/imswitch/ui/static/js/main.884135be.js.map",
     "893.ea5e5703.chunk.js.map": "/imswitch/ui/static/js/893.ea5e5703.chunk.js.map",
     "646.a843c3e3.chunk.js.map": "/imswitch/ui/static/js/646.a843c3e3.chunk.js.map",
     "285.5eb60c33.chunk.js.map": "/imswitch/ui/static/js/285.5eb60c33.chunk.js.map",
-    "426.844a35b6.chunk.js.map": "/imswitch/ui/static/js/426.844a35b6.chunk.js.map",
-    "899.e99f9f72.chunk.js.map": "/imswitch/ui/static/js/899.e99f9f72.chunk.js.map",
-    "760.ec022e4c.chunk.js.map": "/imswitch/ui/static/js/760.ec022e4c.chunk.js.map",
-    "71.76da09c6.chunk.js.map": "/imswitch/ui/static/js/71.76da09c6.chunk.js.map",
-    "391.d46fd002.chunk.js.map": "/imswitch/ui/static/js/391.d46fd002.chunk.js.map",
-    "547.1ae0f2da.chunk.js.map": "/imswitch/ui/static/js/547.1ae0f2da.chunk.js.map",
-    "385.04796c23.chunk.js.map": "/imswitch/ui/static/js/385.04796c23.chunk.js.map",
-    "453.7889dd48.chunk.js.map": "/imswitch/ui/static/js/453.7889dd48.chunk.js.map",
-    "272.6d870e71.chunk.js.map": "/imswitch/ui/static/js/272.6d870e71.chunk.js.map"
+    "453.7889dd48.chunk.js.map": "/imswitch/ui/static/js/453.7889dd48.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ac93c538.css",
-    "static/js/main.ea658235.js"
+    "static/js/main.884135be.js"
   ]
 }
