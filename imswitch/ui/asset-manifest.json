@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/imswitch/ui/static/css/main.436a9593.css",
-    "main.js": "/imswitch/ui/static/js/main.d3d282a1.js",
+    "main.js": "/imswitch/ui/static/js/main.b94f2f1b.js",
     "static/js/794.b7a4a99b.chunk.js": "/imswitch/ui/static/js/794.b7a4a99b.chunk.js",
     "static/js/485.51731a5f.chunk.js": "/imswitch/ui/static/js/485.51731a5f.chunk.js",
     "static/js/852.cd0d7827.chunk.js": "/imswitch/ui/static/js/852.cd0d7827.chunk.js",
@@ -13,6 +13,6 @@
   },
   "entrypoints": [
     "static/css/main.436a9593.css",
-    "static/js/main.d3d282a1.js"
+    "static/js/main.b94f2f1b.js"
   ]
 }
