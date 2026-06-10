@@ -5,7 +5,7 @@
   "funding_url": "https://github.com/openUC2/TechnicalDocs-openUC2-QBox",
   "builds": [
     {
-      "chipFamily": "ESP32-esp32c3",
+      "chipFamily": "ESP32-C3",
       "parts": [{ "path": "odmr-xiao-esp32c3.bin", "offset": 0 }]
     }
   ]
