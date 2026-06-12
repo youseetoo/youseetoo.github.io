@@ -343,7 +343,11 @@ async function updateManifestUrl() {
   }
 
   // Build manifest URL
-  if (boardConfig && boardConfig.manifestPath) {
+  if (boardConfig && boardConfig.manifestUrl) {
+    // Board has a fixed external manifest URL (e.g. ODMR firmware hosted on youseetoo.github.io)
+    manifestUrl = boardConfig.manifestUrl;
+    logToConsole(`\u2713 Loading from fixed URL: ${manifestUrl}`, 'success');
+  } else if (boardConfig && boardConfig.manifestPath) {
     manifestUrl = `${window.location.origin}${boardConfig.manifestPath}${state.selectedBoard}-manifest.json`;
   } else if (releaseTag) {
     manifestUrl = `${RAW_BASE}/${releaseTag}/${state.selectedBoard}-manifest.json`;
