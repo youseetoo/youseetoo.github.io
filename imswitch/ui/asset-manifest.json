@@ -1,18 +1,15 @@
 {
   "files": {
     "main.css": "/imswitch/ui/static/css/main.a433989e.css",
-    "main.js": "/imswitch/ui/static/js/main.3f8ea1a6.js",
+    "main.js": "/imswitch/ui/static/js/main.6790ed97.js",
     "static/js/794.b7a4a99b.chunk.js": "/imswitch/ui/static/js/794.b7a4a99b.chunk.js",
     "static/js/485.51731a5f.chunk.js": "/imswitch/ui/static/js/485.51731a5f.chunk.js",
     "static/js/852.cd0d7827.chunk.js": "/imswitch/ui/static/js/852.cd0d7827.chunk.js",
     "static/js/206.01c88269.chunk.js": "/imswitch/ui/static/js/206.01c88269.chunk.js",
-    "static/media/illumination_ring.png": "/imswitch/ui/static/media/illumination_ring.54bd2afbc0dad2fd423a.png",
-    "static/media/illumination_circle.png": "/imswitch/ui/static/media/illumination_circle.60984d7405fab18873e8.png",
-    "static/media/illumination_halves.png": "/imswitch/ui/static/media/illumination_halves.27b029147851ccf5b1b4.png",
     "index.html": "/imswitch/ui/index.html"
   },
   "entrypoints": [
     "static/css/main.a433989e.css",
-    "static/js/main.3f8ea1a6.js"
+    "static/js/main.6790ed97.js"
   ]
 }
