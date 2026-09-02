@@ -244,7 +244,7 @@
 
     <div class="card">
       <h2>Warenort (Location of goods)</h2>
-      <div class="small">„Art des Ortes“ and „Art der Ortsbestimmung“ are <b>derived from the Art der Ausfuhranmeldung</b> — you cannot pick them freely. ATLAS allows only A↔V, B↔Y and D↔U/W/Z, and requires V (Zollstelle) for every code <span class="mono">#####1##</span>, <span class="mono">#####3##</span>, <span class="mono">#####4##</span> and <span class="mono">#####9##</span>.</div>
+      <div class="small">„Art des Ortes“ and „Art der Ortsbestimmung“ are <b>derived from the Art der Ausfuhranmeldung</b> — you cannot pick them freely. ATLAS allows only A↔V, B↔Y and D↔U/W/Z, and requires V (Zollstelle) for every code <span class="mono">#####1##</span>, <span class="mono">#####3##</span>, <span class="mono">#####4##</span> and <span class="mono">#####9##</span>. With V the customs office is taken from the header — sending a <span class="mono">LocationOfGoods/CustomsOffice</span> block is rejected with <span class="mono">COM00017</span>.</div>
       <div id="warenortSummary" class="derived"></div>
       <div id="logAddressBlock">
         <div class="row">
@@ -352,11 +352,13 @@
       if (declMode() === "2"){
         return {typeOfLocation:"D", typeLabel:"D – Anderer Ort", qualifier:"Z", qualLabel:"Z – Adresse", office:""};
       }
-      const office = isOneStage() ? val("officeOfExit") : val("officeOfExport");
+      // With Ortsbestimmung V the Zollstelle is NOT a data element of its own —
+      // ATLAS takes it from the header. LocationOfGoods/CustomsOffice is rejected
+      // with COM00017 ("keine Vereinbarung"). `office` is only shown in the UI.
       return {
         typeOfLocation:"A", typeLabel:"A – Bestimmter Ort",
         qualifier:"V", qualLabel:"V – Zollstelle",
-        office: office
+        office: isOneStage() ? val("officeOfExit") : val("officeOfExport")
       };
     }
 
@@ -423,8 +425,9 @@
       const w = warenort();
       document.getElementById("logAddressBlock").hidden = w.qualifier !== "Z";
       const where = w.qualifier === "V"
-        ? "Zollstelle <b>" + escXml(w.office || "—") + "</b>" +
-          (oneStage ? " (Ausgangszollstelle)" : " (Ausfuhrzollstelle)")
+        ? "Zollstelle <b>" + escXml(w.office || "—") + "</b> — the " +
+          (oneStage ? "Ausgangszollstelle" : "Ausfuhrzollstelle") +
+          " from the header. With V the office is <b>not</b> a data element of its own; the XML carries no Warenort identification block."
         : "Anschrift <b>" + escXml([val("logStreet"), val("logZip") + " " + val("logCity"), val("logCountry")].join(", ")) + "</b>";
       document.getElementById("warenortSummary").innerHTML =
         "Art des Ortes: <b>" + w.typeLabel + "</b><br />" +
@@ -693,11 +696,10 @@ function xText(ctx, xpath) {
       setText(doc, "//*[local-name()='Consignee']/*[local-name()='Address']/*[local-name()='country']", val("consCountry"));
 
       // Warenort. Art des Ortes / Art der Ortsbestimmung follow from the Art der
-      // Ausfuhranmeldung, and each qualifier allows exactly one identification
-      // block. Element order follows the AES schema:
-      // typeOfLocation, qualifierOfIdentification, authorisationNumber,
-      // additionalIdentifier, UNLocode, CustomsOffice, GNSS, EconomicOperator,
-      // Address, PostcodeAddress, ContactPerson.
+      // Ausfuhranmeldung. Only Y (Bewilligungsnummer), W (GNSS) and Z (Adresse)
+      // carry an identification block of their own; with V the Zollstelle is the
+      // one already named in the header, and ATLAS rejects a CustomsOffice element
+      // here with COM00017 "keine Vereinbarung".
       const logEl = xFirst(doc, "//*[local-name()='LocationOfGoods']");
       if (logEl){
         const ns = logEl.namespaceURI;
@@ -711,11 +713,7 @@ function xText(ctx, xpath) {
         while (logEl.firstChild) logEl.removeChild(logEl.firstChild);
         logEl.appendChild(mk("typeOfLocation", w.typeOfLocation));
         logEl.appendChild(mk("qualifierOfIdentification", w.qualifier));
-        if (w.qualifier === "V"){
-          const co = mk("CustomsOffice");
-          co.appendChild(mk("referenceNumber", w.office));
-          logEl.appendChild(co);
-        } else {
+        if (w.qualifier !== "V"){
           const addr = mk("Address");
           addr.appendChild(mk("streetAndNumber", val("logStreet")));
           addr.appendChild(mk("postcode", val("logZip")));
