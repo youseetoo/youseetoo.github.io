@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ATLAS IAA-Plus XML Generator (incl. Two-Stage)</title>
+  <title>ATLAS IAA-Plus XML Generator (zwei- und einstufiges Verfahren)</title>
   <style>
     :root{
       --bg:#ffffff;--card:#ffffff;--border:#ddd;--text:#111;--muted:#666;
@@ -41,11 +41,16 @@
     .product-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
     .iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:#fff;color:#111;cursor:pointer;font-size:18px;line-height:1}
     .iconbtn.danger{border-color:rgba(185,28,28,.35);color:var(--danger)}
+    [hidden]{display:none!important}
+    .note{font-size:12px;line-height:1.45;border:1px solid var(--border);border-left:3px solid var(--accent);background:rgba(37,99,235,.05);border-radius:8px;padding:8px 10px;margin:8px 0;color:#333}
+    .note.warn{border-left-color:var(--danger);background:rgba(185,28,28,.06)}
+    .derived{font-size:12px;line-height:1.5;color:var(--muted);border:1px dashed var(--border);border-radius:10px;padding:8px 10px;margin:8px 0}
+    .derived b{color:var(--text)}
   </style>
 </head>
 <body>
   <div class="topbar">
-    <h1 style="margin:0">ATLAS IAA-Plus XML Generator (incl. Two-Stage)</h1>
+    <h1 style="margin:0">ATLAS IAA-Plus XML Generator (zwei- und einstufiges Verfahren)</h1>
     <div class="hint">Fields tagged Edit are the ones you usually change. Gray fields are prefilled but still editable.</div>
   </div>
 
@@ -78,21 +83,28 @@
         <input id="totalAmount" class="edit-primary" value="VALUE" />
       </div>
 
-      <h2 style="margin-top:16px">Procedure</h2>
-      <div class="small">Choose the export declaration type. Use <b>00000200</b> (default) for all standard third-country exports (e.g. KR, US, JP, CN…). Use <b>00000100</b> only for Binnenverkehr destinations with inland exit (CH, NO, UK, …) — ATLAS requires a different location qualifier for this type.</div>
+      <h2 style="margin-top:16px">Art der Ausfuhranmeldung (Procedure)</h2>
+      <div class="small">Values from the official ATLAS code list <b>A0121</b>. The <b>6th digit</b> decides where the goods are presented (Gestellung) — and that in turn decides the Warenort codes and whether inland transport data is allowed at all.</div>
       <div class="row">
-        <label>Export declaration type <span class="tag edit">Edit</span></label>
+        <label>Art der Ausfuhranmeldung <span class="tag edit">Edit</span></label>
         <select id="exportDeclType" class="edit-primary">
-          <option value="00000200" selected>00000200 – Drittland / Standard (default)</option>
-          <option value="00000100">00000100 – Binnenverkehr / Inland exit (CH, NO, UK …)</option>
+          <option value="00000200" selected>00000200 – zweistufig, Gestellung außerhalb des Amtsplatzes §12(4) AWV</option>
+          <option value="00000100">00000100 – zweistufig, Gestellung an der Ausfuhrzollstelle</option>
+          <option value="00000901">00000901 – einstufig, Warenwert bis 3.000 €</option>
+          <option value="00000902">00000902 – einstufig, begründeter Ausnahmefall</option>
         </select>
       </div>
-      <div class="row">
-        <label>Customs office of export (Binnenzollamt) <span class="tag edit">Edit</span></label>
+      <div id="declHint" class="note"></div>
+      <div class="row" id="rowVermerk" hidden>
+        <label>Vermerk X0000 (Begründung) <span class="tag edit">Edit</span></label>
+        <input id="vermerkText" class="edit-primary" placeholder="Grund für den Ausnahmefall nach Art. 221 Abs. 2 UZK-IA" />
+      </div>
+      <div class="row" id="rowOfficeOfExport">
+        <label id="lblOfficeOfExport">Ausfuhrzollstelle (Binnenzollamt) <span class="tag edit">Edit</span></label>
         <input id="officeOfExport" class="edit-primary" placeholder="e.g. DE003004" value="DE003004" />
       </div>
       <div class="row">
-        <label>Declared customs office of exit <span class="tag edit">Edit</span></label>
+        <label id="lblOfficeOfExit">Vorgesehene Ausgangszollstelle <span class="tag edit">Edit</span></label>
         <input id="officeOfExit" class="edit-primary" placeholder="e.g. DE003305" value="DE003305" />
       </div>
       <div class="small" style="margin-top:-4px">Format for customs offices: country code + 6-digit office number, e.g. DE003004.</div>
@@ -135,52 +147,84 @@
 
 
       <h2 style="margin-top:16px">Transport (ATLAS mask)</h2>
-      <div class="row">
-        <label>Inland mode <span class="tag">Prefilled</span></label>
+      <div id="transportNote" class="note" hidden></div>
+      <div class="row" id="rowModeInland">
+        <label>Inländischer Verkehrszweig <span class="tag">Prefilled</span></label>
         <select id="modeInland" class="prefilled">
-          <option value="3" selected>3 - Road</option>
-          <option value="4">4 - Air</option>
-          <option value="1">1 - Sea</option>
-          <option value="2">2 - Rail</option>
-          <option value="5">5 - Mail</option>
+          <option value="3" selected>3 - Beförderung auf der Straße</option>
+          <option value="4">4 - Beförderung auf dem Luftweg</option>
+          <option value="1">1 - Seeverkehr</option>
+          <option value="2">2 - Schienenverkehr</option>
+          <option value="5">5 - Postverkehr</option>
+          <option value="7">7 - Festinstallierte Transporteinrichtungen</option>
+          <option value="8">8 - Binnenschifffahrt</option>
+          <option value="9">9 - Eigener Antrieb</option>
         </select>
       </div>
       <div class="row">
-        <label>Border mode <span class="tag">Prefilled</span></label>
+        <label>Verkehrszweig an der Grenze <span class="tag">Prefilled</span></label>
         <select id="modeBorder" class="prefilled">
-          <option value="3" selected>3 - Road</option>
-          <option value="4">4 - Air</option>
-          <option value="1">1 - Sea</option>
-          <option value="2">2 - Rail</option>
-          <option value="5">5 - Mail</option>
+          <option value="3" selected>3 - Beförderung auf der Straße</option>
+          <option value="4">4 - Beförderung auf dem Luftweg</option>
+          <option value="1">1 - Seeverkehr</option>
+          <option value="2">2 - Schienenverkehr</option>
+          <option value="5">5 - Postverkehr</option>
+          <option value="7">7 - Festinstallierte Transporteinrichtungen</option>
+          <option value="8">8 - Binnenschifffahrt</option>
+          <option value="9">9 - Eigener Antrieb</option>
         </select>
       </div>
 
-      <div class="row">
-        <label>Departure ID type <span class="tag">Prefilled</span></label>
-        <input id="depIdType" class="prefilled" value="30" />
+      <div class="row" id="rowDepIdType">
+        <label>Bef.mittel Abgang – Art der Identifikation <span class="tag">Prefilled</span></label>
+        <select id="depIdType" class="prefilled">
+          <option value="30" selected>30 - Amtliches Kennzeichen des Straßenfahrzeugs</option>
+          <option value="31">31 - Amtliches Kennzeichen des Straßenanhängers</option>
+          <option value="40">40 - IATA-Flugnummer</option>
+          <option value="41">41 - Registriernummer des Luftfahrzeugs</option>
+          <option value="10">10 - IMO-Schiffsidentifikationsnummer</option>
+          <option value="11">11 - Name des Seeschiffes</option>
+          <option value="20">20 - Waggonnummer</option>
+          <option value="21">21 - Zugnummer</option>
+          <option value="80">80 - Europäische Schiffsnummer (ENI-Code)</option>
+          <option value="81">81 - Name des Binnenschiffes</option>
+        </select>
       </div>
-      <div class="row">
-        <label>Departure plate <span class="tag">Prefilled</span></label>
+      <div class="row" id="rowDepPlate">
+        <label>Bef.mittel Abgang – Kennzeichen <span class="tag">Prefilled</span></label>
         <input id="depPlate" class="prefilled" value="LKW" />
       </div>
-      <div class="row">
-        <label>Departure nationality <span class="tag">Prefilled</span></label>
+      <div class="row" id="rowDepNat">
+        <label>Bef.mittel Abgang – Staatszugehörigkeit <span class="tag">Prefilled</span></label>
         <input id="depNat" class="prefilled" value="QU" />
       </div>
+      <div id="depIdWarn" class="note warn" hidden></div>
 
       <div class="row">
-        <label>Border ID type <span class="tag">Prefilled</span></label>
-        <input id="xbIdType" class="prefilled" value="30" />
+        <label>Bef.mittel Grenze – Art der Identifikation <span class="tag">Prefilled</span></label>
+        <select id="xbIdType" class="prefilled">
+          <option value="30" selected>30 - Amtliches Kennzeichen des Straßenfahrzeugs</option>
+          <option value="31">31 - Amtliches Kennzeichen des Straßenanhängers</option>
+          <option value="40">40 - IATA-Flugnummer</option>
+          <option value="41">41 - Registriernummer des Luftfahrzeugs</option>
+          <option value="10">10 - IMO-Schiffsidentifikationsnummer</option>
+          <option value="11">11 - Name des Seeschiffes</option>
+          <option value="20">20 - Waggonnummer</option>
+          <option value="21">21 - Zugnummer</option>
+          <option value="80">80 - Europäische Schiffsnummer (ENI-Code)</option>
+          <option value="81">81 - Name des Binnenschiffes</option>
+        </select>
       </div>
       <div class="row">
-        <label>Border plate <span class="tag">Prefilled</span></label>
+        <label>Bef.mittel Grenze – Kennzeichen <span class="tag">Prefilled</span></label>
         <input id="xbPlate" class="prefilled" value="LKW" />
       </div>
       <div class="row">
-        <label>Border nationality <span class="tag">Prefilled</span></label>
+        <label>Bef.mittel Grenze – Staatszugehörigkeit <span class="tag">Prefilled</span></label>
         <input id="xbNat" class="prefilled" value="QU" />
       </div>
+      <div id="xbIdWarn" class="note warn" hidden></div>
+      <div class="small">ATLAS rule: the first digit of „Art der Identifikation“ must match the corresponding Verkehrszweig for sea, rail, road, air and inland waterway.</div>
 
       <h2 style="margin-top:16px">Routing countries</h2>
       <div class="small"><b>Route #1</b> = departure country (always DE). <b>Route #2</b> = final destination country. <b>Route #3</b> = only needed when goods pass through an additional transit country on the way.</div>
@@ -199,23 +243,26 @@
     </div>
 
     <div class="card">
-      <h2>Location of goods (exporter address)</h2>
-      <div class="small">Usually constant. Keep as is unless your pickup location changes.</div>
-      <div class="row">
-        <label>Street and number <span class="tag">Prefilled</span></label>
-        <input id="logStreet" class="prefilled" value="Hans-Knöll-str. 6" />
-      </div>
-      <div class="row">
-        <label>Postcode <span class="tag">Prefilled</span></label>
-        <input id="logZip" class="prefilled" value="07745" />
-      </div>
-      <div class="row">
-        <label>City <span class="tag">Prefilled</span></label>
-        <input id="logCity" class="prefilled" value="Jena" />
-      </div>
-      <div class="row">
-        <label>Country <span class="tag">Prefilled</span></label>
-        <input id="logCountry" class="prefilled" value="DE" />
+      <h2>Warenort (Location of goods)</h2>
+      <div class="small">„Art des Ortes“ and „Art der Ortsbestimmung“ are <b>derived from the Art der Ausfuhranmeldung</b> — you cannot pick them freely. ATLAS allows only A↔V, B↔Y and D↔U/W/Z, and requires V (Zollstelle) for every code <span class="mono">#####1##</span>, <span class="mono">#####3##</span>, <span class="mono">#####4##</span> and <span class="mono">#####9##</span>.</div>
+      <div id="warenortSummary" class="derived"></div>
+      <div id="logAddressBlock">
+        <div class="row">
+          <label>Street and number <span class="tag">Prefilled</span></label>
+          <input id="logStreet" class="prefilled" value="Hans-Knöll-str. 6" />
+        </div>
+        <div class="row">
+          <label>Postcode <span class="tag">Prefilled</span></label>
+          <input id="logZip" class="prefilled" value="07745" />
+        </div>
+        <div class="row">
+          <label>City <span class="tag">Prefilled</span></label>
+          <input id="logCity" class="prefilled" value="Jena" />
+        </div>
+        <div class="row">
+          <label>Country <span class="tag">Prefilled</span></label>
+          <input id="logCountry" class="prefilled" value="DE" />
+        </div>
       </div>
 
       <h2 style="margin-top:16px">Consignee (customer)</h2>
@@ -255,7 +302,7 @@
       <button class="secondary" id="btnDownload">Download XML</button>
       <button class="secondary" id="btnCopy">Copy XML</button>
     </div>
-    <div class="small">For two-stage export, upload the XML in IAA-Plus, wait for release/MRN, then download the ABD from ATLAS and send the PDF to the carrier. The site prepares the XML only.</div>
+    <div class="small"><b>Two-stage (00000100 / 00000200):</b> upload the XML in IAA-Plus, wait for release/MRN, then download the ABD from ATLAS and send the PDF to the carrier.<br /><b>One-stage (00000901 / 00000902):</b> upload the XML, hand the <b>LRN</b> (not an ABD) to the carrier together with the goods — the ABD only arrives with the release message after the Ausgangszollstelle has taken delivery. The site prepares the XML only.</div>
     <pre id="out" class="mono"></pre>
   </div>
 
@@ -289,6 +336,101 @@
         }
       ]
     };
+
+    // ---- Art der Ausfuhranmeldung (Codeliste A0121) -------------------------
+    // Digit 6 of the 8-digit code says how the goods are presented (Gestellung):
+    //   *****1**  at the Ausfuhrzollstelle (Amtsplatz)
+    //   *****2**  outside the Amtsplatz, §12(4) AWV  -> our own address
+    //   *****9**  einstufiges Verfahren: at the Ausgangszollstelle, which also
+    //             takes over the role of the Ausfuhrzollstelle
+    function declMode(){ return (val("exportDeclType") || "")[5] || "2"; }
+    function isOneStage(){ return declMode() === "9"; }
+
+    // Warenort codes follow from the procedure. ATLAS pairs "Art des Ortes" with
+    // "Art der Ortsbestimmung": A only with V, B only with Y, D only with U/W/Z.
+    function warenort(){
+      if (declMode() === "2"){
+        return {typeOfLocation:"D", typeLabel:"D – Anderer Ort", qualifier:"Z", qualLabel:"Z – Adresse", office:""};
+      }
+      const office = isOneStage() ? val("officeOfExit") : val("officeOfExport");
+      return {
+        typeOfLocation:"A", typeLabel:"A – Bestimmter Ort",
+        qualifier:"V", qualLabel:"V – Zollstelle",
+        office: office
+      };
+    }
+
+    const DECL_HINTS = {
+      "00000200": "Zweistufiges Normalverfahren with Antrag auf Gestellung außerhalb des Amtsplatzes (§12 Abs. 4 AWV). The goods stay at your address until release; Warenort is your address.",
+      "00000100": "Zweistufiges Normalverfahren. The goods are presented <b>at the Ausfuhrzollstelle</b>, so the Warenort is that customs office — not your address.",
+      "00000901": "Einstufiges Verfahren, Warenwert bis einschließlich 3.000 € per Ausfuhrsendung. The goods are presented directly <b>at the Ausgangszollstelle</b>, which also takes over the role of the Ausfuhrzollstelle. Not allowed for goods subject to Verbote/Beschränkungen or an Ausfuhrgenehmigung.",
+      "00000902": "Einstufiges Verfahren in begründeten Fällen (Art. 221 Abs. 2 UZK-IA). The reason must be declared as Vermerk <b>X0000</b> — fill the field below."
+    };
+
+    function syncProcedureUi(){
+      const code = val("exportDeclType");
+      const oneStage = isOneStage();
+
+      document.getElementById("declHint").innerHTML = DECL_HINTS[code] || "";
+      document.getElementById("rowVermerk").hidden = code !== "00000902";
+
+      // Einstufiges Verfahren: the Ausgangszollstelle acts as Ausfuhrzollstelle,
+      // so IAA-Plus greys the Ausfuhrzollstelle out and fills it itself.
+      const expOffice = document.getElementById("officeOfExport");
+      if (oneStage){
+        expOffice.value = val("officeOfExit");
+        expOffice.readOnly = true;
+        expOffice.classList.remove("edit-primary");
+        expOffice.classList.add("prefilled");
+        document.getElementById("lblOfficeOfExport").innerHTML =
+          'Ausfuhrzollstelle <span class="tag">auto</span>';
+        document.getElementById("lblOfficeOfExit").innerHTML =
+          'Ausgangszollstelle (Gestellung) <span class="tag edit">Edit</span>';
+      } else {
+        expOffice.readOnly = false;
+        expOffice.classList.add("edit-primary");
+        expOffice.classList.remove("prefilled");
+        document.getElementById("lblOfficeOfExport").innerHTML =
+          'Ausfuhrzollstelle (Binnenzollamt) <span class="tag edit">Edit</span>';
+        document.getElementById("lblOfficeOfExit").innerHTML =
+          'Vorgesehene Ausgangszollstelle <span class="tag edit">Edit</span>';
+      }
+
+      // "Inländischer Verkehrszweig" is unzulässig in the einstufiges Verfahren,
+      // and "Beförderungsmittel beim Abgang" only exists while it is set — this is
+      // exactly the übergreifende Plausibilisierung IAA-Plus complains about.
+      const tNote = document.getElementById("transportNote");
+      tNote.hidden = !oneStage;
+      tNote.innerHTML = "Einstufiges Verfahren: „Inländischer Verkehrszweig“ ist <b>unzulässig</b> (IAA-Plus hides the field), and „Beförderungsmittel beim Abgang“ is only visible while an inland Verkehrszweig is set. Both data groups are therefore left out of the XML. Only the Verkehrszweig an der Grenze and the grenzüberschreitendes aktives Beförderungsmittel are declared.";
+      ["rowModeInland","rowDepIdType","rowDepPlate","rowDepNat"].forEach(id => {
+        document.getElementById(id).hidden = oneStage;
+      });
+
+      // Art der Identifikation must start with the digit of its Verkehrszweig.
+      function checkIdType(warnId, idType, mode, label){
+        const el = document.getElementById(warnId);
+        const linked = ["1","2","3","4","8"].includes(mode);
+        const bad = linked && idType.charAt(0) !== mode;
+        el.hidden = !bad;
+        if (bad) el.textContent = label + ": „Art der Identifikation“ " + idType +
+          " does not match Verkehrszweig " + mode + ". The first digit must be " + mode + ".";
+      }
+      checkIdType("depIdWarn", val("depIdType"), val("modeInland"), "Beförderungsmittel beim Abgang");
+      checkIdType("xbIdWarn", val("xbIdType"), val("modeBorder"), "Beförderungsmittel an der Grenze");
+      if (oneStage) document.getElementById("depIdWarn").hidden = true;
+
+      // Warenort preview + address block visibility
+      const w = warenort();
+      document.getElementById("logAddressBlock").hidden = w.qualifier !== "Z";
+      const where = w.qualifier === "V"
+        ? "Zollstelle <b>" + escXml(w.office || "—") + "</b>" +
+          (oneStage ? " (Ausgangszollstelle)" : " (Ausfuhrzollstelle)")
+        : "Anschrift <b>" + escXml([val("logStreet"), val("logZip") + " " + val("logCity"), val("logCountry")].join(", ")) + "</b>";
+      document.getElementById("warenortSummary").innerHTML =
+        "Art des Ortes: <b>" + w.typeLabel + "</b><br />" +
+        "Art der Ortsbestimmung: <b>" + w.qualLabel + "</b><br />" +
+        "Warenort: " + where;
+    }
 
     function parseHS(hs8){
       const digits = String(hs8 || "").replaceAll(/\D/g,"");
@@ -444,14 +586,28 @@ function xText(ctx, xpath) {
     }
 
     function generateXml(){
+      const declType = val("exportDeclType");
+      const oneStage = isOneStage();
+
       // Validate customs office fields (ATLAS requires exactly 8 alphanumeric chars, e.g. DE003004)
       const _exitOffice = val("officeOfExit");
-      const _exportOffice = val("officeOfExport");
+      // Einstufiges Verfahren: die Ausgangszollstelle übernimmt die Aufgaben der
+      // Ausfuhrzollstelle, so both references carry the same office.
+      const _exportOffice = oneStage ? _exitOffice : val("officeOfExport");
       if (!_exitOffice || _exitOffice.trim().length !== 8) {
         throw new Error("Ausgangszollstelle (\"Declared customs office of exit\") muss genau 8 Zeichen haben, z.B. DE003305.\nAktueller Wert: \"" + _exitOffice + "\"");
       }
       if (!_exportOffice || _exportOffice.trim().length !== 8) {
         throw new Error("Ausfuhrzollamt (\"Customs office of export\") muss genau 8 Zeichen haben, z.B. DE003004.\nAktueller Wert: \"" + _exportOffice + "\"");
+      }
+      if (declType === "00000901"){
+        const amount = Number(String(val("totalAmount")).replace(",", "."));
+        if (Number.isFinite(amount) && amount > 3000) {
+          throw new Error("Art der Ausfuhranmeldung 00000901 ist nur bis einschließlich 3.000 EUR je Ausfuhrsendung zulässig.\nRechnungsbetrag: " + val("totalAmount") + "\nBitte 00000902 (begründeter Ausnahmefall) wählen und den Vermerk X0000 ausfüllen.");
+        }
+      }
+      if (declType === "00000902" && !val("vermerkText")) {
+        throw new Error("Art der Ausfuhranmeldung 00000902 verlangt eine Begründung des Ausnahmefalls als Vermerk X0000.\nBitte das Feld \"Vermerk X0000 (Begründung)\" ausfüllen.");
       }
 
       const parser = new DOMParser();
@@ -467,19 +623,15 @@ function xText(ctx, xpath) {
 
       // ExportOperation
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='LRN']", val("lrn"));
-      setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='exportDeclarationType']", val("exportDeclType"));
-
-      // ATLAS rule: exportDeclarationType 00000100 (*****1**) requires qualifierOfIdentification = 'V'
-      //             exportDeclarationType 00000200 (*****2**) requires qualifierOfIdentification = 'Z'
-      const qualId = val("exportDeclType") === "00000100" ? "V" : "Z";
-      setText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='qualifierOfIdentification']", qualId);
+      setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='exportDeclarationType']", declType);
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='totalAmountInvoiced']", val("totalAmount"));
       setText(doc, "//*[local-name()='ExportOperation']/*[local-name()='invoiceCurrency']", val("currency"));
 
-      // Customs offices for two-stage workflow
-      setText(doc, "//*[local-name()='MessageRecipient']/*[local-name()='referenceNumber']", val("officeOfExport"));
-      setText(doc, "//*[local-name()='CustomsOfficeOfExport']/*[local-name()='referenceNumber']", val("officeOfExport"));
-      setText(doc, "//*[local-name()='CustomsOfficeOfExitDeclared']/*[local-name()='referenceNumber']", val("officeOfExit"));
+      // Customs offices. In the einstufiges Verfahren the message goes to the
+      // Ausgangszollstelle, which is also the Ausfuhrzollstelle.
+      setText(doc, "//*[local-name()='MessageRecipient']/*[local-name()='referenceNumber']", _exportOffice);
+      setText(doc, "//*[local-name()='CustomsOfficeOfExport']/*[local-name()='referenceNumber']", _exportOffice);
+      setText(doc, "//*[local-name()='CustomsOfficeOfExitDeclared']/*[local-name()='referenceNumber']", _exitOffice);
 
       // GoodsShipment - destination + incoterms
       setText(doc, "//*[local-name()='GoodsShipment']/*[local-name()='countryOfDestination']", val("destCountry"));
@@ -489,13 +641,23 @@ function xText(ctx, xpath) {
       setText(doc, "//*[local-name()='DeliveryTerms']/*[local-name()='country']", val("destCountry"));
 
       // Consignment transport modes
-      setText(doc, "//*[local-name()='Consignment']/*[local-name()='inlandModeOfTransport']", val("modeInland"));
       setText(doc, "//*[local-name()='Consignment']/*[local-name()='modeOfTransportAtTheBorder']", val("modeBorder"));
 
-      // Departure transport means
-      setText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='typeOfIdentification']", val("depIdType"));
-      setText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='identificationNumber']", val("depPlate"));
-      setText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='nationality']", val("depNat"));
+      const consignmentEl = xFirst(doc, "//*[local-name()='Consignment']");
+      if (oneStage){
+        // Einstufiges Verfahren: "Inländischer Verkehrszweig" ist unzulässig, und
+        // "Beförderungsmittel beim Abgang" hängt davon ab. Beide entfallen — sonst
+        // meldet IAA-Plus in der übergreifenden Plausibilisierung, dass
+        // Beförderungsmittel beim Abgang nur mit inländischem Verkehrszweig
+        // erfasst sein dürfen.
+        removeAll(consignmentEl, "inlandModeOfTransport");
+        removeAll(consignmentEl, "DepartureTransportMeans");
+      } else {
+        setText(doc, "//*[local-name()='Consignment']/*[local-name()='inlandModeOfTransport']", val("modeInland"));
+        setText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='typeOfIdentification']", val("depIdType"));
+        setText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='identificationNumber']", val("depPlate"));
+        setText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='nationality']", val("depNat"));
+      }
 
       // Active border transport means
       setText(doc, "//*[local-name()='ActiveBorderTransportMeans']/*[local-name()='typeOfIdentification']", val("xbIdType"));
@@ -530,11 +692,57 @@ function xText(ctx, xpath) {
       setText(doc, "//*[local-name()='Consignee']/*[local-name()='Address']/*[local-name()='city']", val("consCity"));
       setText(doc, "//*[local-name()='Consignee']/*[local-name()='Address']/*[local-name()='country']", val("consCountry"));
 
-      // LocationOfGoods address (exporter pickup location)
-      setText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='Address']/*[local-name()='streetAndNumber']", val("logStreet"));
-      setText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='Address']/*[local-name()='postcode']", val("logZip"));
-      setText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='Address']/*[local-name()='city']", val("logCity"));
-      setText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='Address']/*[local-name()='country']", val("logCountry"));
+      // Warenort. Art des Ortes / Art der Ortsbestimmung follow from the Art der
+      // Ausfuhranmeldung, and each qualifier allows exactly one identification
+      // block. Element order follows the AES schema:
+      // typeOfLocation, qualifierOfIdentification, authorisationNumber,
+      // additionalIdentifier, UNLocode, CustomsOffice, GNSS, EconomicOperator,
+      // Address, PostcodeAddress, ContactPerson.
+      const logEl = xFirst(doc, "//*[local-name()='LocationOfGoods']");
+      if (logEl){
+        const ns = logEl.namespaceURI;
+        const mk = (name, text) => {
+          const n = doc.createElementNS(ns, name);
+          if (text != null) n.textContent = text;
+          return n;
+        };
+        const contact = xFirst(logEl, "./*[local-name()='ContactPerson']");
+        const w = warenort();
+        while (logEl.firstChild) logEl.removeChild(logEl.firstChild);
+        logEl.appendChild(mk("typeOfLocation", w.typeOfLocation));
+        logEl.appendChild(mk("qualifierOfIdentification", w.qualifier));
+        if (w.qualifier === "V"){
+          const co = mk("CustomsOffice");
+          co.appendChild(mk("referenceNumber", w.office));
+          logEl.appendChild(co);
+        } else {
+          const addr = mk("Address");
+          addr.appendChild(mk("streetAndNumber", val("logStreet")));
+          addr.appendChild(mk("postcode", val("logZip")));
+          addr.appendChild(mk("city", val("logCity")));
+          addr.appendChild(mk("country", val("logCountry")));
+          logEl.appendChild(addr);
+        }
+        if (contact) logEl.appendChild(contact);
+      }
+
+      // Vermerk X0000 - required to justify the einstufiges Verfahren in
+      // begründeten Fällen. AdditionalInformation sits right before Consignment.
+      const shipmentEl = xFirst(doc, "//*[local-name()='GoodsShipment']");
+      removeAll(shipmentEl, "AdditionalInformation");
+      if (declType === "00000902"){
+        const ns = shipmentEl.namespaceURI;
+        const ai = doc.createElementNS(ns, "AdditionalInformation");
+        const add = (name, text) => {
+          const n = doc.createElementNS(ns, name);
+          n.textContent = text;
+          ai.appendChild(n);
+        };
+        add("sequenceNumber", "1");
+        add("code", "X0000");
+        add("text", val("vermerkText"));
+        shipmentEl.insertBefore(ai, consignmentEl);
+      }
 
       // Goods items: clone from first template GoodsItem
       const goodsShipment = xFirst(doc, "//*[local-name()='GoodsShipment']");
@@ -684,6 +892,7 @@ function xText(ctx, xpath) {
       setVal("currency", xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='invoiceCurrency']"));
       setVal("officeOfExport", xText(doc, "//*[local-name()='CustomsOfficeOfExport']/*[local-name()='referenceNumber']"));
       setVal("officeOfExit", xText(doc, "//*[local-name()='CustomsOfficeOfExitDeclared']/*[local-name()='referenceNumber']"));
+      setVal("vermerkText", xText(doc, "//*[local-name()='GoodsShipment']/*[local-name()='AdditionalInformation'][*[local-name()='code']='X0000']/*[local-name()='text']"));
 
       // Dates (datetime-local needs "YYYY-MM-DDThh:mm", i.e. first 16 chars)
       const subDt = xText(doc, "//*[local-name()='ExportOperation']/*[local-name()='declarationSubmissionDateAndTime']");
@@ -698,12 +907,14 @@ function xText(ctx, xpath) {
       setVal("unlocode", xText(doc, "//*[local-name()='DeliveryTerms']/*[local-name()='UNLocode']"));
       setVal("incotermPlace", xText(doc, "//*[local-name()='DeliveryTerms']/*[local-name()='location']"));
 
-      setVal("modeInland", xText(doc, "//*[local-name()='Consignment']/*[local-name()='inlandModeOfTransport']"));
+      setVal("modeInland", xText(doc, "//*[local-name()='Consignment']/*[local-name()='inlandModeOfTransport']") || "3");
       setVal("modeBorder", xText(doc, "//*[local-name()='Consignment']/*[local-name()='modeOfTransportAtTheBorder']"));
 
-      setVal("depIdType", xText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='typeOfIdentification']"));
-      setVal("depPlate", xText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='identificationNumber']"));
-      setVal("depNat", xText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='nationality']"));
+      // Absent in the einstufiges Verfahren - keep the defaults so the fields stay
+      // usable if the user switches back to a zweistufiges Verfahren.
+      setVal("depIdType", xText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='typeOfIdentification']") || "30");
+      setVal("depPlate", xText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='identificationNumber']") || "LKW");
+      setVal("depNat", xText(doc, "//*[local-name()='DepartureTransportMeans']/*[local-name()='nationality']") || "QU");
 
       setVal("xbIdType", xText(doc, "//*[local-name()='ActiveBorderTransportMeans']/*[local-name()='typeOfIdentification']"));
       setVal("xbPlate", xText(doc, "//*[local-name()='ActiveBorderTransportMeans']/*[local-name()='identificationNumber']"));
@@ -722,11 +933,16 @@ function xText(ctx, xpath) {
       setVal("consCity", xText(doc, "//*[local-name()='Consignee']/*[local-name()='Address']/*[local-name()='city']"));
       setVal("consCountry", xText(doc, "//*[local-name()='Consignee']/*[local-name()='Address']/*[local-name()='country']"));
 
-      // location of goods
-      setVal("logStreet", xText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='Address']/*[local-name()='streetAndNumber']"));
-      setVal("logZip", xText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='Address']/*[local-name()='postcode']"));
-      setVal("logCity", xText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='Address']/*[local-name()='city']"));
-      setVal("logCountry", xText(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='Address']/*[local-name()='country']"));
+      // Warenort. The address block only exists with Art der Ortsbestimmung = Z;
+      // with V the XML carries a Zollstellennummer instead, which the form already
+      // derives from the customs office fields.
+      const logAddr = "//*[local-name()='LocationOfGoods']/*[local-name()='Address']/";
+      if (xFirst(doc, "//*[local-name()='LocationOfGoods']/*[local-name()='Address']")){
+        setVal("logStreet", xText(doc, logAddr + "*[local-name()='streetAndNumber']"));
+        setVal("logZip", xText(doc, logAddr + "*[local-name()='postcode']"));
+        setVal("logCity", xText(doc, logAddr + "*[local-name()='city']"));
+        setVal("logCountry", xText(doc, logAddr + "*[local-name()='country']"));
+      }
 
       // goods items
       const goods = xAll(doc, "//*[local-name()='GoodsShipment']/*[local-name()='GoodsItem']");
@@ -750,6 +966,7 @@ function xText(ctx, xpath) {
       }
 
       renderProducts();
+      syncProcedureUi();
       setOutput(generateXml());
     }
 
@@ -779,9 +996,18 @@ function xText(ctx, xpath) {
       document.getElementById("loadingEndDate").value = fmt(load);
     }
 
+    // Fields that change the derived Warenort / transport structure
+    ["exportDeclType","officeOfExport","officeOfExit","modeInland","modeBorder",
+     "depIdType","xbIdType","logStreet","logZip","logCity","logCountry"].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener("change", syncProcedureUi);
+      el.addEventListener("input", syncProcedureUi);
+    });
+
     // init
     initDates();
     renderProducts();
+    syncProcedureUi();
     setOutput(generateXml());
   </script>
 
