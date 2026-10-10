@@ -2,1352 +2,426 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>UC2 ESP32 Firmware Flashing</title>
-    <meta
-      name="description"
-      content="Expand the Bluetooth range of your smart home using ESPHome devices."
-    />
+    <title>UC2 ESP32 Flasher & Tester</title>
+    <meta name="description" content="Flash, test and configure UC2 ESP32 boards (standalone, CANopen master and satellites) in the browser." />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark light" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="css/flasher.css" rel="stylesheet" />
 
-    <!-- Bootstrap 5 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Bootstrap Icons -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-
-    <!-- The ESP Web Tools script -->
-    <script
-      type="module"
-      src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"
-    ></script>
-
-    <style>
-      /* Additional custom styling */
-
-      /* Force same size for the images */
-      .board-img {
-        width: 140px;
-        height: 140px;
-        object-fit: contain;
-        border: 4px solid transparent;
-        border-radius: 5px;
-        margin-bottom: 0.5rem;
-      }
-
-      /* Highlight the image border if the radio is checked */
-      input[type="radio"]:checked + img {
-        border-color: #0d6efd; /* primary color */
-      }
-
-      /* Hide the info sections by default */
-      .info-section {
-        display: none;
-      }
-
-      /* Once the matching radio is selected, we show the info */
-      .info-section.active {
-        display: block;
-      }
-
-      /* (Optional) Pre/code styling for pinouts */
-      pre {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 4px;
-        max-height: 400px;
-        overflow: auto;
-      }
-    </style>
+    <!-- ESP Web Tools (flashing) -->
+    <script type="module" src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"></script>
+    <!-- esptool-js (erase) -->
+    <script type="module">
+      import * as esptoolJS from 'https://unpkg.com/esptool-js@0.5.0/bundle.js';
+      window.Transport = esptoolJS.Transport;
+      window.ESPLoader = esptoolJS.ESPLoader;
+      window.dispatchEvent(new CustomEvent('esptool-ready'));
+    </script>
+    <script>
+      window.waitForESPTool = (ms = 5000) => new Promise((resolve, reject) => {
+        if (window.ESPLoader) return resolve();
+        const t = setTimeout(() => reject(new Error('timeout')), ms);
+        window.addEventListener('esptool-ready', () => { clearTimeout(t); resolve(); }, { once: true });
+      });
+    </script>
   </head>
   <body>
-    <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container-fluid mx-4">
-        <a class="navbar-brand" href="#">openUC2</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="./">
+          <img src="https://docs.openuc2.com/img/Artboard4@4x.png" width="36" alt="" class="me-2" />
+          openUC2 Flasher &amp; Tester
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link active" href="#drivers">Drivers</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#camera">Camera</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#flash">Flashing Firmware</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#test">Test Firmware</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#faq">FAQ / Tips</a>
-            </li>
+            <li class="nav-item"><a class="nav-link" href="https://docs.openuc2.com/dev/sw/interface/" target="_blank"><i class="bi bi-book"></i> Interface docs</a></li>
+            <li class="nav-item"><a class="nav-link" href="https://github.com/youseetoo/uc2-esp32" target="_blank"><i class="bi bi-github"></i> Firmware</a></li>
+            <li class="nav-item"><a class="nav-link" href="https://openuc2.discourse.group" target="_blank"><i class="bi bi-chat-dots"></i> Forum</a></li>
           </ul>
         </div>
       </div>
     </nav>
 
-    <!-- HEADER -->
-    <header class="bg-light py-5 mb-4">
-      <div class="container mx-4 text-center">
-        <h1 class="display-5">
-          <img
-            src="https://raw.githubusercontent.com/openUC2/openUC2.github.io/master/static/img/Artboard4%404x.png"
-            width="70"
-            alt="UC2 Logo"
-          />
-          UC2 ESP32 Flashing Tool
-        </h1>
-        <p class="lead">
-          Quickly install and update firmware for UC2 ESP32 boards in your browser –
-          no extra software required!
-        </p>
-        <div class="d-flex justify-content-center gap-2 flex-wrap">
-          <a href="https://openuc2.discourse.group" class="btn btn-outline-primary"
-            >Ask questions in our Forum</a
-          >
-          <a href="./flasher.html" class="btn btn-primary"
-            ><i class="bi bi-lightning-charge"></i> Try New Flasher (Beta)</a
-          >
-        </div>
+    <div class="container my-3">
+      <div id="browserWarning" class="alert alert-warning hidden">
+        <i class="bi bi-exclamation-triangle"></i> This browser has no WebSerial. Use Chrome, Edge or Opera on a desktop.
       </div>
-    </header>
-
-    <div class="container mx-4 mb-5">
-      <!-- DRIVERS INFO -->
-      <div id="drivers" class="mb-5">
-        <h2>1. Install ESP32 Drivers</h2>
-        <p>
-          Many ESP32 boards use USB-to-UART chips like <strong>CP2102</strong> or
-          <strong>CH340</strong>. If your board isn’t recognized, install the
-          correct driver:
-        </p>
-        <ul>
-          <li>
-            <strong>Silabs CP2102:</strong>
-            <a
-              href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers?tab=downloads"
-              target="_blank"
-              >Download (Silabs)</a
-            >
-          </li>
-          <li>
-            <strong>CH340:</strong>
-            <a
-              href="https://www.wch.cn/downloads/CH341SER_EXE.html"
-              target="_blank"
-              >Download (WCH)</a
-            > (Windows), or search “CH340 mac driver” if on macOS.
-          </li>
-        </ul>
-        <p>
-          For other OS or details, see
-          <a
-            href="https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers"
-            target="_blank"
-            >this driver installation tutorial</a
-          >.
-        </p>
+      <div id="postFlashBanner" class="alert alert-success alert-dismissible hidden">
+        <i class="bi bi-check-circle-fill"></i> <strong>Flashed.</strong> Click <em>Connect</em> to test the board or set its CAN node ID.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
 
-      <!-- CAMERA INFO -->
-      <div id="camera" class="mb-5">
-        <h2>2. Camera Software</h2>
-        <p>
-          For Daheng or HIK cameras, see:
-        </p>
-        <ul>
-          <li>
-            Daheng:
-            <a
-              href="https://openuc2.github.io/docs/ImSwitch/DahengCamera/"
-              target="_blank"
-              >Daheng Setup Guide</a
-            >
-          </li>
-          <li>
-            HIK MVS:
-            <a
-              href="https://openuc2.github.io/docs/Toolboxes/DiscoveryInterferometer/SoftwareTutorial/#install-mvs-app-for-camera-utilization"
-              target="_blank"
-              >HIK Installation Steps</a
-            >
-          </li>
-        </ul>
-        <p>
-          The actual camera model you have (e.g. Mercury 2 1220 vs. MV-CE060-10UC)
-          may differ from what’s on our website. Always confirm with the
-          manufacturer’s official info. 
-        </p>
-      </div>
+      <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" id="flash-tab" data-bs-toggle="tab" data-bs-target="#flash-pane" type="button"><i class="bi bi-lightning-charge"></i> Flash</button></li>
+        <li class="nav-item"><button class="nav-link" id="test-tab" data-bs-toggle="tab" data-bs-target="#test-pane" type="button"><i class="bi bi-sliders"></i> Test</button></li>
+        <li class="nav-item"><button class="nav-link" id="configure-tab" data-bs-toggle="tab" data-bs-target="#configure-pane" type="button"><i class="bi bi-diagram-3"></i> Configure CAN</button></li>
+        <li class="nav-item"><button class="nav-link" id="erase-tab" data-bs-toggle="tab" data-bs-target="#erase-pane" type="button"><i class="bi bi-eraser"></i> Erase</button></li>
+        <li class="nav-item"><button class="nav-link" id="help-tab" data-bs-toggle="tab" data-bs-target="#help-pane" type="button"><i class="bi bi-question-circle"></i> Help</button></li>
+      </ul>
 
-      <!-- FLASHING SECTION -->
-      <div id="flash" class="mb-5">
-        <h2>3. Flash the Firmware</h2>
-        <p>
-          Select your UC2 device and click “Install” to flash your ESP32 with
-          the UC2 firmware.
-        </p>
-
-        <!-- BOARD SELECTION GRID (RADIO BUTTONS + IMAGES) -->
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3">
-          <!-- Example item -->
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="esp32-uc2-wemos"
-                class="d-none"
-                checked
-              />
-              <img
-                src="./IMAGES/esp32-uc2-wemos.jpg"
-                alt="ESP32 WEMOS D1 R32-based UC2 board"
-                class="board-img"
-              />
-              <div>ESP32 WEMOS D1 R32 board</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="esp32-uc2-standalone-1"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/esp32-uc2-standalone-1.png"
-                alt="Standalone V1"
-                class="board-img"
-              />
-              <div>Standalone Board V1 (deprecated)</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="esp32-uc2-standalone-2"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/esp32-uc2-standalone-2.png"
-                alt="Standalone V2"
-                class="board-img"
-              />
-              <div>Standalone Board V2</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="esp32-uc2-standalone-3"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/esp32-uc2-standalone-3.png"
-                alt="Standalone V3"
-                class="board-img"
-              />
-              <div>Standalone Board V3</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="esp32-uc2-standalone-3-beta"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/esp32-uc2-standalone-3.png"
-                alt="Standalone V3 Beta"
-                class="board-img"
-              />
-              <div>Standalone V3 (BETA)</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="esp32-uc2-standalone-4"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/esp32-uc2-v4.png"
-                alt="Standalone V4"
-                class="board-img"
-              />
-              <div>Standalone Board V4</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="seeed_xiao_esp32s3_ledservo"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/ledboard.jpg"
-                alt="Xiao LED + Servo"
-                class="board-img"
-              />
-              <div>Xiao LED &amp; Servo Board</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="UC2_3_Xiao_Slave_Motor"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/esp32s3-uc2-motor.jpg"
-                alt="Xiao Motor Board"
-                class="board-img"
-              />
-              <div>Xiao Motor Board</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="seeed_xiao_esp32s3_ledring"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/esp32-uc2-ledring.jpg"
-                alt="Xiao LED Ring"
-                class="board-img"
-              />
-              <div>Xiao LED Ring &amp; Brightfield</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="seeed_xiao_esp32s3_can_slave_illumination"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/esp32-uc2-xiao-can-ledring.png"
-                alt="Xiao CAN Slave Illumination"
-                class="board-img"
-              />
-              <div>Xiao CAN Slave Illumination</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="xiao_webcam"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/xiao.jpg"
-                alt="Xiao Webcam"
-                class="board-img"
-              />
-              <div>Seeed Studio Webcam (USB)</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="waveshare_esp32s3_ledarray"
-                class="d-none"
-              />
-              <img
-                src="./IMAGES/waveshare.webp"
-                alt="Waveshare LED matrix"
-                class="board-img"
-              />
-              <div>Waveshare ESP32S3 Matrix</div>
-            </label>
-          </div>
-
-            <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="odmr-xiao-esp32s3"
-                class="d-none"
-              />
-              <img
-                src="https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png"
-                alt="Xiao ESP32S3 ODMR"
-                class="board-img"
-              />
-              <div>Xiao ESP32S3 ODMR</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="odmr-xiao-esp32c3"
-                class="d-none"
-              />
-              <img
-                src="https://quantumminilabs.de/wp-content/uploads/2025/01/cropped-Quantumminilabs_Logo.png"
-                alt="Xiao ESP32C3 ODMR"
-                class="board-img"
-              />
-              <div>Xiao ESP32C3 ODMR</div>
-            </label>
-          </div>
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="arkitekt-esp32"
-                class="d-none"
-              />
-              <img
-                src="https://arkitekt.live/img/favicon.svg"
-                alt="Arkitekt Logo"
-                class="board-img"
-              />
-              <div>Arkitekt (ESP32)</div>
-            </label>
-          </div>
-
-
-          <div class="col text-center">
-            <label>
-              <input
-                type="radio"
-                name="board"
-                value="arkitekt-esp32s3"
-                class="d-none"
-              />
-              <img
-                src="https://arkitekt.live/img/favicon.svg"
-                alt="Arkitekt Logo"
-                class="board-img"
-              />
-              <div>Arkitekt (ESP32S3 Xiao)</div>
-            </label>
-          </div>
-
-        </div>
-
-        <!-- The "Install" button from ESP Web Tools -->
-        <div class="text-center my-4">
-          <esp-web-install-button></esp-web-install-button>
-        </div>
-
-        <!-- Collapsible info sections for each board -->
-        <!-- We preserve the pinouts from your original code. Only the selected board's info is shown. -->
-        <!-- ESP32 WEMOS D1 R32-based UC2 board -->
-        <div id="info-esp32-uc2-wemos" class="info-section">
-          <h3>ESP32 WEMOS D1 R32-based UC2 board</h3>
-          <p>
-            This is an off-the-shelf board that can be used with a CNC Shield v3.
-            <br />
-            More info at
-            <a href="https://github.com/openUC2/UC2-REST#hardware" target="_blank"
-              >here</a
-            >.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-            // ESP32-WEMOS D1 R32
-            const int PIN_DEF_MOTOR_DIR_A = 0;
-            const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_16;
-            const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_27;
-            const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
-            const int PIN_DEF_MOTOR_STP_A = 0;
-            const int PIN_DEF_MOTOR_STP_X = GPIO_NUM_26;
-            const int PIN_DEF_MOTOR_STP_Y = GPIO_NUM_25;
-            const int PIN_DEF_MOTOR_STP_Z = GPIO_NUM_17;
-            const int PIN_DEF_MOTOR_EN_A = GPIO_NUM_12;
-            const int PIN_DEF_MOTOR_EN_X = GPIO_NUM_12;
-            const int PIN_DEF_MOTOR_EN_Y = GPIO_NUM_12;
-            const int PIN_DEF_MOTOR_EN_Z = GPIO_NUM_12;
-            const bool PIN_DEF_MOTOR_EN_A_INVERTED = true;
-            const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
-            const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
-            const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
-  
-            const int PIN_DEF_LASER_1 = GPIO_NUM_18;
-            const int PIN_DEF_LASER_2 = GPIO_NUM_19;
-            const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21
-  
-            const int PIN_DEF_LED = GPIO_NUM_4;
-            const int PIN_DEF_LED_NUM = 64;
-  
-            const int PIN_DEF_END_X = GPIO_NUM_13;
-            const int PIN_DEF_END_Y = GPIO_NUM_5;
-            const int PIN_DEF_END_Z = GPIO_NUM_23;
-  
-            const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
-            const int PIN_PS4_ENUM_DEF = 2;
-  
-  
-            #define WEMOS_D1_R32_BOARD_NAME "ESPDUINO-32 Wemos D1 R32"
-  
-            // timer definitions
-            #define WEMOS_D1_R32_STEP_TIMER_GROUP TIMER_GROUP_0
-            #define WEMOS_D1_R32_STEP_TIMER_INDEX TIMER_0
-  
-            // Define step pulse output pins.
-            #define WEMOS_D1_R32_X_STEP_PIN          GPIO_NUM_26
-            #define WEMOS_D1_R32_Y_STEP_PIN          GPIO_NUM_25
-            #define WEMOS_D1_R32_Z_STEP_PIN          GPIO_NUM_17
-            #define WEMOS_D1_R32_A_STEP_PIN          GPIO_NUM_19
-  
-            // Define step direction output pins. NOTE: All direction pins must be on the same port.
-            #define WEMOS_D1_R32_X_DIRECTION_PIN     GPIO_NUM_16
-            #define WEMOS_D1_R32_Y_DIRECTION_PIN     GPIO_NUM_27
-            #define WEMOS_D1_R32_Z_DIRECTION_PIN     GPIO_NUM_14
-            #define WEMOS_D1_R32_A_DIRECTION_PIN     GPIO_NUM_18
-  
-            #define WEMOS_D1_R32_X_END_STOP          GPIO_NUM_13 // arduino 9
-            #define WEMOS_D1_R32_X_END_STOP          GPIO_NUM_5  // arduino 10
-            #define WEMOS_D1_R32_X_END_STOP          GPIO_NUM_23  // arduino 11
-  
-  
-            // Define stepper driver enable/disable output pin(s).
-            #define WEMOS_D1_R32_STEPPERS_ENABLE_PIN GPIO_NUM_12
-  
-            // Define homing/hard limit switch input pins and limit interrupt vectors.
-            #define WEMOS_D1_R32_X_LIMIT_PIN         GPIO_NUM_13
-            #define WEMOS_D1_R32_Y_LIMIT_PIN         GPIO_NUM_5
-            #define WEMOS_D1_R32_Z_LIMIT_PIN         GPIO_NUM_23
-  
-            // Define spindle enable and spindle direction output pins.
-            #define WEMOS_D1_R32_SPINDLE_ENABLE_PIN  GPIO_NUM_18
-            #define WEMOS_D1_R32_SPINDLEPWMPIN       GPIO_NUM_19
-  
-            // Define flood enable output pin.
-            #define WEMOS_D1_R32_COOLANT_FLOOD_PIN   GPIO_NUM_32
-  
-            // Define user-control CONTROLs (cycle start, reset, feed hold) input pins.
-            #define WEMOS_D1_R32_RESET_PIN           GPIO_NUM_2
-            #define WEMOS_D1_R32_FEED_HOLD_PIN       GPIO_NUM_4
-            #define WEMOS_D1_R32_CYCLE_START_PIN     GPIO_NUM_35
-  
-            // Define probe switch input pin.
-            #define WEMOS_D1_R32_PROBE_PIN           GPIO_NUM_39
-  
-            #define WEMOS_D1_R32_UART2_RX_PIN            GPIO_NUM_33
-            #define WEMOS_D1_R32_UART2_TX_PIN            GPIO_NUM_32
-            #define WEMOS_D1_R32_MODBUS_DIRECTION_PIN    GPIO_NUM_15
-            #define WEMOS_D1_R32_MODBUS_BAUD             19200
-  
-  
-            // Pin mapping when using SPI mode.
-            // With this mapping, SD card can be used both in SPI and 1-line SD mode.
-            // Note that a pull-up on CS line is required in SD mode.
-            #define WEMOS_D1_R32_PIN_NUM_MISO        GPIO_NUM_19
-            #define WEMOS_D1_R32_PIN_NUM_MOSI        GPIO_NUM_23
-            #define WEMOS_D1_R32_PIN_NUM_CLK         GPIO_NUM_18
-            #define WEMOS_D1_R32_PIN_NUM_CS          GPIO_NUM_5
-          </code></pre>
-        </div>
-
-        <!-- Standalone Board V1 -->
-        <div id="info-esp32-uc2-standalone-1" class="info-section">
-          <h3>ESP32 DEV-based UC2 standalone board V1 (deprecated)</h3>
-          <p>
-            Design files can be found
-            <a href="https://github.com/openUC2/UC2-SUES/">here</a>.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-            // UC2 STandalone V1
-            const int PIN_DEF_MOTOR_DIR_A = GPIO_NUM_21;
-            const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33;
-            const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_16;
-            const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
-            const int PIN_DEF_MOTOR_STP_A = GPIO_NUM_22;
-            const int PIN_DEF_MOTOR_STP_X = GPIO_NUM_2;
-            const int PIN_DEF_MOTOR_STP_Y = GPIO_NUM_27;
-            const int PIN_DEF_MOTOR_STP_Z = GPIO_NUM_12;
-            const int PIN_DEF_MOTOR_EN_A = GPIO_NUM_13;
-            const int PIN_DEF_MOTOR_EN_X = GPIO_NUM_13;
-            const int PIN_DEF_MOTOR_EN_Y = GPIO_NUM_13;
-            const int PIN_DEF_MOTOR_EN_Z = GPIO_NUM_13;
-            const bool PIN_DEF_MOTOR_EN_A_INVERTED = true;
-            const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
-            const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
-            const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
-  
-            const int PIN_DEF_LASER_1 = GPIO_NUM_4;
-            const int PIN_DEF_LASER_2 = GPIO_NUM_15;
-            const int PIN_DEF_LASER_3 = 0; //GPIO_NUM_21
-  
-            const int PIN_DEF_LED = GPIO_NUM_17;
-            const int PIN_DEF_LED_NUM = 25;
-  
-            const int PIN_DEF_END_X = GPIO_NUM_10;
-            const int PIN_DEF_END_Y = GPIO_NUM_11;
-            const int PIN_DEF_END_Z = 0;
-  
-            const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
-            const int PIN_PS4_ENUM_DEF = 2;
-          </code></pre>
-        </div>
-
-        <!-- Standalone Board V2 -->
-        <div id="info-esp32-uc2-standalone-2" class="info-section">
-          <h3>ESP32 DEV-based UC2 standalone board V2</h3>
-          <p>
-            Design files:
-            <a href="https://github.com/openUC2/UC2-SUES/">here</a>.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-            // UC2 STandalone V2
-            const int PIN_DEF_MOTOR_DIR_A = GPIO_NUM_21;
-            const int PIN_DEF_MOTOR_DIR_X = GPIO_NUM_33;
-            const int PIN_DEF_MOTOR_DIR_Y = GPIO_NUM_16;
-            const int PIN_DEF_MOTOR_DIR_Z = GPIO_NUM_14;
-            const int PIN_DEF_MOTOR_STP_A = GPIO_NUM_22;
-            const int PIN_DEF_MOTOR_STP_X = GPIO_NUM_2;
-            const int PIN_DEF_MOTOR_STP_Y = GPIO_NUM_27;
-            const int PIN_DEF_MOTOR_STP_Z = GPIO_NUM_12;
-            const int PIN_DEF_MOTOR_EN_A = GPIO_NUM_13;
-            const int PIN_DEF_MOTOR_EN_X = GPIO_NUM_13;
-            const int PIN_DEF_MOTOR_EN_Y = GPIO_NUM_13;
-            const int PIN_DEF_MOTOR_EN_Z = GPIO_NUM_13;
-            const bool PIN_DEF_MOTOR_EN_A_INVERTED = true;
-            const bool PIN_DEF_MOTOR_EN_X_INVERTED = true;
-            const bool PIN_DEF_MOTOR_EN_Y_INVERTED = true;
-            const bool PIN_DEF_MOTOR_EN_Z_INVERTED = true;
-  
-            const int PIN_DEF_LASER_1 = GPIO_NUM_17;
-            const int PIN_DEF_LASER_2 = GPIO_NUM_4;
-            const int PIN_DEF_LASER_3 = GPIO_NUM_15;
-  
-            const int PIN_DEF_LED = GPIO_NUM_32;
-            const int PIN_DEF_LED_NUM = 25;
-  
-            const int PIN_DEF_END_X = GPIO_NUM_34;
-            const int PIN_DEF_END_Y = GPIO_NUM_35;
-            const int PIN_DEF_END_Z = 0;
-  
-            const String PIN_PS4_MAC_DEF = "1a:2b:3c:01:01:01";
-            const int PIN_PS4_ENUM_DEF = 2;
-            </code></pre>
-            <p>
-              This board is the updated version of the V1 with additional transistors to control High Power LEDs.
-              It also features an updated pin layout to access more functionalities of the ESP32.
-              More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
-           </p>
-        </div>
-
-        <!-- Standalone Board V3 -->
-        <div id="info-esp32-uc2-standalone-3" class="info-section">
-          <h3>ESP32 DEV-based UC2 standalone board V3</h3>
-          <p>
-            Updated version of the V2 with transistors, port extenders, etc.
-            More info
-            <a href="https://openuc2.github.io/docs/Electronics/uc2e2" target="_blank"
-              >here</a
-            >.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-            // UC2 STandalone V3
-            const char * pindefName = "UC2_3";
-  
-            int8_t MOTOR_A_STEP = GPIO_NUM_15;
-            int8_t MOTOR_X_STEP = GPIO_NUM_16;
-            int8_t MOTOR_Y_STEP = GPIO_NUM_14;
-            int8_t MOTOR_Z_STEP = GPIO_NUM_0;
-  
-            bool MOTOR_ENABLE_INVERTED = true;
-            bool MOTOR_AUTOENABLE = true;
-            bool useFastAccelStepper = true;
-            int8_t AccelStepperMotorType = 1;
-  
-            int8_t LASER_1 = GPIO_NUM_12;
-            int8_t LASER_2 = GPIO_NUM_4;
-            int8_t LASER_3 = GPIO_NUM_2;
-  
-            int8_t LED_PIN = GPIO_NUM_13;
-            int8_t LED_COUNT = 64;
-  
-            // FIXME: Is this redudant?!
-            int8_t PIN_DEF_END_X = disabled;
-            int8_t PIN_DEF_END_Y = disabled;
-            int8_t PIN_DEF_END_Z = disabled;
-            int8_t DIGITAL_IN_1 = PIN_DEF_END_X;
-            int8_t DIGITAL_IN_2 = PIN_DEF_END_Y;
-            int8_t DIGITAL_IN_3 = PIN_DEF_END_Z;
-  
-            // const char * PSX_MAC = "1a:2b:3c:01:01:04";
-            // int8_t PSX_CONTROLLER_TYPE = 2; // 1: PS3, 2: PS4
-            bool enableBlueTooth = true;
-            bool useBtHID = true;
-  
-            int8_t JOYSTICK_SPEED_MULTIPLIER = 30;
-            int8_t JOYSTICK_MAX_ILLU = 100;
-            int8_t JOYSTICK_SPEED_MULTIPLIER_Z = 30;
-  
-            // for caliper
-            int8_t X_CAL_DATA = GPIO_NUM_32;
-            int8_t Y_CAL_DATA = GPIO_NUM_34;
-            int8_t Z_CAL_DATA = GPIO_NUM_36;
-            int8_t X_CAL_CLK = GPIO_NUM_33;
-            int8_t Y_CAL_CLK = GPIO_NUM_35;
-            int8_t Z_CAL_CLK = GPIO_NUM_17;
-  
-            // I2c
-            int8_t I2C_SCL = GPIO_NUM_22;
-            int8_t I2C_SDA = GPIO_NUM_21;
-            int8_t I2C_ADD = 0x27;
-            gpio_num_t  I2C_INT = GPIO_NUM_27;
-  
-            // SPI
-            int8_t SPI_MOSI = GPIO_NUM_23;
-            int8_t SPI_MISO = GPIO_NUM_19;
-            int8_t SPI_SCK = GPIO_NUM_18;
-            int8_t SPI_CS = GPIO_NUM_5;
-  
-            // WiFI
-            bool enableWifi = false;
-            </code>
-        </pre>
-              <p>
-                 This board is the updated version of the V2 with additional transistors to control High Power LEDs and a
-                 port extender to drive the dirrection and enabling pins of the Motors. The board also enables the use of
-                 linear encoders that are used in callipers.
-                 It also features an updated pin layout to access more functionalities of the ESP32.
-                 More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
-              </p>
+      <div class="tab-content">
+        <!-- ═══════════════ FLASH ═══════════════ -->
+        <div class="tab-pane fade show active" id="flash-pane" role="tabpanel">
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <div class="card mb-3">
+                <div class="card-header d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                  <h5 class="mb-0"><i class="bi bi-motherboard"></i> 1. Board</h5>
+                  <div class="d-flex gap-2">
+                    <select id="boardCategory" class="form-select form-select-sm" aria-label="Category"><option value="all">All boards</option></select>
+                    <input type="search" id="boardSearch" class="form-control form-control-sm" placeholder="Search…" aria-label="Search boards" />
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-2" id="boardGrid"></div>
+                </div>
+              </div>
+              <div class="card mb-3 hidden" id="boardInfoCard"><div class="card-body" id="boardInfo"></div></div>
+              <div class="card">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-tag"></i> 2. Firmware version</h5></div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="releaseSelect" class="form-label">Release</label>
+                      <select id="releaseSelect" class="form-select">
+                        <option value="auto">Newest release with this board (incl. pre-releases)</option>
+                        <option value="stable">Newest stable release</option>
+                      </select>
+                      <small id="loadingReleases" class="text-muted"><span class="spinner-border spinner-border-sm"></span> loading releases…</small>
+                      <div id="releaseError" class="alert alert-warning py-1 mt-2 small hidden"></div>
                     </div>
+                    <div class="col-md-6">
+                      <label for="imswitchSelect" class="form-label">…or match an ImSwitch OS release</label>
+                      <select id="imswitchSelect" class="form-select"><option value="">–</option></select>
+                      <small id="imswitchNote" class="text-muted"></small>
+                    </div>
+                  </div>
+                  <p class="small text-muted mt-2 mb-0">Releases come from <a href="https://github.com/youseetoo/uc2-esp32/releases" target="_blank">youseetoo/uc2-esp32</a>. All CANopen firmware is currently published as pre-release.</p>
+                </div>
+              </div>
+            </div>
 
-        <!-- Standalone Board V3 Beta -->
-        <div id="info-esp32-uc2-standalone-3-beta" class="info-section">
-          <h3>ESP32 DEV-based UC2 standalone board V3 (BETA)</h3>
-          <p>
-            Based on new firmware (reworkBD).
-            More info
-            <a href="https://openuc2.github.io/docs/Electronics/uc2e2" target="_blank"
-              >here</a
-            >.
-          </p>
+            <div class="col-lg-4">
+              <div class="card sticky-top" style="top: 1rem">
+                <div class="card-header bg-primary text-white"><h5 class="mb-0"><i class="bi bi-lightning-charge"></i> 3. Install</h5></div>
+                <div class="card-body">
+                  <div class="small text-muted">Board</div>
+                  <div id="selectedBoardName" class="fw-bold">none selected</div>
+                  <div class="small text-muted mb-2" id="selectedBoardChip"></div>
+                  <div class="small text-muted">Firmware</div>
+                  <div id="resolvedRelease" class="mb-3">–</div>
+                  <esp-web-install-button id="installButton">
+                    <button slot="activate" class="btn btn-primary btn-lg w-100" disabled><i class="bi bi-lightning-charge"></i> Install firmware</button>
+                    <span slot="unsupported"><div class="alert alert-danger small">No WebSerial – use Chrome, Edge or Opera.</div></span>
+                    <span slot="not-allowed"><div class="alert alert-warning small">Serial access not allowed (needs https).</div></span>
+                  </esp-web-install-button>
+                  <div id="firmwareWarning" class="alert alert-warning py-2 mt-2 small hidden">
+                    <i class="bi bi-exclamation-triangle"></i> This board is not in the selected release. Pick another release or "newest release with this board".
+                  </div>
+                  <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="postFlashTest" checked />
+                    <label class="form-check-label small" for="postFlashTest">Open Test / Configure after flashing</label>
+                  </div>
+                  <ul class="small text-muted mt-3 ps-3 mb-2">
+                    <li>The image is written from address 0 and <strong>resets saved settings</strong> (node ID, role, positions).</li>
+                    <li>Close other programs using the port (ImSwitch, serial monitors) first.</li>
+                    <li>Flashing fails? See <a href="#" data-goto="help">Help</a>, or <a href="#" data-goto="erase">erase</a> and retry.</li>
+                  </ul>
+                  <div class="input-group input-group-sm">
+                    <input type="text" class="form-control" id="directLink" readonly aria-label="Direct link" />
+                    <button class="btn btn-outline-secondary" type="button" id="copyLinkBtn" title="Copy link"><i class="bi bi-clipboard"></i></button>
+                  </div>
+                  <a id="manifestLink" href="#" target="_blank" class="small">manifest</a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Standalone Board V4 -->
-        <div id="info-esp32-uc2-standalone-4" class="info-section">
-          <h3>ESP32 DEV-based UC2 standalone board V4</h3>
-          <p>
-            Updated version of the V3 with enhanced features.
-            More info
-            <a href="https://openuc2.github.io/docs/Electronics/uc2e2" target="_blank"
-              >here</a
-            >.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-              //This is for the standalone aka mAIkroscope::mainboard Rev. G, dated 2025-08-15.
-              /*
-              New in this Hardware Rev: 
-              3 flicker-less LED drivers with field-settable current, 
-              CAN transceiver with FRAME-backbone-compatible 12V+XH port, 
-              XH 6-pin port to connect directly to LASERBOX, 
-              XH and SH ports with pinout identical to off-the-shelf endstop boards
-              */
+        <!-- ═══════════════ TEST ═══════════════ -->
+        <div class="tab-pane fade" id="test-pane" role="tabpanel">
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <div class="card mb-3">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-info-circle"></i> Board</h5></div>
+                <div class="card-body d-flex flex-wrap gap-2">
+                  <button class="btn btn-sm btn-outline-primary" id="btnState" data-needs-conn>State / version</button>
+                  <button class="btn btn-sm btn-outline-primary" id="btnModules" data-needs-conn>Modules</button>
+                  <button class="btn btn-sm btn-outline-primary" id="btnMotorGet" data-needs-conn>Positions</button>
+                  <button class="btn btn-sm btn-outline-success" id="btnEnable" data-needs-conn>Drivers on</button>
+                  <button class="btn btn-sm btn-outline-secondary" id="btnDisable" data-needs-conn>Drivers off</button>
+                  <button class="btn btn-sm btn-outline-secondary" id="btnAutoEnable" data-needs-conn>Auto-enable</button>
+                  <button class="btn btn-sm btn-outline-success" id="btnPowerOn" data-needs-conn title="HAT+ only">CAN bus power on</button>
+                  <button class="btn btn-sm btn-outline-danger" id="btnPowerOff" data-needs-conn title="HAT+ only">CAN bus power off</button>
+                  <button class="btn btn-sm btn-outline-primary" id="btnBtScan" data-needs-conn><i class="bi bi-bluetooth"></i> Pair PS4</button>
+                  <button class="btn btn-sm btn-outline-danger" id="btnRestart" data-needs-conn>Reboot</button>
+                </div>
+              </div>
 
-              #pragma once
-              #include "Arduino.h"
-              #include "PinConfigDefault.h"
+              <div class="card mb-3">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-arrows-move"></i> Motors</h5></div>
+                <div class="card-body">
+                  <div class="row g-2 mb-2 small">
+                    <div class="col-4"><label class="form-label mb-0" for="motorSpeed">Speed (steps/s)</label><input type="number" class="form-control form-control-sm" id="motorSpeed" value="20000" /></div>
+                    <div class="col-4"><label class="form-label mb-0" for="motorAccel">Acceleration (0 = keep)</label><input type="number" class="form-control form-control-sm" id="motorAccel" value="0" /></div>
+                    <div class="col-4"><label class="form-label mb-0" for="jogSpeed">Jog speed</label><input type="number" class="form-control form-control-sm" id="jogSpeed" value="5000" /></div>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-sm mb-2">
+                      <thead class="small"><tr><th>Axis</th><th>Steps</th><th>Move</th><th>Jog</th><th>Stop / home</th><th>Position</th></tr></thead>
+                      <tbody id="motorRows"></tbody>
+                    </table>
+                  </div>
+                  <details>
+                    <summary class="small">Homing parameters</summary>
+                    <div class="row g-2 mt-1 small">
+                      <div class="col-4"><label class="form-label mb-0" for="homeTimeout">Timeout (ms)</label><input type="number" class="form-control form-control-sm" id="homeTimeout" value="20000" /></div>
+                      <div class="col-4"><label class="form-label mb-0" for="homeSpeed">Speed</label><input type="number" class="form-control form-control-sm" id="homeSpeed" value="15000" /></div>
+                      <div class="col-4"><label class="form-label mb-0" for="homeDirection">Direction</label>
+                        <select class="form-select form-select-sm" id="homeDirection"><option value="-1">−1</option><option value="1">+1</option></select></div>
+                      <div class="col-4"><label class="form-label mb-0" for="homePolarity">Endstop</label>
+                        <select class="form-select form-select-sm" id="homePolarity"><option value="-1">keep configured</option><option value="0">normally open</option><option value="1">normally closed</option></select></div>
+                      <div class="col-4"><label class="form-label mb-0" for="homeRelease">Release steps (CAN axes)</label><input type="number" class="form-control form-control-sm" id="homeRelease" value="0" /></div>
+                      <div class="col-4 d-flex align-items-end"><div class="form-check"><input class="form-check-input" type="checkbox" id="homeHard" /><label class="form-check-label" for="homeHard">Hard homing</label></div></div>
+                    </div>
+                  </details>
+                </div>
+              </div>
 
-              // only for linting
-              #define MOTOR_CONTROLLER
-              #define USE_TCA9535
-              #define BLUETOOTH
-              #define BTHID
-              //#define WIFI
-              #define HOME_MOTOR
-              #define LASER_CONTROLLER
-              #define DIGITAL_IN_CONTROLLER 
-              #define LED_CONTROLLER
+              <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="mb-0"><i class="bi bi-brightness-high"></i> Lasers (<code>/laser_act</code>)</h5>
+                  <div class="input-group input-group-sm" style="max-width: 190px">
+                    <span class="input-group-text">max</span>
+                    <select class="form-select" id="laserMax"><option value="1023">1023 (local)</option><option value="65535">65535 (CAN)</option></select>
+                  </div>
+                </div>
+                <div class="card-body" id="laserRows"></div>
+              </div>
 
-              struct UC2_4 : PinConfig
-              {
-                  /*
-                  This is the newest electronics where direction/enable are on a seperate port extender
-                  */
-                
-                  const char * pindefName = "UC2_4";
-                  const unsigned long BAUDRATE = 115200;
+              <div class="card mb-3">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-grid-3x3"></i> LED array (<code>/ledarr_act</code>)</h5></div>
+                <div class="card-body">
+                  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                    <input type="color" class="form-control form-control-color" id="ledColor" value="#ffffff" title="Colour" />
+                    <button class="btn btn-sm btn-success" id="ledFill" data-needs-conn>Fill</button>
+                    <button class="btn btn-sm btn-outline-danger" id="ledOff" data-needs-conn>Off</button>
+                    <button class="btn btn-sm btn-outline-primary" data-led-half="left" data-needs-conn>Left</button>
+                    <button class="btn btn-sm btn-outline-primary" data-led-half="right" data-needs-conn>Right</button>
+                    <button class="btn btn-sm btn-outline-primary" data-led-half="top" data-needs-conn>Top</button>
+                    <button class="btn btn-sm btn-outline-primary" data-led-half="bottom" data-needs-conn>Bottom</button>
+                    <div class="input-group input-group-sm" style="max-width: 160px">
+                      <span class="input-group-text">ring r</span>
+                      <input type="number" class="form-control" id="ledRadius" value="3" min="1" max="8" />
+                      <button class="btn btn-outline-info" id="ledRing" data-needs-conn>Ring</button>
+                    </div>
+                  </div>
+                  <div class="small text-muted mb-1">Single pixels (8×8)</div>
+                  <div class="led-matrix-grid" id="ledMatrix"></div>
+                </div>
+              </div>
 
-                  int8_t MOTOR_A_STEP = GPIO_NUM_15;
-                  int8_t MOTOR_X_STEP = GPIO_NUM_16;
-                  int8_t MOTOR_Y_STEP = GPIO_NUM_14;
-                  int8_t MOTOR_Z_STEP = GPIO_NUM_0;
-
-                  // THIS LIVES ON TCA
-                  int8_t MOTOR_ENABLE = 0; 
-                  int8_t MOTOR_X_DIR = 1;
-                  int8_t MOTOR_Y_DIR = 2;
-                  int8_t MOTOR_Z_DIR = 3;
-                  int8_t MOTOR_A_DIR = 4;
-
-                        /*
-                  WARNING PLEASE HANDLE WITH CARE
-                  */
-                  const bool dumpHeap = false;
-                  const uint16_t DEFAULT_TASK_PRIORITY = 0;
-                  const uint16_t MAIN_TASK_STACKSIZE = 8128;
-                  const uint16_t ANALOGJOYSTICK_TASK_STACKSIZE = 0;
-                  const uint16_t HIDCONTROLLER_EVENT_STACK_SIZE = 4* 2048; // Don't go below 2048
-                  const uint16_t HTTP_MAX_URI_HANDLERS = 35;
-                  const uint16_t BT_CONTROLLER_TASK_STACKSIZE = 4 * 2048; // TODO check if this is ending in stackoverflow
-                  const uint16_t MOTOR_TASK_STACKSIZE = 4 * 1024;
-                  const uint16_t MOTOR_TASK_UPDATEWEBSOCKET_STACKSIZE = 0;
-                  const uint16_t INTERRUPT_CONTROLLER_TASK_STACKSIZE = 0;
-                  const uint16_t TCA_TASK_STACKSIZE = 1024;
-                  const uint16_t SCANNER_TASK_STACKSIZE = 0;
-                  const uint16_t TEMPERATURE_TASK_STACKSIZE = 0; // 8096;
-
-
-                  bool MOTOR_ENABLE_INVERTED = true;
-                  bool MOTOR_AUTOENABLE = true;
-                  int8_t AccelStepperMotorType = 1;
-
-                  //The PWM channels 1-3 go to headers, LED drivers, LASERBOX jack.
-                  //LASER_4 is exclusively on the LASERBOX jack.
-                  int8_t LASER_1 = GPIO_NUM_12;
-                  int8_t LASER_2 = GPIO_NUM_4;
-                  int8_t LASER_3 = GPIO_NUM_2;
-                  int8_t LASER_4 = GPIO_NUM_17;
-
-                  //neopixels. LED_1
-                  int8_t LED_PIN = GPIO_NUM_13;
-                  int8_t LED_COUNT = 64;
-
-                  // THESE LIVE ON THE TCA
-                  int8_t DIGITAL_IN_1 = 5;
-                  int8_t DIGITAL_IN_2 = 6;
-                  int8_t DIGITAL_IN_3 = 7;
-                  
-                  //DAC pins go out to pinheaders DAC_1 and DAC_2
-                  int8_t dac_fake_1 = disabled; //GPIO_NUM_25; // RESET-ABORT just toggles between 1 and 0
-                  int8_t dac_fake_2 = disabled; //GPIO_NUM_26; // Coolant
-
-
-
-
-                  // const char * PSX_MAC = "1a:2b:3c:01:01:04";
-                  // int8_t PSX_CONTROLLER_TYPE = 2; // 1: PS3, 2: PS4
-
-                  int8_t JOYSTICK_SPEED_MULTIPLIER = 2;
-                  int8_t JOYSTICK_MAX_ILLU = 255;
-                  int8_t JOYSTICK_SPEED_MULTIPLIER_Z = 1;
-                  
-                  /*
-                  FIXME: Not featured in this revision anymore
-                  // for caliper
-                  int8_t ENC_X_A = GPIO_NUM_32;
-                  int8_t ENC_Y_A = GPIO_NUM_34;
-                  int8_t ENC_Z_A = GPIO_NUM_36;
-                  int8_t ENC_X_B = GPIO_NUM_33;
-                  int8_t ENC_Y_B = GPIO_NUM_35;
-                  int8_t ENC_Z_B = GPIO_NUM_17;
-                  */
-
-                  // I2c
-                  int8_t I2C_SCL = GPIO_NUM_22;      // This is the poart that connects to all other slaves
-                  int8_t I2C_SDA = GPIO_NUM_21;
-
-                  // Auxilarry I2C devices
-                  int8_t I2C_ADD_TCA = 0x27; // this is the port extender on the PCB that controls the direction of the motors
-                  gpio_num_t I2C_INT = GPIO_NUM_27;
-
-                  int8_t I2C_ADD_MOT_X = 0x40;
-                  int8_t I2C_ADD_MOT_Y = 0x41;
-                  int8_t I2C_ADD_MOT_Z = 0x42;
-                  int8_t I2C_ADD_MOT_A = 0x43;
-                  int8_t I2C_ADD_LEX_MAT = 0x50;
-                  int8_t I2C_ADD_LEX_PWM1 = 0x51;
-                  int8_t I2C_ADD_LEX_PWM2 = 0x52;
-                  int8_t I2C_ADD_LEX_PWM3 = 0x53;
-                  int8_t I2C_ADD_LEX_PWM4 = 0x54;
-                  /*
-                  FIXME: 
-                  I/O expander, nothing new in this Revision.
-                  The notation/labels are weird. Not sure if they are correct.
-                  Step_Enable for all motors on P00
-                  X_Dir: P01
-                  Y_Dir: P02
-                  Z_Dir: P03
-                  A_Dir: P04
-                  X_LIMIT: P05
-                  Y_LIMIT: P06
-                  Z_LIMIT: P07
-                  Just broken out to 2.54mm pitch holes: P10-P17
-                  
-                  Also connected: 
-                  int8_t IOEXP_INTERRUPT = GPIO_NUM_27;
-                  */
-
-
-                  // SPI
-                  int8_t SPI_MOSI = GPIO_NUM_23; // PICO
-                  int8_t SPI_MISO = GPIO_NUM_19; // POCI
-                  int8_t SPI_SCK = GPIO_NUM_18;
-                  int8_t SPI_CS = GPIO_NUM_5;
-
-                  /*
-                  // WIFI - specific to SEEED microscope
-                  const char *mSSID = "UC2xSeeed-";
-                  const char *mPWD =  "";
-                  bool mAP = true; // false;
-                  const char *mSSIDAP = "UC2";            
-                  const char *hostname = "youseetoo";    
-                  */ 
-
-                  /*
-                  FIXME: Maybe this is application-based?
-                  // Temperature
-                  int8_t DS28b20_PIN = GPIO_NUM_25;
-                  int8_t LASER_0 = GPIO_NUM_26;
-                  */
-
-                  // CAN
-                  int8_t CAN_RX = GPIO_NUM_33;
-                  int8_t CAN_TX = GPIO_NUM_32;
-
-                  uint32_t CAN_ID_CURRENT = CAN_ID_CENTRAL_NODE;
-
-              };
-              const UC2_4 pinConfig;
-            </code>
-        </pre>
-              <p>
-                 This board is the updated version of the V3 with additional features and improvements.
-                 More information can be found <a href="https://openuc2.github.io/docs/Electronics/uc2e2"> here.</a>
-              </p>
+              <div class="card mb-3">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-cpu"></i> TMC2209 (<code>/tmc_act</code>)</h5></div>
+                <div class="card-body">
+                  <div class="row g-2 small">
+                    <div class="col-3"><label class="form-label mb-0" for="tmcAxis">Driver</label>
+                      <select class="form-select form-select-sm" id="tmcAxis"><option value="0">0 / A</option><option value="1" selected>1 / X</option><option value="2">2 / Y</option><option value="3">3 / Z</option></select></div>
+                    <div class="col-3"><label class="form-label mb-0" for="tmcMsteps">Microsteps</label><input type="number" class="form-control form-control-sm" id="tmcMsteps" value="16" /></div>
+                    <div class="col-3"><label class="form-label mb-0" for="tmcRms">RMS current (mA)</label><input type="number" class="form-control form-control-sm" id="tmcRms" value="600" /></div>
+                    <div class="col-3"><label class="form-label mb-0" for="tmcSgthrs">SGTHRS</label><input type="number" class="form-control form-control-sm" id="tmcSgthrs" value="0" /></div>
+                    <div class="col-3"><label class="form-label mb-0" for="tmcSemin">SEMIN</label><input type="number" class="form-control form-control-sm" id="tmcSemin" value="0" /></div>
+                    <div class="col-3"><label class="form-label mb-0" for="tmcSemax">SEMAX</label><input type="number" class="form-control form-control-sm" id="tmcSemax" value="0" /></div>
+                    <div class="col-3"><label class="form-label mb-0" for="tmcBlank">Blank time</label><input type="number" class="form-control form-control-sm" id="tmcBlank" value="0" /></div>
+                    <div class="col-3"><label class="form-label mb-0" for="tmcToff">TOFF</label><input type="number" class="form-control form-control-sm" id="tmcToff" value="0" /></div>
+                  </div>
+                  <div class="small text-muted mt-1">0 = keep current value. Read-back works only for drivers on this board.</div>
+                  <button class="btn btn-sm btn-primary mt-2" id="tmcSet" data-needs-conn>Apply</button>
+                  <button class="btn btn-sm btn-outline-primary mt-2" id="tmcGet" data-needs-conn>Read</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-5"><div class="console-slot sticky-top" style="top: 1rem"></div></div>
+          </div>
         </div>
 
-        <!-- Xiao LED/Servo -->
-        <div id="info-seeed_xiao_esp32s3_ledservo" class="info-section">
-          <h3>Xiao LED and Servo Motor Board</h3>
-          <p>
-            Based on the new firmware (betaBD).
-            Features an I2C bus for integration with UC2 ecosystem.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-            // UC2 Xiao ESP32S3 LED and Servo board
-            const char * pindefName = "Xiao_LED_SERVO";
-        
-            // Pin definitions for Xiao ESP32S3 (using D1, D2, etc.)
-            #define NEOPIXEL_PIN D6         // Neopixel data pin (TX)
-            #define TOUCH_PIN_1 D0          // Touch Button 1 (Touch Pad 1)
-            #define TOUCH_PIN_2 D1          // Touch Button 2 (Touch Pad 2)
-            #define MOTOR_1_IN1 D3          // Motor 1 IN1 (GPIO0)
-            #define MOTOR_1_IN2 D4          // Motor 1 IN2 (GPIO9)
-            #define MOTOR_2_IN1 D9          // Motor 2 IN1 (GPIO10)
-            #define MOTOR_2_IN2 D10         // Motor 2 IN2 (GPIO3)
-            #define I2C_SDA D4              // I2C SDA (GPIO4)
-            #define I2C_SCL D5              // I2C SCL (GPIO5)
-            #define SERVO_PIN_1 D7          // Servo 1 PWM (GPIO8)
-            #define SERVO_PIN_2 D8          // Servo 2 PWM (GPIO11)          </code></pre>
+        <!-- ═══════════════ CONFIGURE CAN ═══════════════ -->
+        <div class="tab-pane fade" id="configure-pane" role="tabpanel">
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <div class="card mb-3">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-usb-symbol"></i> Connected board</h5></div>
+                <div class="card-body">
+                  <button class="btn btn-sm btn-outline-primary" id="canRead" data-needs-conn>Read node ID &amp; role</button>
+                  <div class="small mt-2"><span id="ownInfo" class="font-monospace">–</span><br /><span id="ownPindef" class="text-muted"></span></div>
+                  <hr />
+                  <h6>Set this board's node ID</h6>
+                  <p class="small text-muted mb-2">For a satellite connected through <strong>its own USB</strong>. Saved in NVS, active immediately. Masters stay at 1.</p>
+                  <div class="d-flex flex-wrap gap-1 mb-2" id="nodePresets"></div>
+                  <div class="input-group input-group-sm" style="max-width: 260px">
+                    <span class="input-group-text">node</span>
+                    <input type="number" class="form-control" id="ownNodeId" min="1" max="127" placeholder="1–127" />
+                    <button class="btn btn-primary" id="setOwnNodeBtn" data-needs-conn>Set</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Bus (through a master)</h5>
+                  <span class="small text-muted" id="scanCount"></span>
+                </div>
+                <div class="card-body">
+                  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                    <button class="btn btn-sm btn-primary" id="scanBtn" data-needs-conn><i class="bi bi-radar"></i> Scan</button>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" id="probeRange" /><label class="form-check-label small" for="probeRange">probe all IDs (slow)</label></div>
+                    <button class="btn btn-sm btn-outline-primary" id="routeBtn" data-needs-conn>Routing table</button>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-sm small" id="scanTable">
+                      <thead><tr><th>Node</th><th>Type</th><th>Status</th><th>Firmware</th><th>Image</th><th>MAC</th><th></th></tr></thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <h6 class="mt-3">Change a satellite's node ID</h6>
+                  <p class="small text-muted mb-2">Only one node may have the old ID while doing this.</p>
+                  <div class="input-group input-group-sm" style="max-width: 360px">
+                    <span class="input-group-text">from</span><input type="number" class="form-control" id="remoteTarget" value="11" min="1" max="127" />
+                    <span class="input-group-text">to</span><input type="number" class="form-control" id="remoteNew" value="12" min="1" max="127" />
+                    <button class="btn btn-primary" id="remoteIdBtn" data-needs-conn>Apply</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card mb-3">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-braces"></i> Raw SDO</h5></div>
+                <div class="card-body">
+                  <div class="row g-2 small">
+                    <div class="col-2"><label class="form-label mb-0" for="sdoNode">Node</label><input type="number" class="form-control form-control-sm" id="sdoNode" value="11" /></div>
+                    <div class="col-3"><label class="form-label mb-0" for="sdoIndex">Index</label><input type="text" class="form-control form-control-sm" id="sdoIndex" value="0x2001" /></div>
+                    <div class="col-2"><label class="form-label mb-0" for="sdoSub">Sub</label><input type="number" class="form-control form-control-sm" id="sdoSub" value="2" /></div>
+                    <div class="col-2"><label class="form-label mb-0" for="sdoType">Type</label>
+                      <select class="form-select form-select-sm" id="sdoType"><option>u8</option><option>u16</option><option>u32</option><option selected>i32</option></select></div>
+                    <div class="col-3"><label class="form-label mb-0" for="sdoOp">Op</label>
+                      <select class="form-select form-select-sm" id="sdoOp"><option value="r">read</option><option value="w">write</option></select></div>
+                    <div class="col-4"><label class="form-label mb-0" for="sdoValue">Value (write)</label><input type="number" class="form-control form-control-sm" id="sdoValue" value="0" /></div>
+                    <div class="col-3 d-flex align-items-end"><button class="btn btn-sm btn-primary" id="sdoBtn" data-needs-conn>Send</button></div>
+                  </div>
+                  <div class="small text-muted mt-1">Objects: <a href="https://docs.openuc2.com/dev/sw/interface/reference/canopen-object-dictionary" target="_blank">CANopen object dictionary</a>. Expedited (≤ 4 bytes) only.</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-5"><div class="console-slot sticky-top" style="top: 1rem"></div></div>
+          </div>
         </div>
 
-        <!-- Xiao Motor Board -->
-        <div id="info-UC2_3_Xiao_Slave_Motor" class="info-section">
-          <h3>Xiao Motor Board</h3>
-          <p>
-            For TMC2209 stepper driver + AS5600 encoder. Acts as a slave on I2C/USB.
-            More info
-            <a href="https://openuc2.github.io/docs/Toolboxes/DiscoveryElectronics" target="_blank"
-              >here</a
-            >.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-
-            const char * pindefName = "UC2_3_I2CSlaveMotorX";
-            const unsigned long BAUDRATE = 115200;
-            
-            int8_t MOTOR_X_STEP = GPIO_NUM_8;  // D9 -> GPIO8
-            int8_t MOTOR_X_DIR = GPIO_NUM_7;   // D8 -> GPIO7
-            int8_t MOTOR_ENABLE = GPIO_NUM_9;  // D10 -> GPIO9
-            bool MOTOR_ENABLE_INVERTED = true;
-            bool MOTOR_AUTOENABLE = true;
-            int8_t AccelStepperMotorType = 1;
-            
-            // I2c
-            const char *I2C_NAME = "MOTX";
-            I2CControllerType I2C_CONTROLLER_TYPE = I2CControllerType::mMOTOR;
-            int8_t I2C_MOTOR_AXIS = 1;   // On the slave we have one motor axis per slave
-            int8_t I2C_ADD_SLAVE = I2C_ADD_MOT_X;    // I2C address of the ESP32 if it's a slave ( 0x40;)
-            int8_t I2C_SCL = GPIO_NUM_2; // D1 -> GPIO2
-            int8_t I2C_SDA = GPIO_NUM_3; // D2 -> GPIO3
-            
-            // I2C configuration (using updated GPIO values)
-            int8_t I2C_SCL_ext = GPIO_NUM_6; // D5 -> GPIO6
-            int8_t I2C_SDA_ext = GPIO_NUM_5; // D4 -> GPIO5
-            
-            // TMC UART
-            int8_t tmc_SW_RX = 44;// GPIO_NUM_44; // D7 -> GPIO44
-            int8_t tmc_SW_TX = 43;// GPIO_NUM_43; // D6 -> GPIO43
-            int8_t tmc_pin_diag = GPIO_NUM_4; // D3 -> GPIO4
-            
-            int tmc_microsteps = 16;
-            int tmc_rms_current = 500;
-            int tmc_stall_value = 100;
-            int tmc_sgthrs = 100;
-            int tmc_semin = 5;
-            int tmc_semax = 2;
-            int tmc_sedn = 0b01;
-            int tmc_tcoolthrs = 0xFFFFF;
-            int tmc_blank_time = 24;
-            int tmc_toff = 4;
-            
-            // TEmporarily for endstop
-            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 -> GPIO1 - > TOUCH
-            
-          </code></pre>
+        <!-- ═══════════════ ERASE ═══════════════ -->
+        <div class="tab-pane fade" id="erase-pane" role="tabpanel">
+          <div class="row justify-content-center">
+            <div class="col-lg-8">
+              <div class="card">
+                <div class="card-header bg-danger text-white"><h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Erase flash</h5></div>
+                <div class="card-body">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="eraseType" id="eraseNvs" value="nvs" checked />
+                    <label class="form-check-label" for="eraseNvs"><strong>Settings only</strong> – erase the NVS partition (node ID, role, saved positions). Firmware stays.</label>
+                  </div>
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="eraseType" id="eraseAll" value="all" />
+                    <label class="form-check-label" for="eraseAll"><strong>Everything</strong> – blank chip. Flash a firmware afterwards.</label>
+                  </div>
+                  <button id="eraseFlashBtn" class="btn btn-danger"><i class="bi bi-eraser"></i> Erase</button>
+                  <div id="eraseProgress" class="mt-3 hidden">
+                    <div class="progress mb-1"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" id="eraseProgressBar" style="width: 0%"></div></div>
+                    <p class="small mb-0" id="eraseStatus"></p>
+                  </div>
+                  <div class="console-output mt-3" id="eraseConsole" style="max-height: 220px"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Xiao LED Ring -->
-        <div id="info-seeed_xiao_esp32s3_ledring" class="info-section">
-          <h3>Xiao LED Ring &amp; Brightfield</h3>
-          <p>
-            A board with LED ring for brightfield illumination. 
-            More info
-            <a href="https://openuc2.github.io/docs/Toolboxes/DiscoveryElectronics" target="_blank"
-              >here</a
-            >.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-
-            const char *pindefName = "UC2_ESP32S3_XIAO_LEDRING";
-            const unsigned long BAUDRATE = 115200;
-
-            uint8_t I2C_CONTROLLER_TYPE = I2CControllerType::mLASER;
-            uint8_t I2C_ADD_SLAVE = I2C_ADD_LEX_PWM1; // I2C address of the ESP32 if it's a slave
-
-            // Laser control pins (using updated GPIO values)
-            int8_t LASER_1 = GPIO_NUM_3; // D2
-            int8_t LASER_2 = GPIO_NUM_4; // D3 => Motor 1/1
-
-            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 // Touch 1
-            int8_t DIGITAL_IN_2 = GPIO_NUM_3; // D1 // Touch 2
-
-            // I2C configuration (using updated GPIO values)
-            int8_t I2C_SCL = GPIO_NUM_6; // D5 -> GPIO6
-            int8_t I2C_SDA = GPIO_NUM_5; // D4 -> GPIO5
-          </code></pre>
-        </div>
-
-        <!-- Xiao CAN Slave Illumination -->
-        <div id="info-seeed_xiao_esp32s3_can_slave_illumination" class="info-section">
-          <h3>Xiao CAN Slave Illumination</h3>
-          <p>
-            A board with CAN bus communication for illumination control. 
-            More info
-            <a href="https://openuc2.github.io/docs/Toolboxes/DiscoveryElectronics" target="_blank"
-              >here</a
-            >.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-
-            const char *pindefName = "UC2_ESP32S3_XIAO_CAN_SLAVE_ILLUMINATION";
-            const unsigned long BAUDRATE = 115200;
-
-            uint8_t I2C_CONTROLLER_TYPE = I2CControllerType::mLASER;
-            uint8_t I2C_ADD_SLAVE = I2C_ADD_LEX_PWM1; // I2C address of the ESP32 if it's a slave
-
-            // Laser control pins (using updated GPIO values)
-            int8_t LASER_1 = GPIO_NUM_3; // D2
-            int8_t LASER_2 = GPIO_NUM_4; // D3 => Motor 1/1
-
-            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 // Touch 1
-            int8_t DIGITAL_IN_2 = GPIO_NUM_3; // D1 // Touch 2
-
-            // I2C configuration (using updated GPIO values)
-            int8_t I2C_SCL = GPIO_NUM_6; // D5 -> GPIO6
-            int8_t I2C_SDA = GPIO_NUM_5; // D4 -> GPIO5
-          </code></pre>
-        </div>
-
-        <!-- Xiao Webcam -->
-        <div id="info-xiao_webcam" class="info-section">
-          <h3>Seeed Studio Webcamera (USB)</h3>
-          <p>
-            Firmware turns the Xiao into a USB webcam.
-            <br />
-            <a
-              href="https://github.com/openUC2/openUC2_XIAO_Microscope_Webcam"
-              target="_blank"
-              >See more here</a
-            >.
-          </p>
-        </div>
-
-        <!-- Waveshare ESP32S3 LED matrix -->
-        <div id="info-waveshare_esp32s3_ledarray" class="info-section">
-          <h3>Waveshare ESP32S3 Matrix</h3>
-          <p>
-            Standalone Neopixel LED matrix with an ESP32S3. 
-            Caution: can get hot at high brightness!
-            <br />
-            <a href="https://openuc2.github.io/docs/Toolboxes/DiscoveryElectronics" target="_blank"
-              >More info</a
-            >.
-          </p>
-          <h4>Pin Layout</h4>
-          <pre><code>
-            const char *pindefName = "UC2_ESP32S3_XIAO_LEDRING";
-            const unsigned long BAUDRATE = 115200;
-
-            uint8_t I2C_CONTROLLER_TYPE = I2CControllerType::mLASER;
-            uint8_t I2C_ADD_SLAVE = I2C_ADD_LEX_PWM1; // I2C address of the ESP32 if it's a slave
-
-            // Laser control pins (using updated GPIO values)
-            int8_t LASER_1 = GPIO_NUM_3; // D2
-            int8_t LASER_2 = GPIO_NUM_4; // D3 => Motor 1/1
-
-            int8_t DIGITAL_IN_1 = GPIO_NUM_1; // D0 // Touch 1
-            int8_t DIGITAL_IN_2 = GPIO_NUM_3; // D1 // Touch 2
-
-            // I2C configuration (using updated GPIO values)
-            int8_t I2C_SCL = GPIO_NUM_6; // D5 -> GPIO6
-            int8_t I2C_SDA = GPIO_NUM_5; // D4 -> GPIO5
-          </code></pre>
-        </div>
-
-
-                <!-- XIAO ESP32S3 ODMR Server  -->
-        <div id="info-odmr-xiao-esp32s3" class="info-section">
-          <h3>Xiao ESP32S3 ODMR Server</h3>
-          <p>
-            Firmware turns the Xiao ESP32S3 the ODMR Server.
-            <br />
-            <a
-              href="https://openuc2.github.io/docs/Toolboxes/QuantumBox/"
-              target="_blank"
-              >See more here</a
-            >.
-          </p>
-        </div>
-
-                <div id="info-odmr-xiao-esp32c3" class="info-section">
-          <h3>Xiao ESP32C3 ODMR Server</h3>
-          <p>
-            Firmware turns the Xiao ESP32C3 the ODMR Server.
-            <br />
-            <a
-              href="https://openuc2.github.io/docs/Toolboxes/QuantumBox/"
-              target="_blank"
-              >See more here</a
-            >.
-          </p>
-        </div>
-
-
-      <!-- ARKITEKT FIRMWARE SECTION  -->
-        <div id="info-arkitekt-esp32" class="info-section">
-          <h3>Xiao ESP32 Arkitekt Client</h3>
-          <p>
-            Firmware turns the Xiao ESP32 the Arkitekt Client.
-            <br />
-            <a
-              href="https://github.com/jhnnsrs/arkitekt-esp32"
-              target="_blank"
-              >See more here</a
-            >.
-          </p>
-        </div>
-
-      <!-- XIAO ESP32S3 ODMR Server  -->
-        <div id="info-arkitekt-esp32s3" class="info-section">
-          <h3>Xiao ESP32S3 Arkitekt Client</h3>
-          <p>
-            Firmware turns the Xiao ESP32S3 the Arkitekt Client.
-            <br />
-            <a
-              href="https://github.com/jhnnsrs/arkitekt-esp32"
-              target="_blank"
-              >See more here</a
-            >.
-          </p>
+        <!-- ═══════════════ HELP ═══════════════ -->
+        <div class="tab-pane fade" id="help-pane" role="tabpanel">
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <h5>Drivers</h5>
+              <p>ESP32 DevKit boards (standalone, HAT+ USB-C) use a <strong>CP2102</strong> or <strong>CH340</strong> USB-UART chip:
+                <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" target="_blank">CP210x driver</a> ·
+                <a href="https://www.wch.cn/downloads/CH341SER_EXE.html" target="_blank">CH340 driver</a>.
+                XIAO ESP32-S3 boards use native USB and need no driver.</p>
+              <h5>Boot mode</h5>
+              <ul>
+                <li><strong>ESP32:</strong> hold BOOT, tap RESET (EN), release BOOT.</li>
+                <li><strong>XIAO ESP32-S3:</strong> hold BOOT while plugging in USB.</li>
+              </ul>
+              <h5>Common problems</h5>
+              <ul>
+                <li><strong>No port in the list:</strong> charge-only cable, missing driver, or the port is open in ImSwitch / another tab.</li>
+                <li><strong>Flashing stops halfway:</strong> enter boot mode manually, or erase everything and retry.</li>
+                <li><strong>Test tab shows only garbage:</strong> wrong baud rate – 921600 for the HAT+ master, 115200 for standalone boards.</li>
+                <li><strong>CAN satellite not found in a scan:</strong> check bus power, 120 Ω termination at both bus ends, and that no two boards share a node ID.</li>
+                <li><strong>Unplugged during flashing:</strong> reconnect and flash again.</li>
+              </ul>
+              <h5>Serial protocol</h5>
+              <p>One compact JSON object per line, e.g. <code>{"task":"/state_get","qid":1}</code>. Replies are framed by <code>++</code> / <code>--</code>; everything else is log output.
+                Reference: <a href="https://docs.openuc2.com/dev/sw/interface/reference/serial-commands" target="_blank">serial commands</a> ·
+                <a href="https://docs.openuc2.com/dev/sw/interface/reference/boards-and-node-ids" target="_blank">boards &amp; node IDs</a> ·
+                <a href="https://docs.openuc2.com/dev/sw/interface/how-to/update-firmware-over-can" target="_blank">update satellites over CAN</a>.</p>
+            </div>
+            <div class="col-lg-4">
+              <h5>Camera software</h5>
+              <ul>
+                <li><a href="https://openuc2.github.io/docs/ImSwitch/DahengCamera/" target="_blank">Daheng setup</a></li>
+                <li><a href="https://openuc2.github.io/docs/Toolboxes/DiscoveryInterferometer/SoftwareTutorial/#install-mvs-app-for-camera-utilization" target="_blank">HIK MVS setup</a></li>
+              </ul>
+              <h5>Source</h5>
+              <ul>
+                <li><a href="https://github.com/youseetoo/uc2-esp32" target="_blank">Firmware (PlatformIO)</a></li>
+                <li><a href="https://github.com/youseetoo/uc2-esp32-binaries" target="_blank">Published images</a></li>
+                <li><a href="https://github.com/openUC2/UC2-REST" target="_blank">Python client uc2rest</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- TEST FIRMWARE SECTION -->
-      <div id="test" class="mb-5">
-        <h2>4. Test the Firmware</h2>
-        <p>
-          After flashing, you can test your firmware with our
-          <a href="./indexWebSerialTest.html" target="_blank"
-            >UC2 WebSerial test page</a
-          >, which lets you:
-        </p>
-        <ul>
-          <li>Connect via USB to the ESP32 in the browser</li>
-          <li>Enable motors, adjust lasers/light sources, etc.</li>
-          <li>Send commands and read logs</li>
-        </ul>
-      </div>
-
-      <!-- FAQ / TIPS -->
-      <div id="faq" class="mb-5">
-        <h2>5. FAQ / Tips</h2>
-        <ul>
-          <li>
-            <strong>Unplugged during flashing?</strong>
-            <br />
-            Typically you can just reconnect and flash again. If repeated
-            failures occur, try erasing the flash first at
-            <a
-              href="https://espressif.github.io/esptool-js/"
-              target="_blank"
-              >Esptool-js</a
-            >
-            then re-flash.
-          </li>
-          <li>
-            <strong>Entering boot mode (ESP32)</strong>
-            <br />
-            Press and hold BOOT, press RESET, release RESET, then release
-            BOOT. This puts the board into the bootloader for flashing.
-          </li>
-          <li>
-            <strong>First flash fails, second works with BOOT held?</strong>
-            <br />
-            Some boards require manual boot mode the first time, after
-            which auto-download can happen. 
-          </li>
-        </ul>
-      </div>
-
-      <!-- ADVANCED USERS -->
-      <div class="mb-5">
-        <h2>Advanced Users</h2>
-        <p>
-          We provide multiple firmware versions: older
-          <code>UC2-REST</code> (Arduino-based) and
-          <code>UC2-ESP</code> (PlatformIO-based, more recent).
-        </p>
-        <ul>
-          <li>
-            <a href="https://github.com/openUC2/UC2-REST/tree/master/ESP32"
-              >UC2-REST (Arduino style)</a
-            >
-          </li>
-          <li>
-            <a href="https://github.com/youseetoo/uc2-esp32/"
-              >UC2-ESP (PlatformIO)</a
-            >
-          </li>
-        </ul>
-      </div>
-
-      <footer class="text-center mt-4 pt-4 border-top">
-        <p class="text-muted mb-0">
-          &copy; <a href="https://openuc2.github.io/" target="_blank">openUC2</a>
-        </p>
-        <p class="text-muted">
-          Based on
-          <a href="https://github.com/esphome/esp-web-tools" target="_blank"
-            >ESPHome Web Tools</a
-          >
-        </p>
-      </footer>
+      <!-- Shared serial console: moved into the console slot of the active tab -->
+      <div id="consoleHolder" class="hidden"><div class="card" id="consoleCard">
+        <div class="card-header">
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button class="btn btn-sm btn-primary" id="connectBtn" data-conn-btn><i class="bi bi-plug"></i> Connect</button>
+            <span class="badge bg-secondary" data-conn-status>Disconnected</span>
+            <select id="baudRate" class="form-select form-select-sm" style="max-width: 130px" aria-label="Baud rate">
+              <option value="115200">115200</option><option value="921600">921600</option><option value="500000">500000</option>
+            </select>
+            <div class="form-check ms-auto"><input class="form-check-input" type="checkbox" id="showLogs" checked /><label class="form-check-label small" for="showLogs">logs</label></div>
+            <button class="btn btn-sm btn-outline-secondary" id="clearConsoleBtn" title="Clear"><i class="bi bi-trash"></i></button>
+          </div>
+        </div>
+        <div class="card-body p-0"><div class="console-output" id="consoleOutput" style="min-height: 360px; max-height: 60vh"></div></div>
+        <div class="card-footer">
+          <div class="input-group input-group-sm">
+            <select class="form-select" id="commandExamples" style="max-width: 120px" aria-label="Examples"><option value="">examples</option></select>
+            <input type="text" class="form-control font-monospace" id="customCommand" placeholder='{"task":"/state_get"}' aria-label="JSON command" />
+            <button class="btn btn-primary" id="sendCommandBtn" data-needs-conn><i class="bi bi-send"></i></button>
+          </div>
+        </div>
+      </div></div>
     </div>
 
-    <!-- Bootstrap Bundle (includes Popper) -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-    ></script>
+    <footer class="text-center text-muted small py-4">
+      © <a href="https://openuc2.com" target="_blank">openUC2</a> · built on
+      <a href="https://github.com/esphome/esp-web-tools" target="_blank">ESP Web Tools</a> and
+      <a href="https://github.com/espressif/esptool-js" target="_blank">esptool-js</a>
+    </footer>
 
-    <script>
-      // On radio change, set the correct manifest for the install button
-      // and show/hide the corresponding pinout info
-      const radios = document.querySelectorAll('input[name="board"]');
-      const infoSections = document.querySelectorAll(".info-section");
-      const installBtn = document.querySelector("esp-web-install-button");
-
-      function updateBoardSelection(radioValue) {
-        // Hide all info sections
-        infoSections.forEach((sec) => sec.classList.remove("active"));
-
-        // Show the matching one
-        const target = document.getElementById("info-" + radioValue);
-        if (target) {
-          target.classList.add("active");
-        }
-
-        // Update manifest file for the install button
-        // Adjust path if needed to match your actual .json location
-        installBtn.manifest =
-          "./static/firmware_build/" + radioValue + "-manifest.json";
-      }
-
-      radios.forEach((r) => {
-        r.addEventListener("change", () => {
-          updateBoardSelection(r.value);
-        });
-      });
-
-      // Trigger the default on page load (the first radio is checked by default)
-      updateBoardSelection(document.querySelector('input[name="board"]:checked').value);
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="js/flasher/app.js"></script>
   </body>
 </html>

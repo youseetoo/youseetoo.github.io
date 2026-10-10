@@ -1,225 +1,133 @@
 // js/flasher/hwtest.js
-// Hardware test controls merged from indexWebSerialTest.html
+// Test tab: motors, homing, lasers, LED array, TMC, system. All commands come from commands.js.
 
-import { sendHwSerialCommand } from './serial.js';
+import { send, onFrame } from './serial.js';
+import * as C from './commands.js';
 
-// =====================================================
-// Light Source / PWM Control
-// =====================================================
+const $ = (id) => document.getElementById(id);
+const num = (id, fallback = 0) => { const v = parseInt($(id).value, 10); return Number.isFinite(v) ? v : fallback; };
 
-const lastLightValue = [0, 0, 0, 0, 0];
-
-function setLight(channel, value) {
-  const v = Math.max(0, Math.min(1023, parseInt(value)));
-  lastLightValue[channel] = v;
-  sendHwSerialCommand(JSON.stringify({ task: '/laser_act', LASERid: channel, LASERval: v }));
+function rgb() {
+  const hex = $('ledColor').value;   // #rrggbb
+  return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 }
 
-function setupLightChannel(ch) {
-  const onBtn = document.getElementById(`hwLight${ch}OnBtn`);
-  const offBtn = document.getElementById(`hwLight${ch}OffBtn`);
-  const slider = document.getElementById(`hwLight${ch}Slider`);
-  const valueInput = document.getElementById(`hwLight${ch}Value`);
-
-  if (!onBtn || !offBtn || !slider || !valueInput) return;
-
-  onBtn.addEventListener('click', () => {
-    slider.disabled = false;
-    valueInput.disabled = false;
-    const val = lastLightValue[ch] || 512;
-    setLight(ch, val);
-    slider.value = val;
-    valueInput.value = val;
-  });
-
-  offBtn.addEventListener('click', () => {
-    setLight(ch, 0);
-    slider.disabled = true;
-    valueInput.disabled = true;
-  });
-
-  slider.addEventListener('input', function () {
-    valueInput.value = this.value;
-    setLight(ch, this.value);
-  });
-
-  valueInput.addEventListener('change', function () {
-    slider.value = this.value;
-    setLight(ch, this.value);
-  });
-}
-
-// =====================================================
-// Motor Jog Control (per-axis quick buttons)
-// =====================================================
-
-function setupAxisJog(axisName, stepperId) {
-  const stepInput = document.getElementById(`hwStep${axisName}`);
-  const plusBtn = document.getElementById(`hw${axisName}Plus`);
-  const minusBtn = document.getElementById(`hw${axisName}Minus`);
-  const foreverPlusBtn = document.getElementById(`hw${axisName}ForeverPlus`);
-  const foreverMinusBtn = document.getElementById(`hw${axisName}ForeverMinus`);
-  const stopBtn = document.getElementById(`hw${axisName}Stop`);
-
-  if (!plusBtn) return;
-
-  plusBtn.addEventListener('click', () => {
-    const steps = parseInt(stepInput.value) || 1000;
-    sendHwSerialCommand(JSON.stringify({
-      task: '/motor_act',
-      motor: { steppers: [{ stepperid: stepperId, position: steps, speed: 15000, isabs: 0, isaccel: 0 }] }
-    }));
-  });
-
-  minusBtn.addEventListener('click', () => {
-    const steps = parseInt(stepInput.value) || 1000;
-    sendHwSerialCommand(JSON.stringify({
-      task: '/motor_act',
-      motor: { steppers: [{ stepperid: stepperId, position: -steps, speed: 15000, isabs: 0, isaccel: 0 }] }
-    }));
-  });
-
-  foreverPlusBtn.addEventListener('click', () => {
-    sendHwSerialCommand(JSON.stringify({
-      task: '/motor_act',
-      motor: { steppers: [{ stepperid: stepperId, isforever: 1, speed: 1500 }] }
-    }));
-  });
-
-  foreverMinusBtn.addEventListener('click', () => {
-    sendHwSerialCommand(JSON.stringify({
-      task: '/motor_act',
-      motor: { steppers: [{ stepperid: stepperId, isforever: 1, speed: -1500 }] }
-    }));
-  });
-
-  stopBtn.addEventListener('click', () => {
-    sendHwSerialCommand(JSON.stringify({
-      task: '/motor_act',
-      motor: { steppers: [{ stepperid: stepperId, isstop: 1 }] }
+function motorRows() {
+  const tbody = $('motorRows');
+  for (const [axis, id] of Object.entries(C.AXES)) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <th class="align-middle">${axis} <small class="text-muted">(${id})</small></th>
+      <td><input type="number" class="form-control form-control-sm" id="steps${axis}" value="1000" style="max-width:110px"></td>
+      <td class="text-nowrap">
+        <button class="btn btn-sm btn-outline-success" data-needs-conn data-act="move" data-dir="-1" data-axis="${axis}"><i class="bi bi-dash-lg"></i></button>
+        <button class="btn btn-sm btn-outline-success" data-needs-conn data-act="move" data-dir="1" data-axis="${axis}"><i class="bi bi-plus-lg"></i></button>
+      </td>
+      <td class="text-nowrap">
+        <button class="btn btn-sm btn-outline-warning" data-needs-conn data-act="jog" data-dir="-1" data-axis="${axis}">&laquo; jog</button>
+        <button class="btn btn-sm btn-outline-warning" data-needs-conn data-act="jog" data-dir="1" data-axis="${axis}">jog &raquo;</button>
+      </td>
+      <td class="text-nowrap">
+        <button class="btn btn-sm btn-danger" data-needs-conn data-act="stop" data-axis="${axis}"><i class="bi bi-stop-fill"></i></button>
+        <button class="btn btn-sm btn-outline-secondary" data-needs-conn data-act="home" data-axis="${axis}"><i class="bi bi-house"></i></button>
+      </td>
+      <td class="font-monospace small" id="pos${axis}">–</td>`;
+    tbody.appendChild(tr);
+  }
+  tbody.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-act]');
+    if (!b) return;
+    const axis = b.dataset.axis, id = C.AXES[axis], dir = parseInt(b.dataset.dir || '1', 10);
+    const speed = num('motorSpeed', 20000), acceleration = num('motorAccel', 0);
+    if (b.dataset.act === 'move') send(C.motorMove(id, dir * num(`steps${axis}`, 1000), { speed, acceleration }));
+    if (b.dataset.act === 'jog') send(C.motorJog(id, dir * Math.abs(num('jogSpeed', 5000))));
+    if (b.dataset.act === 'stop') send(C.motorStop(id));
+    if (b.dataset.act === 'home') send(C.home(id, {
+      timeout: num('homeTimeout', 20000), speed: num('homeSpeed', 15000), direction: num('homeDirection', -1),
+      endstoppolarity: num('homePolarity', -1), endstoprelease: num('homeRelease', 0), hardhome: $('homeHard').checked,
     }));
   });
 }
 
-// =====================================================
-// LED Matrix (8x8)
-// =====================================================
+function laserRows() {
+  const box = $('laserRows');
+  for (let id = 0; id <= 4; id++) {
+    const row = document.createElement('div');
+    row.className = 'light-channel-row';
+    row.innerHTML = `
+      <strong style="width:4.5rem">Laser ${id}</strong>
+      <input type="range" class="form-range" min="0" max="1023" value="0" id="laserRange${id}" data-needs-conn>
+      <input type="number" class="form-control form-control-sm" style="width:90px" min="0" value="0" id="laserVal${id}" data-needs-conn>
+      <button class="btn btn-sm btn-outline-danger" data-needs-conn id="laserOff${id}">Off</button>`;
+    box.appendChild(row);
+    const range = row.querySelector(`#laserRange${id}`), val = row.querySelector(`#laserVal${id}`);
+    const set = (v) => { range.value = v; val.value = v; send(C.laser(id, v)); };
+    range.addEventListener('change', () => set(parseInt(range.value, 10)));
+    val.addEventListener('change', () => set(parseInt(val.value, 10) || 0));
+    row.querySelector(`#laserOff${id}`).addEventListener('click', () => set(0));
+  }
+  $('laserMax').addEventListener('change', () => {
+    const max = num('laserMax', 1023);
+    document.querySelectorAll('#laserRows input[type=range]').forEach((r) => { r.max = max; });
+  });
+}
 
-function createLEDMatrix() {
-  const container = document.getElementById('hwLedMatrix');
-  if (!container) return;
-  container.innerHTML = '';
-
+function ledMatrix() {
+  const grid = $('ledMatrix');
   for (let i = 0; i < 64; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-sm btn-outline-secondary';
-    btn.textContent = i;
-    btn.addEventListener('click', function () {
-      const isActive = this.classList.contains('btn-success');
-      const color = isActive ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
-      sendHwSerialCommand(JSON.stringify({
-        task: '/ledarr_act',
-        led: { action: 'single', ledIndex: i, ...color }
-      }));
-      this.classList.toggle('btn-outline-secondary', isActive);
-      this.classList.toggle('btn-success', !isActive);
+    const b = document.createElement('button');
+    b.className = 'btn btn-sm btn-outline-secondary';
+    b.textContent = i;
+    b.dataset.needsConn = '';
+    b.addEventListener('click', () => {
+      const on = !b.classList.contains('btn-success');
+      const [r, g, bl] = on ? rgb() : [0, 0, 0];
+      send(C.ledSingle(i, r, g, bl));
+      b.classList.toggle('btn-success', on);
+      b.classList.toggle('btn-outline-secondary', !on);
     });
-    container.appendChild(btn);
+    grid.appendChild(b);
   }
 }
-
-// =====================================================
-// Initialize All Hardware Test Controls
-// =====================================================
 
 export function initHardwareTest() {
-  // Light source channels 0-4
-  for (let ch = 0; ch < 5; ch++) {
-    setupLightChannel(ch);
-  }
+  motorRows();
+  laserRows();
+  ledMatrix();
 
-  // Motor jog axes: A=0, X=1, Y=2, Z=3
-  setupAxisJog('A', 0);
-  setupAxisJog('X', 1);
-  setupAxisJog('Y', 2);
-  setupAxisJog('Z', 3);
+  // System
+  $('btnState').addEventListener('click', () => send(C.stateGet()));
+  $('btnModules').addEventListener('click', () => send(C.modulesGet()));
+  $('btnMotorGet').addEventListener('click', () => send(C.motorGet()));
+  $('btnPowerOn').addEventListener('click', () => send(C.busPower(true)));
+  $('btnPowerOff').addEventListener('click', () => send(C.busPower(false)));
+  $('btnRestart').addEventListener('click', () => confirm('Reboot the connected board?') && send(C.restart()));
+  $('btnBtScan').addEventListener('click', () => send(C.btScan()));
+  $('btnEnable').addEventListener('click', () => send(C.motorEnable(true)));
+  $('btnDisable').addEventListener('click', () => send(C.motorEnable(false)));
+  $('btnAutoEnable').addEventListener('click', () => send(C.motorEnable(true, true)));
 
-  // LED Array controls
-  document.getElementById('hwLedFullOn')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/ledarr_act","qid":17,"led":{"action":"fill","r":255,"g":255,"b":255}}');
-  });
-  document.getElementById('hwLedFullOff')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/ledarr_act","qid":17,"led":{"action":"off"}}');
-  });
-  document.getElementById('hwLedLeft')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/ledarr_act","qid":17,"led":{"action":"halves","region":"left","r":255,"g":255,"b":255}}');
-  });
-  document.getElementById('hwLedRight')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/ledarr_act","qid":17,"led":{"action":"halves","region":"right","r":255,"g":255,"b":255}}');
-  });
-  document.getElementById('hwLedTop')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/ledarr_act","qid":17,"led":{"action":"halves","region":"top","r":255,"g":255,"b":255}}');
-  });
-  document.getElementById('hwLedBottom')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/ledarr_act","qid":17,"led":{"action":"halves","region":"bottom","r":255,"g":255,"b":255}}');
-  });
-  document.getElementById('hwLedOuterRing')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/ledarr_act","qid":17,"led":{"action":"rings","radius":5,"r":255,"g":255,"b":255}}');
-  });
-  document.getElementById('hwLedMiddleRing')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/ledarr_act","qid":17,"led":{"action":"rings","radius":3,"r":255,"g":255,"b":255}}');
-  });
-  document.getElementById('hwLedInnerRing')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/ledarr_act","qid":17,"led":{"action":"rings","radius":2,"r":255,"g":255,"b":255}}');
-  });
+  // LED
+  $('ledFill').addEventListener('click', () => send(C.ledFill(...rgb())));
+  $('ledOff').addEventListener('click', () => send(C.ledOff()));
+  document.querySelectorAll('[data-led-half]').forEach((b) =>
+    b.addEventListener('click', () => send(C.ledHalves(b.dataset.ledHalf, ...rgb()))));
+  $('ledRing').addEventListener('click', () => send(C.ledRings(num('ledRadius', 3), ...rgb())));
 
-  // LED Matrix (8x8)
-  createLEDMatrix();
+  // TMC
+  $('tmcSet').addEventListener('click', () => send(C.tmcSet(num('tmcAxis', 1), {
+    msteps: num('tmcMsteps'), rms_current: num('tmcRms'), sgthrs: num('tmcSgthrs'),
+    semin: num('tmcSemin'), semax: num('tmcSemax'), blank_time: num('tmcBlank'), toff: num('tmcToff'),
+  })));
+  $('tmcGet').addEventListener('click', () => send(C.tmcGet(num('tmcAxis', 1))));
 
-  // Motor enable/disable
-  document.getElementById('hwMotorEnable')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/motor_act","isen":1,"isenauto":1}');
-  });
-  document.getElementById('hwMotorDisable')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/motor_act","isen":1,"isenauto":0}');
-  });
-
-  // TMC Driver settings
-  document.getElementById('hwTmcUpdate')?.addEventListener('click', () => {
-    const cmd = {
-      task: '/tmc_act',
-      msteps: parseInt(document.getElementById('hwTmcMsteps').value) || 16,
-      rms_current: parseInt(document.getElementById('hwTmcRms').value) || 700,
-      sgthrs: parseInt(document.getElementById('hwTmcSgthrs').value) || 15,
-      semin: parseInt(document.getElementById('hwTmcSemin').value) || 5,
-      semax: parseInt(document.getElementById('hwTmcSemax').value) || 2,
-      blank_time: parseInt(document.getElementById('hwTmcBlank').value) || 24,
-      toff: parseInt(document.getElementById('hwTmcToff').value) || 4,
-      axis: parseInt(document.getElementById('hwTmcAxis').value) || 2
-    };
-    sendHwSerialCommand(JSON.stringify(cmd));
-  });
-
-  // CAN Address
-  document.getElementById('hwCanUpdate')?.addEventListener('click', () => {
-    const address = parseInt(document.getElementById('hwCanAddress').value);
-    if (!isNaN(address)) {
-      sendHwSerialCommand(JSON.stringify({ task: '/can_act', address, nodeId: address, canMotorAxis: 1 }));
+  // Live positions from motor pushes and /motor_get
+  onFrame((m) => {
+    const steppers = m.steppers || m.motor?.steppers;
+    if (!Array.isArray(steppers)) return;
+    for (const s of steppers) {
+      const axis = Object.keys(C.AXES).find((k) => C.AXES[k] === s.stepperid);
+      if (axis && s.position !== undefined) $(`pos${axis}`).textContent = `${s.position}${s.isDone === 0 || s.isRunning ? ' …' : ''}`;
     }
-  });
-  // CAN Address presets
-  document.querySelectorAll('.hw-can-preset').forEach(preset => {
-    preset.addEventListener('click', () => {
-      document.querySelectorAll('.hw-can-preset').forEach(p => p.classList.remove('selected'));
-      preset.classList.add('selected');
-      const address = parseInt(preset.dataset.address);
-      document.getElementById('hwCanAddress').value = address;
-      sendHwSerialCommand(JSON.stringify({ task: '/can_act', address, nodeId: address, canMotorAxis: 1 }));
-    });
-  });
-
-  // BT Pairing
-  document.getElementById('hwBtPair')?.addEventListener('click', () => {
-    sendHwSerialCommand('{"task":"/bt_scan"}');
   });
 }

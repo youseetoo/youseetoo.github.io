@@ -1,176 +1,102 @@
 // js/flasher/erase.js
-// Erase flash functionality using ESPTool.js
-// Uses flashBegin (sector-by-sector erase) instead of eraseFlash (chip erase)
-// because the sector approach keeps USB responsive on native-USB chips (ESP32-S3).
+// Erase flash with esptool-js. "Settings only" reads the partition table from the
+// device and erases exactly the NVS partition (offsets differ between boards:
+// ESP32 0x9000+0x6000, XIAO ESP32-S3 0x9000+0x4000, Waveshare 0x9000+0x5000).
 
-import { state } from './config.js';
-import { disconnectSerial, disconnectHwSerial } from './serial.js';
+import { isConnected, disconnect } from './serial.js';
 
-function logToEraseConsole(message, type = 'info') {
-  const el = document.getElementById('eraseConsole');
-  if (!el) return;
-  const line = document.createElement('div');
-  line.className = type;
-  line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-  el.appendChild(line);
-  el.scrollTop = el.scrollHeight;
+const PT_OFFSET = 0x8000;
+const ESP_ERASE_REGION = 0xd1;       // supported by the esptool stub loader
+const CHUNK = 256 * 1024;
+
+// Erase [offset, offset+size) in chunks. flashBegin() is NOT an erase when the stub
+// runs (the stub erases lazily while data is written), so use ERASE_REGION.
+async function eraseRegion(loader, offset, size, onProgress) {
+  for (let done = 0; done < size; done += CHUNK) {
+    const len = Math.min(CHUNK, size - done);
+    const data = new Uint8Array(8);
+    const dv = new DataView(data.buffer);
+    dv.setUint32(0, offset + done, true);
+    dv.setUint32(4, len, true);
+    await loader.checkCommand('erase region', ESP_ERASE_REGION, data, undefined, 30000);
+    onProgress((done + len) / size);
+  }
 }
 
-function updateEraseProgress(percent, status) {
-  const bar = document.getElementById('eraseProgressBar');
-  const statusEl = document.getElementById('eraseStatus');
-  if (bar) bar.style.width = `${percent}%`;
-  if (statusEl) statusEl.textContent = status;
+// Parse an ESP-IDF partition table (pure; unit-tested)
+export function parsePartitionTable(bytes) {
+  const parts = [];
+  for (let i = 0; i + 32 <= bytes.length; i += 32) {
+    if (bytes[i] !== 0xaa || bytes[i + 1] !== 0x50) break;
+    const dv = new DataView(bytes.buffer, bytes.byteOffset + i, 32);
+    const name = new TextDecoder().decode(bytes.subarray(i + 12, i + 28)).replace(/\0.*$/s, '');
+    parts.push({ type: bytes[i + 2], subtype: bytes[i + 3], offset: dv.getUint32(4, true), size: dv.getUint32(8, true), name });
+  }
+  return parts;
+}
+
+function out(msg, type = 'info') {
+  const el = document.getElementById('eraseConsole');
+  if (!el) return;
+  const d = document.createElement('div');
+  d.className = type;
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+function progress(pct, text) {
+  document.getElementById('eraseProgressBar').style.width = `${pct}%`;
+  document.getElementById('eraseStatus').textContent = text;
 }
 
 export async function eraseFlash() {
-  const eraseType = document.querySelector('input[name="eraseType"]:checked').value;
-  const eraseBtn = document.getElementById('eraseFlashBtn');
-  const eraseProgress = document.getElementById('eraseProgress');
+  const mode = document.querySelector('input[name="eraseType"]:checked').value;
+  const btn = document.getElementById('eraseFlashBtn');
   let transport = null;
-  let progressInterval = null;
-
+  btn.disabled = true;
+  document.getElementById('eraseProgress').classList.remove('hidden');
   try {
-    eraseProgress.classList.remove('hidden');
-    eraseBtn.disabled = true;
-    logToEraseConsole('Requesting serial port...', 'info');
+    await window.waitForESPTool(5000).catch(() => { throw new Error('ESPTool.js failed to load – reload the page'); });
+    if (isConnected()) { out('Closing the test connection…', 'warning'); await disconnect(); }
 
-    // Wait for ESPTool to be ready
-    try {
-      await window.waitForESPTool(5000);
-      logToEraseConsole('\u2713 ESPTool.js ready', 'success');
-    } catch (err) {
-      throw new Error('ESPTool.js failed to load. Please refresh the page and try again.');
-    }
-
-    // Close any existing connections first
-    if (state.isConnected) {
-      logToEraseConsole('\u26A0 Closing existing serial connection...', 'warning');
-      try {
-        await disconnectSerial();
-        await new Promise(resolve => setTimeout(resolve, 500));
-      } catch (e) {
-        logToEraseConsole('Note: Could not close existing connection.', 'warning');
-      }
-    }
-    if (state.hwIsConnected) {
-      logToEraseConsole('\u26A0 Closing hardware test connection...', 'warning');
-      try {
-        await disconnectHwSerial();
-        await new Promise(resolve => setTimeout(resolve, 500));
-      } catch (e) {
-        logToEraseConsole('Note: Could not close hardware test connection.', 'warning');
-      }
-    }
-
-    // Request a new port from the user
     const port = await navigator.serial.requestPort();
-
-    logToEraseConsole('Connected. Starting erase...', 'info');
-    updateEraseProgress(10, 'Connecting to ESP32...');
-
-    const Transport = window.Transport;
-    const ESPLoader = window.ESPLoader;
-
-    if (!Transport || !ESPLoader) {
-      throw new Error('ESPTool.js classes not available. Please refresh the page.');
-    }
-
-    // Create transport — tracing disabled to reduce overhead during long erase
-    transport = new Transport(port, false);
-    const loader = new ESPLoader({
-      transport: transport,
-      baudrate: 115200,
-      terminal: {
-        clean: () => {},
-        writeLine: (text) => logToEraseConsole(text, 'info'),
-        write: (text) => logToEraseConsole(text, 'info')
-      }
+    transport = new window.Transport(port, false);
+    const loader = new window.ESPLoader({
+      transport, baudrate: 115200,
+      terminal: { clean() {}, writeLine: (t) => out(t), write: (t) => out(t) },
     });
+    progress(15, 'Connecting to the bootloader…');
+    await loader.main();          // detects chip, uploads stub (needed for readFlash)
 
-    updateEraseProgress(20, 'Syncing...');
-    await loader.main();
-
-    // Detect flash size so we erase the right amount
-    let flashSizeBytes;
-    try {
-      const flashSizeKB = await loader.getFlashSize();
-      flashSizeBytes = flashSizeKB * 1024;
-      const label = flashSizeKB >= 1024
-        ? (flashSizeKB / 1024) + ' MB'
-        : flashSizeKB + ' KB';
-      logToEraseConsole('Detected flash size: ' + label, 'info');
-    } catch (e) {
-      // Fallback: assume 8 MB (common for ESP32-S3 boards)
-      flashSizeBytes = 8 * 1024 * 1024;
-      logToEraseConsole('Could not detect flash size, assuming 8 MB', 'warning');
-    }
-
-    updateEraseProgress(40, 'Erasing flash...');
-
-    // Show elapsed timer so the user knows the operation is still running
-    let elapsed = 0;
-    progressInterval = setInterval(() => {
-      elapsed++;
-      updateEraseProgress(40 + Math.min(elapsed, 50), `Erasing flash... ${elapsed}s`);
-    }, 1000);
-
-    if (eraseType === 'all') {
-      logToEraseConsole('Erasing entire flash (this can take 30-120 seconds)...', 'warning');
-
-      // Use flashBegin instead of eraseFlash.  flashBegin erases sectors one
-      // by one (the same path used during normal firmware upload) which keeps
-      // the USB connection alive on native-USB chips like the ESP32-S3.
-      // eraseFlash sends a single chip-erase command that can cause a long
-      // USB silence which the WebSerial / browser may drop.
-      await loader.flashBegin(flashSizeBytes, 0);
+    let offset, size;
+    if (mode === 'nvs') {
+      progress(30, 'Reading partition table…');
+      const pt = parsePartitionTable(await loader.readFlash(PT_OFFSET, 0xc00));
+      const nvs = pt.find((p) => p.type === 1 && p.subtype === 2);
+      if (!nvs) throw new Error('No NVS partition found in the partition table');
+      ({ offset, size } = nvs);
+      out(`NVS partition "${nvs.name}" at 0x${offset.toString(16)}, 0x${size.toString(16)} bytes`);
     } else {
-      logToEraseConsole('Erasing NVS partition (0x9000, size 0x5000)...', 'warning');
-      await loader.flashBegin(0x5000, 0x9000);
+      offset = 0;
+      try { size = (await loader.getFlashSize()) * 1024; } catch { size = 8 * 1024 * 1024; out('Flash size unknown, assuming 8 MB', 'warning'); }
+      out(`Erasing all ${size / 1048576} MB (30–120 s)…`, 'warning');
     }
 
-    clearInterval(progressInterval);
-    progressInterval = null;
+    const t0 = Date.now();
+    await eraseRegion(loader, offset, size, (f) =>
+      progress(40 + Math.round(f * 55), `Erasing… ${Math.round(f * 100)} % (${Math.round((Date.now() - t0) / 1000)} s)`));
 
-    updateEraseProgress(92, 'Resetting device...');
-    logToEraseConsole('Erase complete (' + elapsed + 's). Resetting device...', 'info');
-
-    // Leave flash download mode
-    try {
-      await loader.flashFinish(false);
-    } catch (e) {
-      // Not critical — we will hard-reset next
-    }
-
-    // Hard reset the chip so it restarts with clean flash
-    try {
-      await loader.hardReset();
-    } catch (e) {
-      logToEraseConsole('Note: Could not hard-reset. Please manually reset your device.', 'warning');
-    }
-
-    // Disconnect transport
-    try {
-      await transport.disconnect();
-    } catch (e) {
-      // Port may already be closed after hard reset
-    }
+    progress(97, 'Resetting…');
+    try { await loader.hardReset(); } catch { out('Reset the board manually', 'warning'); }
+    try { await transport.disconnect(); } catch { /* port closed by reset */ }
     transport = null;
-
-    updateEraseProgress(100, 'Erase complete!');
-    logToEraseConsole('\u2713 Flash erased successfully! Device has been reset.', 'success');
-
-  } catch (error) {
-    if (progressInterval) clearInterval(progressInterval);
-    console.error('Erase error:', error);
-    logToEraseConsole('\u2717 Error: ' + error.message, 'error');
-    updateEraseProgress(0, 'Erase failed');
-
-    // Try to clean up transport on error
-    if (transport) {
-      try { await transport.disconnect(); } catch (e) { /* ignore */ }
-    }
+    progress(100, 'Done');
+    out(mode === 'nvs' ? '✓ Settings erased (node ID, role, positions back to build defaults)' : '✓ Flash erased – flash a firmware next', 'success');
+  } catch (e) {
+    progress(0, 'Failed');
+    out(`✗ ${e.message}`, 'error');
+    if (transport) { try { await transport.disconnect(); } catch { /* ignore */ } }
   } finally {
-    eraseBtn.disabled = false;
+    btn.disabled = false;
   }
 }

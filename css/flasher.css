@@ -43,6 +43,8 @@
 .console-output .error { color: #f14c4c; }
 .console-output .warning { color: #cca700; }
 .console-output .info { color: #3794ff; }
+.console-output .log { color: #8a8a8a; }
+.console-output .sent { color: #c586c0; }
 
 /* Progress indicator */
 .progress-step {

@@ -1,696 +1,331 @@
 // js/flasher/app.js
-// Main entry point for UC2 Firmware Flasher
+// UC2 firmware flasher + tester (index.html): releases, board catalog, flashing, tabs.
 
-import {
-  GITHUB_API, IMSWITCH_API, RAW_BASE, IMSWITCH_REPO,
-  BOARD_CONFIG, state
-} from './config.js';
-
-import {
-  connectSerial, disconnectSerial, sendSerialCommand, setCanId,
-  connectHwSerial, disconnectHwSerial, sendHwSerialCommand,
-  logToConsole, clearConsole, logToHwConsole, clearHwConsole
-} from './serial.js';
-
+import { GITHUB_API, IMSWITCH_API, IMSWITCH_REPO, RAW_BASE, BOARDS, CATEGORIES, state } from './config.js';
+import * as serial from './serial.js';
+import * as C from './commands.js';
 import { eraseFlash } from './erase.js';
 import { initHardwareTest } from './hwtest.js';
+import { initCan } from './can.js';
 
-// =====================================================
-// Loading Overlay
-// =====================================================
+const $ = (id) => document.getElementById(id);
 
-function showLoading(text = 'Loading...') {
-  const overlay = document.getElementById('loadingOverlay');
-  const textEl = document.getElementById('loadingText');
-  if (textEl) textEl.textContent = text;
-  if (overlay) overlay.classList.remove('hidden');
-}
+// Old board IDs (pre-CANopen release naming, old links) → current IDs
+const ID_ALIASES = {
+  'can-hat-master-v2': 'uc2-can-master', 'esp32-uc2-v4-can-hybrid': 'uc2-can-standalone-v4',
+  'xiao-can-slave-motor': 'uc2-can-slave-motor', 'xiao-can-slave-laser': 'uc2-can-slave-laser',
+  'xiao-can-slave-led': 'uc2-can-slave-led', 'xiao-can-slave-illumination': 'uc2-can-slave-led',
+  'xiao-can-slave-galvo': 'uc2-can-slave-galvo',
+};
+const TAB_ALIASES = { hardware: 'test' };
+const NATIVE_USB = (b) => b.chip !== 'ESP32';   // XIAO/S3/C3 boards: USB-CDC, baud ignored
 
-function hideLoading() {
-  const overlay = document.getElementById('loadingOverlay');
-  if (overlay) overlay.classList.add('hidden');
-}
-
-// =====================================================
-// URL Parameter Parsing
-// =====================================================
-
-function parseUrlParams() {
-  const params = new URLSearchParams(window.location.search);
-
-  if (params.has('firmware')) {
-    state.selectedBoard = params.get('firmware');
-  }
-  if (params.has('release')) {
-    state.currentRelease = params.get('release');
-  }
-  if (params.has('tab')) {
-    const tab = params.get('tab');
-    const tabBtn = document.getElementById(`${tab}-tab`);
-    if (tabBtn) {
-      new bootstrap.Tab(tabBtn).show();
-    }
-  }
-  if (params.has('canid')) {
-    const canIdInput = document.getElementById('customCanId');
-    if (canIdInput) canIdInput.value = params.get('canid');
-  }
-}
-
-// =====================================================
-// GitHub Release Loading
-// =====================================================
-
+// ── Releases ──────────────────────────────────────────────────────────────
 async function loadReleases() {
+  const sel = $('releaseSelect');
   try {
-    showLoading('Loading firmware releases...');
-
-    // Load firmware releases
-    const fwResponse = await fetch(`${GITHUB_API}/releases`);
-    if (!fwResponse.ok) throw new Error('Failed to fetch firmware releases');
-
-    const releases = await fwResponse.json();
-    state.releases = releases;
-
-    // Load ImSwitch releases
-    try {
-      const imswitchResponse = await fetch(`${IMSWITCH_API}/releases`);
-      if (imswitchResponse.ok) {
-        state.imswitchReleases = await imswitchResponse.json();
-        console.log(`Loaded ${state.imswitchReleases.length} ImSwitch OS releases`);
-      }
-    } catch (err) {
-      console.warn('Failed to load ImSwitch releases:', err);
+    const r = await fetch(`${GITHUB_API}/releases?per_page=50`);
+    if (!r.ok) throw new Error(`GitHub API ${r.status}${r.status === 403 ? ' (rate limit – try again later)' : ''}`);
+    state.releases = (await r.json()).filter((x) => x.assets?.length);
+    for (const rel of state.releases) {
+      const o = document.createElement('option');
+      o.value = rel.tag_name;
+      o.textContent = `${rel.tag_name}${rel.prerelease ? '  (pre-release)' : ''} — ${rel.published_at.slice(0, 10)}`;
+      sel.appendChild(o);
     }
-
-    // Populate firmware release dropdown
-    const releaseSelect = document.getElementById('releaseSelect');
-    releaseSelect.innerHTML = '';
-
-    const latestOpt = document.createElement('option');
-    latestOpt.value = 'latest';
-    latestOpt.textContent = 'Latest Stable';
-    releaseSelect.appendChild(latestOpt);
-
-    releases.forEach(release => {
-      const opt = document.createElement('option');
-      opt.value = release.tag_name;
-      opt.textContent = `${release.tag_name} ${release.prerelease ? '(beta)' : ''}`;
-      releaseSelect.appendChild(opt);
-    });
-
-    // Populate ImSwitch OS release dropdown
-    const imswitchSelect = document.getElementById('imswitchReleaseSelect');
-    if (state.imswitchReleases && state.imswitchReleases.length > 0) {
-      imswitchSelect.innerHTML = '<option value="">-- Select ImSwitch OS Release --</option>';
-      state.imswitchReleases.slice(0, 20).forEach(release => {
-        const opt = document.createElement('option');
-        opt.value = release.tag_name;
-        opt.textContent = `${release.tag_name} ${release.prerelease ? '(beta)' : ''}`;
-        imswitchSelect.appendChild(opt);
-      });
-    }
-
-    // Select from URL or default
-    if (state.currentRelease) {
-      releaseSelect.value = state.currentRelease;
-    }
-
-    updateVersionDisplay();
-    logToConsole('\u2713 Firmware will be loaded from GitHub raw URLs', 'success');
-
-  } catch (error) {
-    console.error('Error loading releases:', error);
-    logToConsole(`Error loading releases: ${error.message}`, 'error');
-    document.getElementById('releaseSelect').innerHTML = '<option value="static">Local (static)</option>';
-  } finally {
-    hideLoading();
+    if (state.releaseMode !== 'auto' && state.releaseMode !== 'stable') sel.value = state.releaseMode;
+  } catch (e) {
+    serial.log(`Could not load firmware releases: ${e.message}`, 'error');
+    $('releaseError').textContent = `Could not load releases (${e.message}). Static boards still work.`;
+    $('releaseError').classList.remove('hidden');
   }
 }
 
-function updateVersionDisplay() {
-  const selectedValue = document.getElementById('releaseSelect').value;
-  const currentVersionEl = document.getElementById('currentVersion');
-  const releaseDateEl = document.getElementById('releaseDate');
-  let release;
-
-  if (selectedValue === 'latest' || selectedValue === 'static') {
-    release = state.releases[0];
-  } else {
-    release = state.releases.find(r => r.tag_name === selectedValue);
+async function isAvailable(tag, boardId) {
+  const key = `${tag}|${boardId}`;
+  if (!(key in state.availability)) {
+    state.availability[key] = fetch(`${RAW_BASE}/${tag}/${boardId}-manifest.json`, { method: 'HEAD' })
+      .then((r) => r.ok).catch(() => false);
   }
-
-  if (release) {
-    currentVersionEl.textContent = release.tag_name;
-    currentVersionEl.className = `badge version-badge ${release.prerelease ? 'bg-warning' : 'bg-success'}`;
-    releaseDateEl.textContent = new Date(release.published_at).toLocaleDateString();
-    state.currentRelease = release.tag_name;
-  } else {
-    currentVersionEl.textContent = 'Static';
-    currentVersionEl.className = 'badge version-badge bg-secondary';
-    releaseDateEl.textContent = '';
-  }
-
-  if (state.selectedBoard) {
-    updateManifestUrl();
-  }
+  return state.availability[key];
 }
 
-// =====================================================
-// ImSwitch Firmware Resolution
-// =====================================================
-
-async function resolveFirmwareFromImSwitch(imswitchTag) {
-  const fileUrl = `https://raw.githubusercontent.com/${IMSWITCH_REPO}/refs/tags/${imswitchTag}/deployments/firmware.pkg/deployment.compose.yml`;
-  const response = await fetch(fileUrl);
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch deployment file: ${response.statusText}`);
+async function resolveTag(boardId) {
+  const mode = state.releaseMode;
+  if (mode === 'stable') {
+    const rel = state.releases.find((r) => !r.prerelease);
+    return rel && (await isAvailable(rel.tag_name, boardId)) ? rel.tag_name : null;
   }
-
-  const yamlContent = await response.text();
-  const imageMatch = yamlContent.match(/image:\s+ghcr\.io\/youseetoo\/firmware-image-server:(\S+?)(?:@|\s|$)/);
-
-  if (!imageMatch) {
-    throw new Error('Could not find firmware-image-server image in deployment file');
+  if (mode !== 'auto') return (await isAvailable(mode, boardId)) ? mode : null;
+  for (const rel of state.releases.slice(0, 10)) {           // newest first
+    if (await isAvailable(rel.tag_name, boardId)) return rel.tag_name;
   }
-
-  let tag = imageMatch[1];
-  console.log('Found Docker image tag:', tag);
-
-  if (tag.startsWith('sha-')) {
-    const imswitchRelease = state.imswitchReleases.find(r => r.tag_name === imswitchTag);
-    if (imswitchRelease) {
-      const imswitchDate = new Date(imswitchRelease.published_at);
-      const closestFirmware = state.releases
-        .filter(r => !r.prerelease)
-        .map(r => ({ ...r, dateDiff: Math.abs(new Date(r.published_at) - imswitchDate) }))
-        .sort((a, b) => a.dateDiff - b.dateDiff)[0];
-
-      if (closestFirmware) {
-        logToConsole(`\u2139 Matched to firmware release by date: ${closestFirmware.tag_name}`, 'info');
-        return closestFirmware.tag_name;
-      }
-    }
-    return null;
-  } else if (tag.match(/^v\d{4}\.\d{2}\.\d{2}/)) {
-    return tag;
-  }
-
   return null;
 }
 
-// =====================================================
-// Board Rendering
-// =====================================================
+// ── ImSwitch OS → firmware release ───────────────────────────────────────
+async function loadImSwitchReleases() {
+  try {
+    const r = await fetch(`${IMSWITCH_API}/releases?per_page=20`);
+    if (!r.ok) return;
+    state.imswitchReleases = await r.json();
+    const sel = $('imswitchSelect');
+    for (const rel of state.imswitchReleases) {
+      const o = document.createElement('option');
+      o.value = rel.tag_name;
+      o.textContent = `${rel.tag_name}${rel.prerelease ? ' (pre-release)' : ''}`;
+      sel.appendChild(o);
+    }
+  } catch { /* optional feature */ }
+}
 
-function renderBoards(filter = '', category = 'all') {
-  const boardGrid = document.getElementById('boardGrid');
-  boardGrid.innerHTML = '';
+// The OS pins ghcr.io/youseetoo/firmware-image-server:<tag>. <tag> is either a release
+// tag or sha-<commit>. For a commit, pick the oldest release that contains it.
+async function firmwareForImSwitch(osTag) {
+  const y = await fetch(`https://raw.githubusercontent.com/${IMSWITCH_REPO}/refs/tags/${osTag}/deployments/firmware.pkg/deployment.compose.yml`);
+  if (!y.ok) throw new Error(`deployment file not found (${y.status})`);
+  const m = (await y.text()).match(/firmware-image-server:([\w.\-]+)/);
+  if (!m) throw new Error('no firmware-image-server image in the deployment file');
+  const tag = m[1];
+  if (state.releases.some((r) => r.tag_name === tag)) return { tag, note: `pins release ${tag}` };
+  const sha = tag.replace(/^sha-/, '');
+  const c = await fetch(`${GITHUB_API}/commits/${sha}`);
+  if (!c.ok) throw new Error(`commit ${sha} not found`);
+  const commitDate = new Date((await c.json()).commit.committer.date);
+  const candidates = state.releases.filter((r) => new Date(r.published_at) >= commitDate).reverse();  // oldest first
+  for (const rel of candidates.slice(0, 5)) {
+    const cmp = await fetch(`${GITHUB_API}/compare/${sha}...${rel.tag_name}`);
+    if (cmp.ok && ['ahead', 'identical'].includes((await cmp.json()).status)) {
+      return { tag: rel.tag_name, note: `pins firmware commit ${sha}; oldest release containing it: ${rel.tag_name}` };
+    }
+  }
+  return { tag: null, note: `pins firmware commit ${sha}, which is in no release yet` };
+}
 
-  const filterLower = filter.toLowerCase();
+// ── Boards ────────────────────────────────────────────────────────────────
+function renderCategories() {
+  const sel = $('boardCategory');
+  for (const [k, v] of Object.entries(CATEGORIES)) {
+    const o = document.createElement('option');
+    o.value = k; o.textContent = v;
+    sel.appendChild(o);
+  }
+}
 
-  Object.entries(BOARD_CONFIG).forEach(([boardId, config]) => {
-    if (category !== 'all' && config.category !== category) return;
-    if (filter && !config.name.toLowerCase().includes(filterLower) &&
-        !boardId.toLowerCase().includes(filterLower)) return;
-
+function renderBoards() {
+  const grid = $('boardGrid');
+  const q = $('boardSearch').value.trim().toLowerCase();
+  grid.innerHTML = '';
+  for (const [id, b] of Object.entries(BOARDS)) {
+    if (state.category !== 'all' && b.category !== state.category) continue;
+    if (q && !`${id} ${b.name} ${b.env ?? ''}`.toLowerCase().includes(q)) continue;
     const col = document.createElement('div');
     col.className = 'col';
-    const isSelected = state.selectedBoard === boardId;
-
-    const categoryColors = {
-      'frame': 'primary', 'electrobox': 'warning',
-      'qbox': 'success', 'standalone': 'secondary'
-    };
-    const categoryBadge = config.category
-      ? `<span class="badge bg-${categoryColors[config.category] || 'secondary'} ms-1" style="font-size: 0.6rem;">${config.category.toUpperCase()}</span>`
-      : '';
-
     col.innerHTML = `
-      <div class="card board-card h-100 ${isSelected ? 'selected' : ''}" data-board="${boardId}">
+      <div class="card board-card h-100 ${state.selectedBoard === id ? 'selected' : ''} ${b.category === 'legacy' ? 'opacity-75' : ''}" data-board="${id}" tabindex="0">
         <div class="card-body text-center p-2">
-          <img src="${config.image}" alt="${config.name}" class="board-img mb-2"
-               onerror="this.src='./IMAGES/placeholder.svg'">
-          <h6 class="card-title mb-1" style="font-size: 0.85rem;">${config.name}</h6>
-          <div>
-            <span class="badge bg-secondary" style="font-size: 0.7rem;">${config.chip}</span>
-            ${config.canConfig ? '<span class="badge bg-info ms-1" style="font-size: 0.7rem;">CAN</span>' : ''}
-            ${categoryBadge}
-          </div>
+          <img src="${b.image}" alt="" class="board-img mb-2" onerror="this.src='./IMAGES/placeholder.svg'">
+          <h6 class="card-title mb-1 small">${b.name}</h6>
+          <span class="badge bg-secondary">${b.chip}</span>
+          ${b.node ? `<span class="badge bg-info">node ${b.node}</span>` : ''}
+          ${b.category === 'legacy' ? '<span class="badge bg-warning text-dark">legacy</span>' : ''}
         </div>
-      </div>
-    `;
-
-    col.querySelector('.board-card').addEventListener('click', () => selectBoard(boardId));
-    boardGrid.appendChild(col);
-  });
-
-  // If a board was preselected from URL, select it
-  if (state.selectedBoard && !filter) {
-    selectBoard(state.selectedBoard);
+      </div>`;
+    const card = col.firstElementChild;
+    card.addEventListener('click', () => selectBoard(id));
+    card.addEventListener('keydown', (e) => { if (e.key === 'Enter') selectBoard(id); });
+    grid.appendChild(col);
   }
+  if (!grid.children.length) grid.innerHTML = '<p class="text-muted">No board matches.</p>';
 }
 
-function selectBoard(boardId) {
-  state.selectedBoard = boardId;
-  const config = BOARD_CONFIG[boardId];
-
-  document.querySelectorAll('.board-card').forEach(card => {
-    card.classList.toggle('selected', card.dataset.board === boardId);
-  });
-
-  const nameEl = document.getElementById('selectedBoardName');
-  const chipEl = document.getElementById('selectedBoardChip');
-  if (nameEl) nameEl.textContent = config ? config.name : boardId;
-  if (chipEl) chipEl.textContent = config ? config.chip : '';
-
-  const activateBtn = document.getElementById('installButton')?.querySelector('button[slot="activate"]');
-  if (activateBtn) activateBtn.disabled = false;
-
-  updateManifestUrl();
-  if (config) showBoardInfo(boardId, config);
+async function selectBoard(id) {
+  const b = BOARDS[id];
+  if (!b) { serial.log(`Unknown board "${id}"`, 'warning'); return; }
+  state.selectedBoard = id;
+  document.querySelectorAll('.board-card').forEach((c) => c.classList.toggle('selected', c.dataset.board === id));
+  $('selectedBoardName').textContent = b.name;
+  $('selectedBoardChip').textContent = `${b.chip}${b.env ? ` · ${b.env}` : ''}`;
+  $('baudRate').value = String(b.baud ?? 115200);
+  showBoardInfo(id, b);
+  await updateManifest();
   updateDirectLink();
 }
 
-function showBoardInfo(boardId, config) {
-  const card = document.getElementById('boardInfoCard');
-  const info = document.getElementById('boardInfo');
-  card.classList.remove('hidden');
-
-  let canConfigHtml = '';
-  if (config.canConfig) {
-    canConfigHtml = `
-      <div class="mt-3">
-        <h6><i class="bi bi-diagram-3"></i> CAN Configuration</h6>
-        <p class="text-muted small">This board supports CAN bus. Configure after flashing in the "Configure" tab.</p>
-        ${config.defaultCanId ? `<p>Default CAN ID: <strong>${config.defaultCanId}</strong></p>` : ''}
+function showBoardInfo(id, b) {
+  const usb = NATIVE_USB(b) ? 'native USB (baud ignored)' : `USB-UART, ${b.baud ?? 115200} baud`;
+  $('boardInfo').innerHTML = `
+    <div class="d-flex gap-3">
+      <img src="${b.image}" alt="" style="width:90px;height:90px;object-fit:contain" onerror="this.src='./IMAGES/placeholder.svg'">
+      <div>
+        <h5 class="mb-1">${b.name}</h5>
+        <p class="mb-2">${b.description}</p>
+        <table class="table table-sm mb-2 small"><tbody>
+          ${b.env ? `<tr><th>Firmware env</th><td><code>${b.env}</code></td></tr>` : ''}
+          <tr><th>Chip</th><td>${b.chip}</td></tr>
+          <tr><th>Serial</th><td>${usb}</td></tr>
+          ${b.node ? `<tr><th>CAN node after flashing</th><td>${b.node}</td></tr>` : ''}
+          <tr><th>Source</th><td>${b.source === 'release' ? 'uc2-esp32 release' : 'static image (not versioned)'}</td></tr>
+        </tbody></table>
+        ${b.category === 'frame' ? '<p class="small mb-1"><i class="bi bi-arrow-right-circle"></i> After flashing, set the node ID in the <a href="#" data-goto="configure">Configure CAN</a> tab (only needed if the default is not the right axis/device).</p>' : ''}
+        ${b.docs ? `<a href="${b.docs}" target="_blank" class="small">Documentation <i class="bi bi-box-arrow-up-right"></i></a>` : ''}
       </div>
-    `;
-  }
-
-  info.innerHTML = `
-    <div class="row">
-      <div class="col-md-4 text-center">
-        <img src="${config.image}" alt="${config.name}" style="max-width: 150px;"
-             onerror="this.src='./IMAGES/placeholder.svg'">
-      </div>
-      <div class="col-md-8">
-        <h5>${config.name}</h5>
-        <p class="text-muted">${config.description}</p>
-        <p><strong>Chip:</strong> ${config.chip}</p>
-        ${canConfigHtml}
-      </div>
-    </div>
-  `;
+    </div>`;
+  $('boardInfoCard').classList.remove('hidden');
 }
 
-// =====================================================
-// Manifest URL & Firmware Availability
-// =====================================================
+async function updateManifest() {
+  const id = state.selectedBoard;
+  if (!id) return;
+  const b = BOARDS[id];
+  const btn = $('installButton').querySelector('button[slot="activate"]');
+  btn.disabled = true;
+  $('firmwareWarning').classList.add('hidden');
+  $('resolvedRelease').textContent = 'checking…';
 
-async function updateManifestUrl() {
-  if (!state.selectedBoard) return;
-
-  const boardConfig = BOARD_CONFIG[state.selectedBoard];
-  let manifestUrl;
-  let releaseTag = state.currentRelease;
-
-  // Handle ImSwitch release selection
-  if (releaseTag && releaseTag.startsWith('imswitch:')) {
-    const imswitchTag = releaseTag.replace('imswitch:', '');
-    logToConsole(`\u231B Resolving firmware version for ImSwitch ${imswitchTag}...`, 'info');
-    try {
-      const fwVersion = await resolveFirmwareFromImSwitch(imswitchTag);
-      if (fwVersion) {
-        releaseTag = fwVersion;
-        logToConsole(`\u2713 Resolved to firmware version: ${fwVersion}`, 'success');
-      } else {
-        logToConsole('\u26A0 Could not resolve firmware version, using latest', 'warning');
-        releaseTag = 'latest';
-      }
-    } catch (err) {
-      console.error('Error resolving ImSwitch firmware:', err);
-      logToConsole(`\u2717 Error resolving firmware: ${err.message}`, 'error');
-      releaseTag = 'latest';
-    }
-  }
-
-  // Handle 'latest' release selection
-  if (releaseTag === 'latest') {
-    const latestRelease = state.releases.find(r => !r.prerelease);
-    releaseTag = latestRelease ? latestRelease.tag_name : state.releases[0]?.tag_name;
-  }
-
-  // Build manifest URL
-  if (boardConfig && boardConfig.manifestUrl) {
-    // Board has a fixed external manifest URL (e.g. ODMR firmware hosted on youseetoo.github.io)
-    manifestUrl = boardConfig.manifestUrl;
-    logToConsole(`\u2713 Loading from fixed URL: ${manifestUrl}`, 'success');
-  } else if (boardConfig && boardConfig.manifestPath) {
-    manifestUrl = `${window.location.origin}${boardConfig.manifestPath}${state.selectedBoard}-manifest.json`;
-  } else if (releaseTag) {
-    manifestUrl = `${RAW_BASE}/${releaseTag}/${state.selectedBoard}-manifest.json`;
-    logToConsole(`\u2713 Loading from GitHub: ${releaseTag}/${state.selectedBoard}`, 'success');
+  let url = null, tag = null;
+  if (b.source === 'static') {
+    url = b.manifest;
+    $('resolvedRelease').innerHTML = '<span class="badge bg-secondary">static image</span>';
   } else {
-    manifestUrl = `./static/firmware_build/${state.selectedBoard}-manifest.json`;
-  }
-
-  const installButton = document.getElementById('installButton');
-  installButton.manifest = manifestUrl;
-  console.log('Final manifest URL:', manifestUrl);
-
-  // Check if the manifest actually exists before showing the install button
-  await checkManifestAvailability(manifestUrl);
-}
-
-async function checkManifestAvailability(url) {
-  const activateBtn = document.getElementById('installButton')?.querySelector('button[slot="activate"]');
-  const warningEl = document.getElementById('firmwareWarning');
-
-  try {
-    const response = await fetch(url, { method: 'HEAD' });
-    if (response.ok) {
-      // Firmware manifest is available
-      if (activateBtn && state.selectedBoard) activateBtn.disabled = false;
-      if (warningEl) warningEl.classList.add('hidden');
-    } else {
-      // Firmware manifest not found (404)
-      if (activateBtn) activateBtn.disabled = true;
-      if (warningEl) warningEl.classList.remove('hidden');
-      logToConsole(`\u26A0 Firmware not available for ${state.selectedBoard} in this version`, 'warning');
+    tag = await resolveTag(id);
+    if (state.selectedBoard !== id) return;           // user clicked another board meanwhile
+    if (tag) {
+      url = `${RAW_BASE}/${tag}/${id}-manifest.json`;
+      const rel = state.releases.find((r) => r.tag_name === tag);
+      $('resolvedRelease').innerHTML = `<code>${tag}</code> ${rel?.prerelease ? '<span class="badge bg-warning text-dark">pre-release</span>' : '<span class="badge bg-success">stable</span>'}`;
     }
-  } catch (err) {
-    // Network error - still allow the attempt but warn
-    console.warn('Could not verify firmware availability:', err);
   }
+  state.resolvedTag = tag;
+  if (!url) {
+    $('resolvedRelease').textContent = '–';
+    $('firmwareWarning').classList.remove('hidden');
+    return;
+  }
+  $('installButton').manifest = url;
+  $('installButton').setAttribute('manifest', url);
+  $('manifestLink').href = url;
+  btn.disabled = false;
 }
-
-// =====================================================
-// Direct Link
-// =====================================================
 
 function updateDirectLink() {
-  const params = new URLSearchParams();
-  if (state.selectedBoard) params.set('firmware', state.selectedBoard);
-  if (state.currentRelease && state.currentRelease !== 'latest') {
-    params.set('release', state.currentRelease);
-  }
-
-  const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-  const directLink = document.getElementById('directLink');
-  if (directLink) directLink.value = url;
+  const p = new URLSearchParams();
+  if (state.selectedBoard) p.set('firmware', state.selectedBoard);
+  if (state.releaseMode !== 'auto') p.set('release', state.releaseMode);
+  $('directLink').value = `${location.origin}${location.pathname}?${p}`;
 }
 
-// =====================================================
-// Event Listeners
-// =====================================================
+// ── Tabs and console ──────────────────────────────────────────────────────
+function showTab(name) {
+  const btn = $(`${TAB_ALIASES[name] ?? name}-tab`);
+  if (btn) bootstrap.Tab.getOrCreateInstance(btn).show();
+}
 
-function setupEventListeners() {
-  const releaseSelect = document.getElementById('releaseSelect');
-  const imswitchSelect = document.getElementById('imswitchReleaseSelect');
-  const imswitchLink = document.getElementById('imswitchReleaseLink');
-
-  // Release selection
-  releaseSelect.addEventListener('change', () => {
-    imswitchSelect.value = '';
-    imswitchLink.classList.add('hidden');
-    updateVersionDisplay();
-  });
-
-  // ImSwitch release selection
-  imswitchSelect.addEventListener('change', async () => {
-    const selectedImswitch = imswitchSelect.value;
-    if (selectedImswitch) {
-      state.currentRelease = `imswitch:${selectedImswitch}`;
-      logToConsole(`\u231B Resolving firmware for ImSwitch ${selectedImswitch}...`, 'info');
-
-      const imswitchRelease = state.imswitchReleases.find(r => r.tag_name === selectedImswitch);
-      if (imswitchRelease) {
-        const linkElem = imswitchLink.querySelector('a');
-        linkElem.href = imswitchRelease.html_url;
-        linkElem.innerHTML = `<i class="bi bi-download"></i> Download ImSwitch OS ${selectedImswitch}`;
-        imswitchLink.classList.remove('hidden');
-      }
-
-      try {
-        const fwVersion = await resolveFirmwareFromImSwitch(selectedImswitch);
-        if (fwVersion) {
-          releaseSelect.value = fwVersion;
-          state.currentRelease = fwVersion;
-          logToConsole(`\u2713 Resolved to firmware ${fwVersion}`, 'success');
-        } else {
-          logToConsole('\u26A0 Could not resolve firmware version', 'warning');
-          releaseSelect.value = 'latest';
-          state.currentRelease = 'latest';
-        }
-      } catch (err) {
-        console.error('Error resolving:', err);
-        logToConsole(`\u2717 Error: ${err.message}`, 'error');
-        releaseSelect.value = 'latest';
-        state.currentRelease = 'latest';
-      }
-
-      updateVersionDisplay();
-    } else {
-      imswitchLink.classList.add('hidden');
-    }
-  });
-
-  // Board category filter
-  document.getElementById('boardCategory').addEventListener('change', (e) => {
-    state.currentCategory = e.target.value;
-    renderBoards(document.getElementById('boardSearch').value, state.currentCategory);
-  });
-
-  // Board search
-  document.getElementById('boardSearch').addEventListener('input', (e) => {
-    renderBoards(e.target.value, state.currentCategory);
-  });
-
-  // Copy link
-  document.getElementById('copyLinkBtn').addEventListener('click', () => {
-    const directLink = document.getElementById('directLink');
-    directLink.select();
-    navigator.clipboard.writeText(directLink.value);
-    const btn = document.getElementById('copyLinkBtn');
-    btn.innerHTML = '<i class="bi bi-check"></i>';
-    setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 2000);
-  });
-
-  // Configure tab - Serial connection
-  document.getElementById('connectSerialBtn').addEventListener('click', connectSerial);
-  document.getElementById('clearConsoleBtn').addEventListener('click', clearConsole);
-
-  document.getElementById('sendCommandBtn').addEventListener('click', () => {
-    const input = document.getElementById('customCommand');
-    const cmd = input.value.trim();
-    if (cmd) { sendSerialCommand(cmd); input.value = ''; }
-  });
-
-  document.getElementById('customCommand').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') document.getElementById('sendCommandBtn').click();
-  });
-
-  // CAN presets (Configure tab)
-  document.querySelectorAll('.can-preset').forEach(preset => {
-    preset.addEventListener('click', () => {
-      document.querySelectorAll('.can-preset').forEach(p => p.classList.remove('selected'));
-      preset.classList.add('selected');
-      setCanId(preset.dataset.address);
+function setupTabs() {
+  // One console card, moved into the console slot of the active tab
+  document.querySelectorAll('#mainTabs button[data-bs-toggle="tab"]').forEach((btn) => {
+    btn.addEventListener('shown.bs.tab', () => {
+      const slot = document.querySelector(`${btn.dataset.bsTarget} .console-slot`);
+      (slot ?? $('consoleHolder')).appendChild($('consoleCard'));
+      const p = new URLSearchParams(location.search);
+      p.set('tab', btn.id.replace('-tab', ''));
+      history.replaceState(null, '', `?${p}`);
     });
   });
-
-  document.getElementById('setCustomCanBtn').addEventListener('click', () => {
-    const id = document.getElementById('customCanId').value;
-    if (id) setCanId(id);
-  });
-
-  // Quick commands (Configure tab)
-  document.querySelectorAll('.quick-cmd').forEach(btn => {
-    btn.addEventListener('click', () => sendSerialCommand(btn.dataset.cmd));
-  });
-
-  // Erase flash
-  document.getElementById('eraseFlashBtn').addEventListener('click', eraseFlash);
-
-  // Hardware test tab - Serial
-  document.getElementById('hwConnectSerialBtn').addEventListener('click', () => {
-    connectHwSerial();
-  });
-  document.getElementById('hwClearConsoleBtn').addEventListener('click', clearHwConsole);
-
-  document.getElementById('hwSendCommandBtn').addEventListener('click', () => {
-    const input = document.getElementById('hwCustomCommand');
-    const cmd = input.value.trim();
-    if (cmd) { sendHwSerialCommand(cmd); input.value = ''; }
-  });
-
-  document.getElementById('hwCustomCommand').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') document.getElementById('hwSendCommandBtn').click();
-  });
-
-  // Hardware test quick commands
-  document.querySelectorAll('.hw-quick-cmd').forEach(btn => {
-    btn.addEventListener('click', () => sendHwSerialCommand(btn.dataset.cmd));
-  });
-
-  // Hardware test - Motor controls (existing parametric controls)
-  document.getElementById('motorMovePositive')?.addEventListener('click', () => {
-    const cmd = {
-      task: '/motor_act',
-      motor: {
-        steppers: [{
-          stepperid: parseInt(document.getElementById('motorStepperId').value),
-          position: parseInt(document.getElementById('motorPosition').value),
-          speed: parseInt(document.getElementById('motorSpeed').value),
-          isabs: 0, isaccel: 1,
-          accel: parseInt(document.getElementById('motorAccel').value),
-          qid: 1
-        }]
-      }
-    };
-    sendHwSerialCommand(JSON.stringify(cmd));
-  });
-
-  document.getElementById('motorMoveNegative')?.addEventListener('click', () => {
-    const cmd = {
-      task: '/motor_act',
-      motor: {
-        steppers: [{
-          stepperid: parseInt(document.getElementById('motorStepperId').value),
-          position: -parseInt(document.getElementById('motorPosition').value),
-          speed: parseInt(document.getElementById('motorSpeed').value),
-          isabs: 0, isaccel: 1,
-          accel: parseInt(document.getElementById('motorAccel').value),
-          qid: 1
-        }]
-      }
-    };
-    sendHwSerialCommand(JSON.stringify(cmd));
-  });
-
-  document.getElementById('motorStop')?.addEventListener('click', () => {
-    const cmd = {
-      task: '/motor_act',
-      motor: {
-        steppers: [{
-          stepperid: parseInt(document.getElementById('motorStepperId').value),
-          position: 0, speed: 0, isabs: 0, stop: 1
-        }]
-      }
-    };
-    sendHwSerialCommand(JSON.stringify(cmd));
-  });
-
-  // Hardware test - Laser controls
-  const laserValue = document.getElementById('laserValue');
-  laserValue?.addEventListener('input', (e) => {
-    document.getElementById('laserValueDisplay').textContent = e.target.value;
-  });
-
-  document.getElementById('laserOn')?.addEventListener('click', () => {
-    const id = parseInt(document.getElementById('laserId').value);
-    sendHwSerialCommand(JSON.stringify({ task: '/laser_act', LASERid: id, LASERval: 1000 }));
-  });
-
-  document.getElementById('laserOff')?.addEventListener('click', () => {
-    const id = parseInt(document.getElementById('laserId').value);
-    sendHwSerialCommand(JSON.stringify({ task: '/laser_act', LASERid: id, LASERval: 0 }));
-  });
-
-  document.getElementById('laserSetValue')?.addEventListener('click', () => {
-    const id = parseInt(document.getElementById('laserId').value);
-    const val = parseInt(document.getElementById('laserValue').value);
-    sendHwSerialCommand(JSON.stringify({ task: '/laser_act', LASERid: id, LASERval: val }));
-  });
-
-  // Hardware test - Homing
-  document.getElementById('homeStart')?.addEventListener('click', () => {
-    const cmd = {
-      task: '/home_act',
-      home: {
-        steppers: [{
-          stepperid: parseInt(document.getElementById('homeStepperId').value),
-          timeout: parseInt(document.getElementById('homeTimeout').value),
-          speed: parseInt(document.getElementById('homeSpeed').value),
-          direction: parseInt(document.getElementById('homeDirection').value),
-          endstoppolarity: parseInt(document.getElementById('homeEndstopPolarity').value),
-          endstoprelease: parseInt(document.getElementById('homeEndstopRelease').value)
-        }]
-      }
-    };
-    sendHwSerialCommand(JSON.stringify(cmd));
-  });
-
-  // ESP Web Tools - Post-flash configure redirect
-  const installButton = document.getElementById('installButton');
-  installButton.addEventListener('state-changed', (e) => {
-    console.log('Install state:', e.detail);
-
-    // When flashing starts, disconnect any existing serial connections
-    // so they don't become stale after the device resets
-    if (e.detail.state === 'initializing' || e.detail.state === 'preparing') {
-      if (state.isConnected) {
-        disconnectSerial().catch(() => {});
-      }
-      if (state.hwIsConnected) {
-        disconnectHwSerial().catch(() => {});
-      }
-    }
-
-    if (e.detail.state === 'finished') {
-      logToConsole('\u2713 Firmware flashed successfully!', 'success');
-
-      if (document.getElementById('postFlashConfig')?.checked) {
-        // Switch to Configure tab immediately (it appears behind the esp-web-tools dialog)
-        const configTab = document.getElementById('configure-tab');
-        if (configTab) {
-          new bootstrap.Tab(configTab).show();
-        }
-
-        // Show a post-flash banner in the Configure tab
-        const banner = document.getElementById('postFlashBanner');
-        if (banner) {
-          banner.classList.remove('hidden');
-        }
-
-        // Also poll for the ESP Web Tools dialog to be removed from DOM,
-        // then scroll the banner into view
-        const checkInterval = setInterval(() => {
-          const dialog = document.querySelector('ewt-install-dialog');
-          if (!dialog) {
-            clearInterval(checkInterval);
-            if (banner) banner.scrollIntoView({ behavior: 'smooth' });
-            logToConsole('\u2192 Connect to your device to configure CAN ID and other settings.', 'info');
-          }
-        }, 500);
-        // Safety: stop checking after 2 minutes
-        setTimeout(() => clearInterval(checkInterval), 120000);
-      }
-    }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('[data-goto]');
+    if (a) { e.preventDefault(); showTab(a.dataset.goto); }
   });
 }
 
-// =====================================================
-// Initialization
-// =====================================================
-
-async function init() {
-  // Check WebSerial support
-  if (!('serial' in navigator)) {
-    document.getElementById('browserWarning')?.classList.remove('hidden');
+function setupConsole() {
+  $('connectBtn').addEventListener('click', async () => {
+    try {
+      if (serial.isConnected()) await serial.disconnect();
+      else await serial.connect(parseInt($('baudRate').value, 10));
+    } catch (e) { serial.log(e.message, 'error'); }
+  });
+  $('clearConsoleBtn').addEventListener('click', serial.clearConsole);
+  $('showLogs').addEventListener('change', (e) => serial.setShowLogs(e.target.checked));
+  const sendCustom = () => {
+    const v = $('customCommand').value.trim();
+    if (v) serial.send(v).then((ok) => { if (ok) $('customCommand').value = ''; });
+  };
+  $('sendCommandBtn').addEventListener('click', sendCustom);
+  $('customCommand').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendCustom(); });
+  const examples = {
+    'Board info': C.stateGet(), 'Positions': C.motorGet(), 'Modules': C.modulesGet(),
+    'CAN status': C.canGet(), 'CAN scan': C.canScan(), 'Routing table': C.routeGet(),
+    'Move X +1000': C.motorMove(1, 1000), 'LED white': C.ledFill(255, 255, 255),
+  };
+  const ex = $('commandExamples');
+  for (const [label, cmd] of Object.entries(examples)) {
+    const o = document.createElement('option');
+    o.value = C.toLine(cmd); o.textContent = label;
+    ex.appendChild(o);
   }
-
-  parseUrlParams();
-  await loadReleases();
-  setupEventListeners();
-  renderBoards();
-  updateDirectLink();
-
-  // Initialize hardware test controls
-  initHardwareTest();
+  ex.addEventListener('change', () => { $('customCommand').value = ex.value; ex.selectedIndex = 0; });
 }
 
-// Start application
+// ── Flash tab events ──────────────────────────────────────────────────────
+function setupFlash() {
+  $('releaseSelect').addEventListener('change', (e) => {
+    state.releaseMode = e.target.value;
+    $('imswitchSelect').value = '';
+    $('imswitchNote').textContent = '';
+    updateManifest(); updateDirectLink();
+  });
+  $('imswitchSelect').addEventListener('change', async (e) => {
+    const os = e.target.value;
+    $('imswitchNote').textContent = os ? 'resolving…' : '';
+    if (!os) return;
+    try {
+      const { tag, note } = await firmwareForImSwitch(os);
+      $('imswitchNote').textContent = `ImSwitch OS ${os} ${note}.`;
+      if (tag) { state.releaseMode = tag; $('releaseSelect').value = tag; updateManifest(); updateDirectLink(); }
+    } catch (err) { $('imswitchNote').textContent = `Could not resolve: ${err.message}`; }
+  });
+  $('boardCategory').addEventListener('change', (e) => { state.category = e.target.value; renderBoards(); });
+  $('boardSearch').addEventListener('input', renderBoards);
+  $('copyLinkBtn').addEventListener('click', () => navigator.clipboard.writeText($('directLink').value));
+  $('eraseFlashBtn').addEventListener('click', eraseFlash);
+
+  $('installButton').addEventListener('state-changed', (e) => {
+    const s = e.detail?.state;
+    if ((s === 'initializing' || s === 'preparing') && serial.isConnected()) serial.disconnect();
+    if (s === 'finished') {
+      serial.log(`✓ Flashed ${state.selectedBoard}${state.resolvedTag ? ` (${state.resolvedTag})` : ''}`, 'success');
+      if ($('postFlashTest').checked) {
+        showTab(BOARDS[state.selectedBoard]?.category === 'frame' ? 'configure' : 'test');
+        $('postFlashBanner').classList.remove('hidden');
+      }
+    }
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+async function init() {
+  if (!('serial' in navigator)) $('browserWarning').classList.remove('hidden');
+  const p = new URLSearchParams(location.search);
+  if (p.has('release')) state.releaseMode = p.get('release');
+  $('releaseSelect').value = ['auto', 'stable'].includes(state.releaseMode) ? state.releaseMode : 'auto';
+
+  renderCategories();
+  setupTabs();
+  setupConsole();
+  setupFlash();
+  initHardwareTest();
+  initCan();
+  renderBoards();
+  serial.updateStatus();
+  if (p.has('canid')) $('ownNodeId').value = p.get('canid');
+  if (p.has('tab')) showTab(p.get('tab'));
+
+  await loadReleases();
+  loadImSwitchReleases();
+  const fw = p.get('firmware');
+  if (fw) await selectBoard(ID_ALIASES[fw] ?? fw);
+  $('loadingReleases').classList.add('hidden');
+}
+
 init();
