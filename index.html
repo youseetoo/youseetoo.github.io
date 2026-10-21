@@ -58,6 +58,7 @@
       <ul class="nav nav-tabs" id="mainTabs" role="tablist">
         <li class="nav-item"><button class="nav-link active" id="flash-tab" data-bs-toggle="tab" data-bs-target="#flash-pane" type="button"><i class="bi bi-lightning-charge"></i> Flash</button></li>
         <li class="nav-item"><button class="nav-link" id="test-tab" data-bs-toggle="tab" data-bs-target="#test-pane" type="button"><i class="bi bi-sliders"></i> Test</button></li>
+        <li class="nav-item"><button class="nav-link" id="scan-tab" data-bs-toggle="tab" data-bs-target="#scan-pane" type="button"><i class="bi bi-grid-3x3-gap"></i> Scan</button></li>
         <li class="nav-item"><button class="nav-link" id="configure-tab" data-bs-toggle="tab" data-bs-target="#configure-pane" type="button"><i class="bi bi-diagram-3"></i> Configure CAN</button></li>
         <li class="nav-item"><button class="nav-link" id="erase-tab" data-bs-toggle="tab" data-bs-target="#erase-pane" type="button"><i class="bi bi-eraser"></i> Erase</button></li>
         <li class="nav-item"><button class="nav-link" id="help-tab" data-bs-toggle="tab" data-bs-target="#help-pane" type="button"><i class="bi bi-question-circle"></i> Help</button></li>
@@ -250,6 +251,103 @@
               </div>
             </div>
             <div class="col-lg-5"><div class="console-slot sticky-top" style="top: 1rem"></div></div>
+          </div>
+        </div>
+
+        <!-- ═══════════════ SCAN ═══════════════ -->
+        <div class="tab-pane fade" id="scan-pane" role="tabpanel">
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <div class="card mb-3">
+                <div class="card-header">
+                  <fieldset class="d-flex flex-wrap gap-2 align-items-center">
+                    <h5 class="mb-0 me-auto"><i class="bi bi-camera-video"></i> Camera</h5>
+                    <select id="scanCamera" class="form-select form-select-sm w-auto" style="max-width: 240px" aria-label="Camera"></select>
+                    <select id="scanRes" class="form-select form-select-sm w-auto" aria-label="Resolution">
+                      <option>640x480</option><option selected>1280x720</option><option>1920x1080</option><option>2592x1944</option><option>3840x2160</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary" id="scanCamBtn"><i class="bi bi-camera-video"></i> Start</button>
+                  </fieldset>
+                </div>
+                <div class="card-body p-2">
+                  <video id="scanVideo" class="w-100 d-block bg-dark" muted playsinline></video>
+                  <div class="small text-muted mt-1" id="scanCamInfo">Pick the USB camera and click Start. Camera names appear once the browser may use a camera.</div>
+                </div>
+              </div>
+              <div class="card mb-3">
+                <div class="card-header d-flex align-items-center">
+                  <h5 class="mb-0 me-auto"><i class="bi bi-grid-3x3-gap"></i> Mosaic</h5>
+                  <button class="btn btn-sm btn-outline-primary" id="scanSavePng"><i class="bi bi-download"></i> PNG</button>
+                </div>
+                <div class="card-body p-2">
+                  <canvas id="scanMosaic" class="w-100 d-block bg-dark" width="0" height="0" style="max-height: 70vh; object-fit: contain"></canvas>
+                  <div class="small text-muted mt-1">Tiles placed at their stage positions, no image registration. Changing the pixel size or orientation re-places the last scan, so you can tune them until the seams match.</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-5">
+              <div class="card mb-3">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-arrows-move"></i> Stage &amp; scan</h5></div>
+                <div class="card-body">
+                  <fieldset id="scanSettings">
+                    <div class="row g-2 small">
+                      <div class="col-3"><label class="form-label mb-0" for="scanUmX">µm/step X</label><input type="number" class="form-control form-control-sm" id="scanUmX" value="0.3125" step="any" /></div>
+                      <div class="col-3"><label class="form-label mb-0" for="scanUmY">µm/step Y</label><input type="number" class="form-control form-control-sm" id="scanUmY" value="0.3125" step="any" /></div>
+                      <div class="col-3"><label class="form-label mb-0" for="scanSpeed">Speed (steps/s)</label><input type="number" class="form-control form-control-sm" id="scanSpeed" value="15000" /></div>
+                      <div class="col-3"><label class="form-label mb-0" for="scanAccel">Accel. (0 = keep)</label><input type="number" class="form-control form-control-sm" id="scanAccel" value="0" /></div>
+                    </div>
+                    <div class="form-text mt-0">Stepper ids 1 (X) and 2 (Y). A negative µm/step inverts that axis.</div>
+
+                    <h6 class="mt-3 mb-1">Camera ↔ stage</h6>
+                    <div class="row g-2 small align-items-end">
+                      <div class="col-4"><label class="form-label mb-0" for="scanPx">Pixel size (µm/px)</label><input type="number" class="form-control form-control-sm" id="scanPx" value="1" step="any" /></div>
+                      <div class="col-8">
+                        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="scanSwap" /><label class="form-check-label" for="scanSwap">swap X/Y</label></div>
+                        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="scanFlipX" /><label class="form-check-label" for="scanFlipX">flip image x</label></div>
+                        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="scanFlipY" /><label class="form-check-label" for="scanFlipY">flip image y</label></div>
+                      </div>
+                    </div>
+                    <div class="form-text mt-0">Pixel size in the sample plane. <em>Swap</em>: stage X moves the image up/down. <em>Flip</em>: tiles go to the other side along that image axis.</div>
+
+                    <h6 class="mt-3 mb-1">Jog</h6>
+                    <div class="d-flex flex-wrap gap-1 align-items-center small">
+                      <div class="input-group input-group-sm" style="max-width: 130px"><input type="number" class="form-control" id="scanJogStep" value="500" aria-label="Jog step" /><span class="input-group-text">µm</span></div>
+                      <button class="btn btn-sm btn-outline-success" data-needs-conn data-scan-jog="X-">X−</button>
+                      <button class="btn btn-sm btn-outline-success" data-needs-conn data-scan-jog="X+">X+</button>
+                      <button class="btn btn-sm btn-outline-success" data-needs-conn data-scan-jog="Y-">Y−</button>
+                      <button class="btn btn-sm btn-outline-success" data-needs-conn data-scan-jog="Y+">Y+</button>
+                      <span class="font-monospace ms-1" id="scanPos">X 0.0 µm · Y 0.0 µm</span>
+                    </div>
+
+                    <h6 class="mt-3 mb-1">Grid, centred on the current position</h6>
+                    <div class="row g-2 small">
+                      <div class="col-3"><label class="form-label mb-0" for="scanNx">Tiles X</label><input type="number" class="form-control form-control-sm" id="scanNx" value="3" min="1" max="100" /></div>
+                      <div class="col-3"><label class="form-label mb-0" for="scanNy">Tiles Y</label><input type="number" class="form-control form-control-sm" id="scanNy" value="3" min="1" max="100" /></div>
+                      <div class="col-3"><label class="form-label mb-0" for="scanOverlap">Overlap %</label><input type="number" class="form-control form-control-sm" id="scanOverlap" value="25" min="0" max="90" /></div>
+                      <div class="col-3"><label class="form-label mb-0" for="scanSettle" title="Wait after each move before the frame is taken: stage vibration and camera latency">Settle (ms)</label><input type="number" class="form-control form-control-sm" id="scanSettle" value="300" min="0" /></div>
+                    </div>
+                    <div class="small mt-1">
+                      <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="scanSnake" checked /><label class="form-check-label" for="scanSnake">snake</label></div>
+                      <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="scanReturn" checked /><label class="form-check-label" for="scanReturn">return to start</label></div>
+                    </div>
+                    <div class="small text-muted" id="scanInfo"></div>
+
+                    <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
+                      <button class="btn btn-sm btn-outline-secondary" id="scanFolderBtn"><i class="bi bi-folder2-open"></i> Save tiles to…</button>
+                      <span class="small text-muted" id="scanFolder">tiles are not saved</span>
+                    </div>
+                    <div class="form-text mt-0">Per scan: <code>tiles/*.jpg</code>, <code>tiles.json</code>, <code>scan.json</code> (ImSwitch ShitScope layout), <code>mosaic.png</code> and <code>tiles/TileConfiguration.txt</code> for Fiji › Stitching › Grid/Collection (positions from file).</div>
+                  </fieldset>
+                  <div class="d-flex gap-2 align-items-center mt-3">
+                    <button class="btn btn-primary" id="scanStart" data-needs-conn><i class="bi bi-play-fill"></i> Start scan</button>
+                    <button class="btn btn-outline-danger" id="scanStop" disabled><i class="bi bi-stop-fill"></i> Stop after this tile</button>
+                  </div>
+                  <div class="progress mt-2" style="height: 6px"><div class="progress-bar" id="scanBar" style="width: 0%"></div></div>
+                  <div class="small mt-1" id="scanStatus"></div>
+                </div>
+              </div>
+              <div class="console-slot"></div>
+            </div>
           </div>
         </div>
 

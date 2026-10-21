@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { createFrameParser } from '../js/flasher/serial.js';
 import { parsePartitionTable } from '../js/flasher/erase.js';
 import * as C from '../js/flasher/commands.js';
+import * as S from '../js/flasher/scan.js';
 
 test('frame parser: NUL terminators, log lines, chunk boundaries', () => {
   const frames = [], logs = [];
@@ -64,4 +65,15 @@ test('route builders: v4 satellite preset and validation', () => {
   assert.throws(() => C.routeSet('PUMP', 0, 'LOCAL'));
   assert.deepEqual(C.routeReset(), { task: '/route_set', reset: 1 });
   assert.deepEqual(C.setRole(2, 14), { task: '/config_set', canRole: 2, canNodeId: 14 });
+});
+
+test('scan plan: centred snake grid, swapped field of view, orientation', () => {
+  assert.deepEqual(S.grid(0, 0, 3, 2, 100, 50, true).map((t) => [t.ix, t.iy, t.x, t.y]), [
+    [0, 0, -100, -25], [1, 0, 0, -25], [2, 0, 100, -25], [2, 1, 100, 25], [1, 1, 0, 25], [0, 1, -100, 25]]);
+  assert.deepEqual(S.grid(0, 0, 2, 2, 10, 10, false).map((t) => t.ix), [0, 1, 0, 1]);   // raster
+  assert.deepEqual(S.stageFov(1000, 500, false), [1000, 500]);
+  assert.deepEqual(S.stageFov(1000, 500, true), [500, 1000]);   // stage X runs along the image height
+  assert.deepEqual(S.toImage(1, 2), [1, 2]);
+  assert.deepEqual(S.toImage(1, 2, { swap: true, flipX: true }), [-2, 1]);
+  assert.deepEqual(S.toImage(1, 2, { flipY: true }), [1, -2]);
 });

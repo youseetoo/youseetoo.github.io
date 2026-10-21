@@ -7,6 +7,7 @@ import * as C from './commands.js';
 import { eraseFlash } from './erase.js';
 import { initHardwareTest } from './hwtest.js';
 import { initCan } from './can.js';
+import { initScan } from './scan.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -316,6 +317,7 @@ async function init() {
   setupFlash();
   initHardwareTest();
   initCan();
+  initScan();
   renderBoards();
   serial.updateStatus();
   if (p.has('canid')) $('ownNodeId').value = p.get('canid');
