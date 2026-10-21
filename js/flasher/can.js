@@ -56,6 +56,21 @@ function renderScan(reply) {
   $('scanCount').textContent = `${rows.length} node(s)`;
 }
 
+function renderRoutes(routes) {
+  const tbody = $('routeTable').querySelector('tbody');
+  tbody.innerHTML = '';
+  for (const r of routes) {
+    const tr = document.createElement('tr');
+    [r.type, r.id, r.where, r.nodeId ?? '', r.subAxis ?? ''].forEach((v) => {
+      const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
+    });
+    const td = document.createElement('td');
+    if (r.saved) td.innerHTML = '<span class="badge bg-info">saved</span>';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+}
+
 export function initCan() {
   renderPresets();
 
@@ -65,6 +80,24 @@ export function initCan() {
   $('remoteIdBtn').addEventListener('click', safe(() =>
     send(C.setRemoteNodeId(parseInt($('remoteTarget').value, 10), parseInt($('remoteNew').value, 10)))));
   $('routeBtn').addEventListener('click', () => send(C.routeGet()));
+  $('rtSetBtn').addEventListener('click', safe(() => send(C.routeSet(
+    $('rtType').value, parseInt($('rtId').value, 10), $('rtWhere').value,
+    parseInt($('rtNode').value, 10), parseInt($('rtSub').value, 10), $('rtPersist').checked))));
+  $('maApplyBtn').addEventListener('click', safe(async () => {
+    const cmds = C.multiAxisRoutes(parseInt($('maNode').value, 10),
+      parseInt($('maMotorBase').value, 10), parseInt($('maLaserBase').value, 10));
+    for (const c of cmds) { await send(c); await new Promise((r) => setTimeout(r, 120)); }
+  }));
+  $('rtResetBtn').addEventListener('click', () =>
+    confirm('Forget all saved routes and restore the build defaults?') && send(C.routeReset()));
+  $('roleBtn').addEventListener('click', safe(async () => {
+    const role = parseInt($('roleSelect').value, 10);
+    const node = role === 2 ? parseInt($('roleNode').value, 10) : (role === 1 ? 1 : undefined);
+    const label = ['standalone', 'master', `satellite (node ${node})`][role];
+    if (!confirm(`Make the connected board a ${label} and reboot it?`)) return;
+    await send(C.setRole(role, node));
+    setTimeout(() => send(C.restart()), 400);
+  }));
   $('sdoBtn').addEventListener('click', safe(() => {
     const op = $('sdoOp').value;
     send(C.sdo(parseInt($('sdoNode').value, 10), C.parseIndex($('sdoIndex').value),
@@ -77,6 +110,8 @@ export function initCan() {
     }
     if (m.state?.pindef) $('ownPindef').textContent = `${m.state.pindef} · ${m.state.identifier_version ?? ''}`;
     if (Array.isArray(m.scan)) renderScan(m);
+    if (Array.isArray(m) && (m.length === 0 || m[0].type)) renderRoutes(m);   // /route_get, /route_set
+    if (m.msg && /reboot/.test(m.msg)) log(m.msg, 'info');
     if (m.status === 'saved') log(`Node ID ${m.nodeId} saved – the board restarts CANopen with the new ID`, 'success');
   });
 }

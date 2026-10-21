@@ -7,6 +7,8 @@ let nextQid = 1;
 const qid = () => (nextQid = (nextQid % 9999) + 1);
 
 export const AXES = { A: 0, X: 1, Y: 2, Z: 3 };
+// Extra logical axes on a CAN master, e.g. the four axes of a standalone v4 satellite
+export const AXES_EXT = { B: 4, C: 5, D: 6, E: 7 };
 
 // ── Motor ────────────────────────────────────────────────────────────────
 export function motorMove(stepperid, position, { speed = 20000, acceleration = 0, isabs = 0 } = {}) {
@@ -73,6 +75,37 @@ export function setRemoteNodeId(target, newId) {
 }
 export const rebootNode = (nodeId) => ({ task: '/can_act', restart: nodeId });   // 0 = the board itself
 export const routeGet = () => ({ task: '/route_get' });
+export const ROUTE_TYPES = ['MOTOR', 'LASER', 'LED', 'GALVO', 'HOME', 'TMC'];
+// MOTOR also sets HOME and TMC of that axis (firmware). subAxis = axis/channel on the node.
+export function routeSet(type, id, where, nodeId = 0, subAxis = id, persist = false) {
+  if (!ROUTE_TYPES.includes(type)) throw new Error(`type must be one of ${ROUTE_TYPES.join(', ')}`);
+  if (!Number.isInteger(id) || id < 0 || id > 63) throw new Error('id must be 0–63');
+  const c = { task: '/route_set', type, id, where };
+  if (where === 'REMOTE') {
+    assertNode(nodeId);
+    if (!Number.isInteger(subAxis) || subAxis < 0 || subAxis > 3) throw new Error('subAxis must be 0–3');
+    c.nodeId = nodeId; c.subAxis = subAxis;
+  }
+  if (persist) c.persist = 1;
+  return c;
+}
+export const routeReset = () => ({ task: '/route_set', reset: 1 });
+// Routes for a multi-axis satellite (standalone v4): motors motorBase..+3 -> axes 0-3,
+// lasers laserBase..+2 -> its laser channels 1-3.
+export function multiAxisRoutes(nodeId, motorBase = 4, laserBase = 5) {
+  const cmds = [];
+  for (let k = 0; k < 4; k++) cmds.push(routeSet('MOTOR', motorBase + k, 'REMOTE', nodeId, k, true));
+  for (let k = 0; k < 3; k++) cmds.push(routeSet('LASER', laserBase + k, 'REMOTE', nodeId, k + 1, true));
+  return cmds;
+}
+
+// ── Runtime config (NVS, needs a reboot) ─────────────────────────────────
+export const configGet = () => ({ task: '/config_get' });
+export function setRole(role, nodeId) {   // 0 standalone, 1 master, 2 satellite
+  const c = { task: '/config_set', canRole: role };
+  if (nodeId !== undefined) { assertNode(nodeId); c.canNodeId = nodeId; }
+  return c;
+}
 
 const SDO_TYPES = ['u8', 'u16', 'u32', 'i32'];
 export function sdo(node, index, sub, type, op = 'r', value) {

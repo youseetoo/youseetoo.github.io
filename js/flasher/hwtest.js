@@ -12,10 +12,13 @@ function rgb() {
   return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 }
 
+const ALL_AXES = { ...C.AXES, ...C.AXES_EXT };
+
 function motorRows() {
   const tbody = $('motorRows');
-  for (const [axis, id] of Object.entries(C.AXES)) {
+  for (const [axis, id] of Object.entries(ALL_AXES)) {
     const tr = document.createElement('tr');
+    if (id >= 4) tr.className = 'ext-id d-none';
     tr.innerHTML = `
       <th class="align-middle">${axis} <small class="text-muted">(${id})</small></th>
       <td><input type="number" class="form-control form-control-sm" id="steps${axis}" value="1000" style="max-width:110px"></td>
@@ -37,7 +40,7 @@ function motorRows() {
   tbody.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-act]');
     if (!b) return;
-    const axis = b.dataset.axis, id = C.AXES[axis], dir = parseInt(b.dataset.dir || '1', 10);
+    const axis = b.dataset.axis, id = ALL_AXES[axis], dir = parseInt(b.dataset.dir || '1', 10);
     const speed = num('motorSpeed', 20000), acceleration = num('motorAccel', 0);
     if (b.dataset.act === 'move') send(C.motorMove(id, dir * num(`steps${axis}`, 1000), { speed, acceleration }));
     if (b.dataset.act === 'jog') send(C.motorJog(id, dir * Math.abs(num('jogSpeed', 5000))));
@@ -51,9 +54,9 @@ function motorRows() {
 
 function laserRows() {
   const box = $('laserRows');
-  for (let id = 0; id <= 4; id++) {
+  for (let id = 0; id <= 7; id++) {
     const row = document.createElement('div');
-    row.className = 'light-channel-row';
+    row.className = id >= 5 ? 'light-channel-row ext-id d-none' : 'light-channel-row';
     row.innerHTML = `
       <strong style="width:4.5rem">Laser ${id}</strong>
       <input type="range" class="form-range" min="0" max="1023" value="0" id="laserRange${id}" data-needs-conn>
@@ -94,6 +97,8 @@ export function initHardwareTest() {
   motorRows();
   laserRows();
   ledMatrix();
+  $('showExtIds').addEventListener('change', (e) =>
+    document.querySelectorAll('.ext-id').forEach((el) => el.classList.toggle('d-none', !e.target.checked)));
 
   // System
   $('btnState').addEventListener('click', () => send(C.stateGet()));
@@ -126,7 +131,7 @@ export function initHardwareTest() {
     const steppers = m.steppers || m.motor?.steppers;
     if (!Array.isArray(steppers)) return;
     for (const s of steppers) {
-      const axis = Object.keys(C.AXES).find((k) => C.AXES[k] === s.stepperid);
+      const axis = Object.keys(ALL_AXES).find((k) => ALL_AXES[k] === s.stepperid);
       if (axis && s.position !== undefined) $(`pos${axis}`).textContent = `${s.position}${s.isDone === 0 || s.isRunning ? ' …' : ''}`;
     }
   });

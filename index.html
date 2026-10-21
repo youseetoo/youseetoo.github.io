@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="css/flasher.css" rel="stylesheet" />
 
-    <!-- ESP Web Tools (flashing) -->
+    <!-- ESP Web Tools d(flashing) -->
     <script type="module" src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"></script>
     <!-- esptool-js (erase) -->
     <script type="module">
@@ -170,6 +170,10 @@
                     <div class="col-4"><label class="form-label mb-0" for="motorAccel">Acceleration (0 = keep)</label><input type="number" class="form-control form-control-sm" id="motorAccel" value="0" /></div>
                     <div class="col-4"><label class="form-label mb-0" for="jogSpeed">Jog speed</label><input type="number" class="form-control form-control-sm" id="jogSpeed" value="5000" /></div>
                   </div>
+                  <div class="form-check form-switch small mb-1">
+                    <input class="form-check-input" type="checkbox" id="showExtIds" />
+                    <label class="form-check-label" for="showExtIds">show CAN ids: motors 4–7, lasers 5–7 (e.g. standalone v4 satellite)</label>
+                  </div>
                   <div class="table-responsive">
                     <table class="table table-sm mb-2">
                       <thead class="small"><tr><th>Axis</th><th>Steps</th><th>Move</th><th>Jog</th><th>Stop / home</th><th>Position</th></tr></thead>
@@ -267,6 +271,17 @@
                     <input type="number" class="form-control" id="ownNodeId" min="1" max="127" placeholder="1–127" />
                     <button class="btn btn-primary" id="setOwnNodeBtn" data-needs-conn>Set</button>
                   </div>
+                  <hr />
+                  <h6>Role of this board</h6>
+                  <p class="small text-muted mb-2">Saved in NVS, active after the reboot. A standalone v4 becomes a CAN satellite (suggested node 14) that the HAT+ drives.</p>
+                  <div class="input-group input-group-sm" style="max-width: 440px">
+                    <select class="form-select" id="roleSelect" aria-label="Role">
+                      <option value="2">Satellite</option><option value="1">Master</option><option value="0">Standalone</option>
+                    </select>
+                    <span class="input-group-text">node</span>
+                    <input type="number" class="form-control" id="roleNode" value="14" min="1" max="127" />
+                    <button class="btn btn-warning" id="roleBtn" data-needs-conn>Save &amp; reboot</button>
+                  </div>
                 </div>
               </div>
 
@@ -279,7 +294,6 @@
                   <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                     <button class="btn btn-sm btn-primary" id="scanBtn" data-needs-conn><i class="bi bi-radar"></i> Scan</button>
                     <div class="form-check"><input class="form-check-input" type="checkbox" id="probeRange" /><label class="form-check-label small" for="probeRange">probe all IDs (slow)</label></div>
-                    <button class="btn btn-sm btn-outline-primary" id="routeBtn" data-needs-conn>Routing table</button>
                   </div>
                   <div class="table-responsive">
                     <table class="table table-sm small" id="scanTable">
@@ -294,6 +308,43 @@
                     <span class="input-group-text">to</span><input type="number" class="form-control" id="remoteNew" value="12" min="1" max="127" />
                     <button class="btn btn-primary" id="remoteIdBtn" data-needs-conn>Apply</button>
                   </div>
+                </div>
+              </div>
+
+              <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="mb-0"><i class="bi bi-signpost-split"></i> Routing (on a master)</h5>
+                  <button class="btn btn-sm btn-outline-primary" id="routeBtn" data-needs-conn>Read table</button>
+                </div>
+                <div class="card-body">
+                  <p class="small text-muted mb-2">Where each device id goes: a <em>local</em> pin, a CAN node (<em>remote</em>, node + sub-axis), or <em>off</em>. A motor route also sets homing and TMC of that axis. <em>Saved</em> routes survive reboots.</p>
+                  <div class="table-responsive" style="max-height: 260px">
+                    <table class="table table-sm small" id="routeTable">
+                      <thead><tr><th>Type</th><th>Id</th><th>Where</th><th>Node</th><th>Sub</th><th></th></tr></thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <h6 class="mt-2">Set one route</h6>
+                  <div class="row g-2 small align-items-end">
+                    <div class="col-3"><label class="form-label mb-0" for="rtType">Type</label>
+                      <select class="form-select form-select-sm" id="rtType"><option>MOTOR</option><option>LASER</option><option>LED</option><option>GALVO</option><option>HOME</option><option>TMC</option></select></div>
+                    <div class="col-2"><label class="form-label mb-0" for="rtId">Id</label><input type="number" class="form-control form-control-sm" id="rtId" value="4" min="0" max="63" /></div>
+                    <div class="col-3"><label class="form-label mb-0" for="rtWhere">Where</label>
+                      <select class="form-select form-select-sm" id="rtWhere"><option>REMOTE</option><option>LOCAL</option><option>OFF</option></select></div>
+                    <div class="col-2"><label class="form-label mb-0" for="rtNode">Node</label><input type="number" class="form-control form-control-sm" id="rtNode" value="14" min="1" max="127" /></div>
+                    <div class="col-2"><label class="form-label mb-0" for="rtSub">Sub</label><input type="number" class="form-control form-control-sm" id="rtSub" value="0" min="0" max="3" /></div>
+                    <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="rtPersist" checked /><label class="form-check-label" for="rtPersist">save (survives reboot)</label></div></div>
+                    <div class="col-6 text-end"><button class="btn btn-sm btn-primary" id="rtSetBtn" data-needs-conn>Set route</button></div>
+                  </div>
+                  <h6 class="mt-3">Standalone v4 as satellite</h6>
+                  <p class="small text-muted mb-2">Saves routes for its four axes (A X Y Z) and its lasers 1–3. Motor satellites 10–13 keep stepperid 0–3.</p>
+                  <div class="input-group input-group-sm mb-2" style="max-width: 520px">
+                    <span class="input-group-text">node</span><input type="number" class="form-control" id="maNode" value="14" min="1" max="127" />
+                    <span class="input-group-text">motors from</span><input type="number" class="form-control" id="maMotorBase" value="4" min="0" max="60" />
+                    <span class="input-group-text">lasers from</span><input type="number" class="form-control" id="maLaserBase" value="5" min="0" max="61" />
+                    <button class="btn btn-primary" id="maApplyBtn" data-needs-conn>Apply</button>
+                  </div>
+                  <button class="btn btn-sm btn-outline-danger" id="rtResetBtn" data-needs-conn>Reset routes to build defaults</button>
                 </div>
               </div>
 
@@ -372,7 +423,8 @@
               <p>One compact JSON object per line, e.g. <code>{"task":"/state_get","qid":1}</code>. Replies are framed by <code>++</code> / <code>--</code>; everything else is log output.
                 Reference: <a href="https://docs.openuc2.com/dev/sw/interface/reference/serial-commands" target="_blank">serial commands</a> ·
                 <a href="https://docs.openuc2.com/dev/sw/interface/reference/boards-and-node-ids" target="_blank">boards &amp; node IDs</a> ·
-                <a href="https://docs.openuc2.com/dev/sw/interface/how-to/update-firmware-over-can" target="_blank">update satellites over CAN</a>.</p>
+                <a href="https://docs.openuc2.com/dev/sw/interface/how-to/update-firmware-over-can" target="_blank">update satellites over CAN</a> ·
+                <a href="https://docs.openuc2.com/dev/sw/interface/how-to/standalone-v4-as-satellite" target="_blank">standalone v4 as satellite</a>.</p>
             </div>
             <div class="col-lg-4">
               <h5>Camera software</h5>
