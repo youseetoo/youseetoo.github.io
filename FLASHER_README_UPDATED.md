@@ -118,9 +118,9 @@ Common CAN addresses for slave devices:
 
 ### ODMR Firmware (External)
 - **Repository**: `openUC2/TechnicalDocs-openUC2-QBox`
-- **Workflow**: `.github/workflows/build-odmr-external.yaml` (in uc2-esp32 repo)
-- **Trigger**: Weekly schedule or manual dispatch
-- **Output**: Uploaded to `youseetoo.github.io/static/firmware_odmr/`
+- **Workflow**: `.github/workflows/build_firmware.yaml` (in TechnicalDocs-openUC2-QBox)
+- **Trigger**: Push to `main` touching `ODMR_Server/`, or manual dispatch
+- **Output**: `youseetoo.github.io/static/firmware_build/odmr-xiao-*.bin` + manifests (copy in `static/firmware_odmr/`), WebSerial app in `odmr/`
 - **Boards**: ESP32-S3 and ESP32-C3 variants
 
 ## How It Works
@@ -128,7 +128,7 @@ Common CAN addresses for slave devices:
 1. **Flasher loads** → Fetches releases from GitHub API
 2. **User selects board** → Determines manifest source:
    - UC2 boards: GitHub Release assets
-   - ODMR boards: Local path (`/static/firmware_odmr/`)
+   - ODMR boards: Local path (`/static/firmware_build/`)
 3. **Install clicked** → ESP Web Tools handles flashing
 4. **Post-flash** (optional) → WebSerial sends CAN ID configuration
 

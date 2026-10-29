@@ -66,19 +66,15 @@ git push origin v2026.01.15
 
 ### 2. ODMR Quantum Firmware
 **Source Repository**: `openUC2/TechnicalDocs-openUC2-QBox`  
-**Build Workflow**: `.github/workflows/build-odmr-external.yaml` (in uc2-esp32 repo)  
-**Target**: Also published to `youseetoo/uc2-esp32` releases
+**Build Workflow**: `.github/workflows/build_firmware.yaml` (in TechnicalDocs-openUC2-QBox)  
+**Target**: this repo, `static/firmware_build/` (flasher, `source: 'static'` in `js/flasher/config.js`) and `odmr/` (the WebSerial app, https://youseetoo.github.io/odmr)
 
-```bash
-# Trigger ODMR build manually
-# GitHub UI: Actions → Build ODMR Firmware → Run workflow
-```
+**Automated Process** (every push to QBox `main` touching `ODMR_Server/`, or Actions → Build ODMR Firmware → Run workflow):
+1. Build ESP32-S3 and ESP32-C3: `pio run`, `-t buildfs`, `-t mergedbin` (bootloader + app + SPIFFS web pages, one image at 0x0)
+2. Write `odmr-xiao-esp32{s3,c3}-manifest.json` (`chipFamily` `ESP32-S3` / `ESP32-C3`)
+3. Commit images, manifests and `odmr/` here
 
-**Automated Process**:
-1. Clone ODMR repository
-2. Build ESP32-S3 and ESP32-C3 variants
-3. Create separate release (e.g., `odmr-2026.01.15`)
-4. Upload to same repository for unified access
+The same WebSerial app runs in the ODMR tab of the UC2 Control Android app (https://github.com/youseetoo/UC2Control).
 
 ## Manifest Format
 

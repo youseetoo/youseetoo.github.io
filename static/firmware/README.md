@@ -88,10 +88,11 @@ If you need to manually add firmware:
 ## ODMR Firmware
 
 ODMR (quantum spectroscopy) firmware from external repository:
-- **Location**: `static/firmware_odmr/`
+- **Location**: `static/firmware_build/odmr-xiao-*` (read by the flasher; copy in `static/firmware_odmr/`)
 - **Source**: `openUC2/TechnicalDocs-openUC2-QBox`
-- **Workflow**: `.github/workflows/build-odmr-external.yaml` (in uc2-esp32 repo)
-- **Update**: Weekly automatic or manual dispatch
+- **Workflow**: `.github/workflows/build_firmware.yaml` (in TechnicalDocs-openUC2-QBox)
+- **Update**: every push to QBox `main` touching `ODMR_Server/`, or manual dispatch
+- **Control apps**: WebSerial app at `odmr/` (https://youseetoo.github.io/odmr), UC2 Control Android app (ODMR tab)
 
 ## Testing Locally
 
