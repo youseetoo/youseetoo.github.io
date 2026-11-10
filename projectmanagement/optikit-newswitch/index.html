@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optikit work packages</title>
+<style>
+:root{--bg:#fff;--fg:#1f2328;--mute:#6b7280;--line:#e5e7eb;--card:#f6f8fa;--accent:#2563eb;--ms:#dc2626;--L:38%}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--fg:#e6e6e6;--mute:#9ca3af;--line:#2a2f37;--card:#171a21;--accent:#60a5fa;--L:72%}}
+*{box-sizing:border-box}
+body{margin:0;height:100vh;display:flex;flex-direction:column;font:14px/1.35 system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+header{flex:none;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+h1{font-size:16px;margin:0 8px 0 0}
+select,input,textarea,button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+button{cursor:pointer}
+button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+#saved{margin-left:auto;color:var(--mute)}
+.ro #new,.ro #del,.ro button[value=ok]{display:none}
+.pill{display:inline-block;padding:0 6px;border-radius:9px;font-size:12px;white-space:nowrap;background:hsl(var(--h) 70% 50%/.15);color:hsl(var(--h) 60% var(--L))}
+.mute{color:var(--mute);font-size:12px}
+/* board */
+main{flex:1;min-height:0;overflow:auto}
+#board{display:grid;grid-template-columns:repeat(7,minmax(220px,1fr));grid-auto-rows:max-content;gap:10px;padding:12px 16px}
+.col{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px;min-height:70vh}
+.solo .col{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;align-content:start}
+.solo .col h2{grid-column:1/-1}
+.solo .card{margin:0}
+.role{cursor:default}.role ul{margin:4px 0;padding-left:18px}.role .pill{margin:0 4px 2px 0}
+.col h2{display:flex;justify-content:space-between;font-size:13px;margin:0 0 8px}
+.col.over{outline:2px dashed var(--accent)}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin-bottom:6px;cursor:grab}
+.card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:2px}
+.card .top b{white-space:nowrap}
+.card .top .pill{overflow:hidden;text-overflow:ellipsis}
+.card.migration b{color:var(--accent)}
+/* gantt */
+.gw{position:relative}
+.gr{display:flex;min-height:24px;border-bottom:1px solid var(--line)}
+.gr[data-id]{cursor:pointer}
+.gr[data-id]:hover .lab{background:var(--card)}
+.lab{position:sticky;left:0;z-index:2;flex:0 0 340px;padding:3px 8px 3px 16px;background:var(--bg);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.track{position:relative;flex:none;background:repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px 42px)}
+.head{position:sticky;top:0;z-index:4;background:var(--bg)}
+.head .track span{position:absolute;top:2px;padding-left:3px;font-size:11px;line-height:1.2;color:var(--mute)}
+.head .lab{z-index:5}
+.gh .lab{padding-top:10px;font-weight:600}
+.bar{position:absolute;top:4px;height:16px;border-radius:4px;padding:0 4px;font-size:11px;line-height:16px;color:#fff;white-space:nowrap;overflow:hidden;background:hsl(var(--h) 60% 48%)}
+.bar.s-done{opacity:.4}
+.bar.s-blocked{background-image:repeating-linear-gradient(45deg,transparent 0 5px,rgb(0 0 0/.3) 5px 10px)}
+.vl{position:absolute;top:0;bottom:0;z-index:3;border-left:2px dashed var(--ms);pointer-events:none}
+.vl span{position:sticky;top:30px;display:inline-block;margin-left:2px;padding:0 4px;font-size:11px;background:var(--ms);color:#fff;border-radius:3px}
+.vl.today{border-left:2px solid var(--accent)}
+.vl.today span{background:var(--accent)}
+/* dialog */
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);width:min(560px,94vw)}
+dialog form{display:grid;grid-template-columns:90px 1fr;gap:6px 10px;align-items:center}
+dialog label{display:contents}
+dialog menu{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;padding:0;margin:8px 0 0}
+#del{margin-right:auto;color:var(--ms)}
+[hidden]{display:none!important}
+</style>
+<script>window.SNAPSHOT = {date: '2026-11-10', wps: [
+{"id": "P1", "title": "Freeze contract v1: devices for HIK camera + CANopen/serial UC2 parts, report shape, *.newswitch-device.yml schema; import into NewSwitch and boot", "project": "migration", "area": "Hardware integration", "group": "A · DSN contract", "status": "open", "owner": "Christian, Ethan, Florian", "lead": "Christian", "start": "2026-09-28", "end": "2026-10-12", "deps": "", "note": "done when NewSwitch boots, sees an image, controls the stage"},
+{"id": "P2", "title": "Report → NewSwitch config in Python for the P1 devices (= WP-314 components report + WP-316 export half)", "project": "migration", "area": "Hardware integration", "group": "A · DSN contract", "status": "done", "owner": "Bene, Claude, Florian", "lead": "Bene", "start": "2026-10-12", "end": "2026-10-23", "deps": "P1", "note": "Ethan reviews; done when `optikit-core export newswitch` equals Ethan's _newswitch-config.yml on his examples; → WP-401c (BACKLOG §1e). 2026-11-08: landed as WP-401c (export/newswitch.py, PR #36); all nine Go configs come out identical (test_newswitch_config.py)", "tester": ""},
+{"id": "P3", "title": "Device files in the library for every M1 module (= WP-315, folds WP-178 half)", "project": "migration", "area": "Hardware integration", "group": "A · DSN contract", "status": "untested", "owner": "Bene, Claude, Florian", "lead": "Bene", "start": "2026-11-02", "end": "2026-11-22", "deps": "P1, P20", "note": "Florian for content; done when `library validate` refuses a module without its device file; → WP-401a (BACKLOG §1e). 2026-11-08: WP-401a and WP-403 put devices on frame_xyz, the LED cubes, the lasers, the HIK cameras and the boards (library main 26f9bba); the `library validate` device-file check is still to verify", "tester": "Christine"},
+{"id": "P4", "title": "Composition/pose split, library absolute paths", "project": "migration", "area": "DSN & Go sync", "group": "A · DSN contract", "status": "done", "owner": "Ethan", "lead": "Ethan", "start": "", "end": "", "deps": "M1 freeze", "note": "M2; behind a flag, no consumer before M2"},
+{"id": "P5", "title": "The Pi side: Ethan's Go tool packaged for boot or Python native tool (Christian?)", "project": "migration", "area": "Hardware integration", "group": "A · DSN contract", "status": "done", "owner": "Ethan, Christian", "lead": "Ethan", "start": "2026-10-12", "end": "2026-11-08", "deps": "P1", "note": "Option 1 with a Python port on the device? done when NewSwitch's loader reads the config from it on the bench Pi. 2026-11-09: superseded — the export is pure Python in optikit-core (D-N4) and NewSwitch reads the exported file; no Go tool runs on the Pi. Drop it?", "tester": ""},
+{"id": "P6", "title": "Control tab v0: fetch the manifest/device list, per firmware input match driver and axis (= WP-316 editor half)", "project": "migration", "area": "Hardware integration", "group": "B · Optikit bridge", "status": "doing", "owner": "Bene, Manuel", "lead": "Bene", "start": "2026-10-22", "end": "2026-11-18", "deps": "P1, P9", "note": "done when the M1 design binds stage x/y/z, camera, LED without hand-editing YAML; WP-401b is its first step (BACKLOG §1e). 2026-11-08: the Wiring tab (WP-401b/402/403) binds stage x/y/z, camera and LED from the placed parts; on feat/newswitch-connections, unmerged; Manuel's app has its own client-side wiring canvas and export (optikit-app-v1 ControlView) to rebase on it 2026-11-09: Manuel's app draws the wiring from the service's index (app-v1 PR #34)."},
+{"id": "P7", "title": "Export package: .dsn archive with config, device files, report, minimum NewSwitch version; download or push to the instrument", "project": "migration", "area": "Hardware integration", "group": "B · Optikit bridge", "status": "blocked", "owner": "Bene, Manuel, Ethan", "lead": "Bene", "start": "2026-11-16", "end": "2026-11-29", "deps": "P2, P6", "note": "done when the archive boots NewSwitch (P10) unchanged. 2026-11-08: `optikit-core export zip` and the NewSwitch config export exist; NewSwitch main (288a201) and feat/controller-mapping-runtime refuse the Go #37 shape (`connections`, `root`; GO-SYNC) — blocked on NewSwitch taking #37"},
+{"id": "P8", "title": "Reverse leg: inventory back, W_DEVICE_MISSING (= WP-317)", "project": "migration", "area": "Hardware integration", "group": "B · Optikit bridge", "status": "open", "owner": "Bene", "lead": "Bene", "start": "2026-12-07", "end": "2026-12-20", "deps": "P10", "note": "M1 nice to have, M2 firm"},
+{"id": "P9", "title": "Serve GET /system/drivers from the vendored example (contract v1)", "project": "migration", "area": "Hardware integration", "group": "C · NewSwitch", "status": "decision", "owner": "Christian, Johannes", "lead": "Christian", "start": "2026-09-28", "end": "2026-10-18", "deps": "", "note": "optional; done when the bench Pi lists the components optikit can wire to actuators. 2026-11-08: superseded — the static config is generated from the DSN (newswitch docs/TEAM-SYNC-2026-09.md item 3); no manifest endpoint exists on any newswitch branch. Drop it?"},
+{"id": "P10", "title": "NewSwitch loader: static config at startup to managers (stage, camera, light), version mismatch refused", "project": "migration", "area": "Hardware integration", "group": "C · NewSwitch", "status": "doing", "owner": "Christian, Florian", "lead": "Christian", "start": "2026-11-02", "end": "2026-12-06", "deps": "P1, P2", "note": "done when it boots from Ethan's hand-drafted yaml. 2026-11-08: Florian's feat/controller-mapping-runtime (93a116d, 8 ahead of main) routes the YAML `mapping` rows to the serial/CAN bus (yaml_runtime.py); unmerged, pre-#37 shape. Johannes' new-stack/optikit-tests (34 ahead) reads a .dsn itself — a second loader; one must be chosen 2026-11-10: Florian's YAML hardware runtime is on newswitch main (d78df7b, 2026-11-09, squashed); config_io still has the pre-#37 shape.", "tester": ""},
+{"id": "P11", "title": "M1 hardware: UC2 stage over CAN (T-024, T-025), illumination (T-023), HIK camera driver (T-020)", "project": "migration", "area": "Hardware drivers", "group": "C · NewSwitch", "status": "doing", "owner": "Christian, Florian", "lead": "Christian", "start": "2026-09-28", "end": "2026-11-15", "deps": "OP-011", "note": "jog, home, light on, frames, on the bench. 2026-11-08: Pi 30059 (configs/machines/openuc2-first-cord-30059.yaml) — serial connected, LED-off verified; no motion, homing or camera yet (docs/PI-HARDWARE-DEVELOPMENT.md, 2026-11-03); the camera is blocked by the MVS SDK vs the pinned uc2_cam_py 2026-11-10 (Florian): axis movement tested on the Pi over serial; the config matches the installed hardware (four axes, one LED, no matrix)."},
+{"id": "P12", "title": "Live view and snapshot (T-039, T-040, T-041, T-043)", "project": "migration", "area": "Hardware drivers", "group": "C · NewSwitch", "status": "doing", "owner": "Christian", "lead": "Christian", "start": "2026-10-29", "end": "2026-12-09", "deps": "P11", "note": "the long pole. 2026-11-08: H.264/zstd live view exists (routes/ws/liveview.py) and is unreliable — 640×480 resize, dropped chunks (docs/encoder_bugreport.md, LIVE-IMAGE-PIPELINE.md §8). That is the transport the SRS's DEC-001 (2026-07-29) superseded: LiveKit/WebRTC/VP8 with an SFU, newswitch T-039 (VP8 spike on the Pi), T-047 (server), T-049 (client), T-041 (publish); not started on the hardware line, only new-stack mentions LiveKit 2026-11-10 (Christian): ring buffer optimised, with a test up to the websocket interface."},
+{"id": "P13", "title": "Widgets from the design: per-device widget schema (jog, slider); v0 renders stage and light from the M1 config", "project": "migration", "area": "UI/UX (newswitch)", "group": "C · NewSwitch", "status": "doing", "owner": "Florian, Johannes", "lead": "Florian", "start": "2026-11-09", "end": "2026-12-27", "deps": "P1, P10", "note": "M1: generated jog and slider; M2: composable viewers; continues to M2 (wk 53). 2026-11-09: this is the SRS's capability descriptor (T-013) and gating (T-026/T-027, InvariantMatrix.md G1): a control is shown only if the device can do it; its facts (axes, lights, ranges) come from the exported config"},
+{"id": "P15", "title": "Accounts deployment (= WP-307): Caddy, OAuth apps, backups, beta testers log in", "project": "migration", "area": "Accounts & projects", "group": "D · Optikit platform", "status": "doing", "owner": "Florian", "lead": "Florian", "start": "2026-09-28", "end": "2026-10-11", "deps": "", "note": "done when five testers have accounts on the staging host (uc2-orin Jetson in the office). 2026-11-08: WP-305/306 merged 2026-11-04 (PR #32); the deployment still runs Caddy basic-auth, OPTIKIT_AUTH is not on; Manuel's app keeps accounts in localStorage and calls none of /v1/auth", "tester": ""},
+{"id": "P16", "title": "UI v5: Home, Projects, View, Simulate; beta 1 with internal testers", "project": "migration", "area": "UI/UX (optikit)", "group": "D · Optikit platform", "status": "doing", "owner": "Manuel", "lead": "Manuel", "start": "2026-09-29", "end": "2026-11-23", "deps": "P15", "note": "done when three testers build a FRAME config without help 2026-11-10 (Manuel): v3 UI/UX, tests on physical setups; this week the FRAME wizard's functions from optikit-v2 and ray-tracing tests."},
+{"id": "P17", "title": "Quote benchmark: kits and boxes as palette source (WP-323), real prices (WP-275), Commercial tab, quote out", "project": "migration", "area": "Pricing & Odoo", "group": "D · Optikit platform", "status": "untested", "owner": "Bene, Sebastian, Dirk, Haiyue", "lead": "Bene", "start": "2026-10-09", "end": "2026-11-19", "deps": "P20", "note": "sales; three test users produce a correct FRAME histology quote in < 15 min", "tester": "Haiyue"},
+{"id": "P18", "title": "Optiland round trip on screen: variables, cost function, results, apply back, regenerate holders", "project": "migration", "area": "Optical design", "group": "D · Optikit platform", "status": "doing", "owner": "Manuel", "lead": "Manuel", "start": "2026-12-07", "end": "2026-12-27", "deps": "P16", "note": "M1: FRAME design; M2: holders regenerate; continues to M2 (wk 56)"},
+{"id": "P19", "title": "Export/interact quote to/from Odoo (WP-331, WP-332)", "project": "migration", "area": "Pricing & Odoo", "group": "D · Optikit platform", "status": "done", "owner": "Bene, Marius", "lead": "Bene", "start": "", "end": "", "deps": "M1", "note": "M2", "tester": ""},
+{"id": "P20", "title": "M1 module set: FRAME body, xyz stage, camera, LED, objective, slide holder — exports, meshes, prices, device files", "project": "migration", "area": "Library & CAD", "group": "E · Content & hardware", "status": "done", "owner": "CAD team, Haiyue, Bene, Haoran, Dirk", "lead": "CAD team", "start": "2026-09-28", "end": "2026-11-01", "deps": "", "note": "done when every M1 module validates with a price and a device file"},
+{"id": "P21", "title": "Test bench: one Pi 5 with the M1 instrument, firmware flashed with CAN IDs, a named owner", "project": "migration", "area": "Hardware drivers", "group": "E · Content & hardware", "status": "doing", "owner": "Christian, Florian, Ethan", "lead": "Christian", "start": "2026-11-02", "end": "2026-11-15", "deps": "P20", "note": "anyone can reproduce the M1 scenario on it"},
+{"id": "P22", "title": "M2 content: fluorescence (lasers, filter cubes, dichroics), light sheet (galvo, cylindrical lens, sCMOS) + drivers", "project": "migration", "area": "Library & CAD", "group": "E · Content & hardware", "status": "open", "owner": "Haiyue, CAD team, Jens", "lead": "Haiyue", "start": "", "end": "", "deps": "M1", "note": "M2"},
+{"id": "P23", "title": "Friday integration demo on the bench; contract fixtures in both CIs; glossary; decision log", "project": "migration", "area": "Infrastructure", "group": "F · Integration", "status": "later", "owner": "Bene", "lead": "Bene", "start": "2026-09-28", "end": "2026-12-18", "deps": "", "note": "weekly, all leads (PLAN-PROGRAM-2026Q4.md)"},
+{"id": "WP-318", "title": "The prescription is a static model: optics.fragment-file → primitive.static-models.optiland", "project": "migration", "area": "DSN & Go sync", "group": "B · Optikit bridge", "status": "done", "owner": "Bene, Claude", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "½ day; before WP-314 (P2)"},
+{"id": "M1", "title": "One round trip Optikit → NewSwitch (FRAME histology scanner)", "project": "milestone", "group": "milestone", "status": "open", "owner": "Christian", "lead": "Christian", "start": "2026-12-18", "end": "2026-12-18", "deps": "", "note": ""},
+{"id": "M2", "title": "Three instruments round-tripping, UI v5 beta 2", "project": "milestone", "group": "milestone", "status": "open", "owner": "Ethan", "lead": "Ethan", "start": "2027-02-26", "end": "2027-02-26", "deps": "", "note": ""},
+{"id": "M3", "title": "Customer release: public accounts, quotes, education mode", "project": "milestone", "group": "milestone", "status": "open", "owner": "Bene", "lead": "Bene", "start": "2027-04-30", "end": "2027-04-30", "deps": "", "note": ""},
+{"id": "LIB-CI", "title": "Library repo CI wheel: rebuild optikit_core at the new pin so the library's main goes green", "project": "features", "area": "Infrastructure", "group": "1 Land what exists", "status": "done", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-322 tail", "title": "Cube road tail: lens-side mesh check, seats on published modules, seat variants on decomposed designs, galvo axis-map", "project": "features", "area": "Library & CAD", "group": "1a Cube road", "status": "open", "owner": "", "lead": "", "start": "2027-01-25", "end": "2027-01-29", "deps": "", "note": ""},
+{"id": "WP-154 tail", "title": "Gratings tail: a grating in the kernel, a grating record category, spectrum readout, prisms", "project": "features", "area": "Optical design", "group": "3.3 DSN & engine", "status": "later", "owner": "Manuel", "lead": "Manuel", "start": "", "end": "", "deps": "", "note": "", "tester": ""},
+{"id": "D-U5", "title": "optikit-library private or public (general architecture, git behavior)", "project": "features", "area": "Accounts & projects", "group": "2 Decisions", "status": "decision", "owner": "Bene, Ethan", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "2026-11-09: openUC2/optikit-library is private on GitHub (CI red since 2026-11-03, WP-415); confirm and close"},
+{"id": "WP-191", "title": "What replaces the fx hand-off: parameters named on the design, not the CAD", "project": "features", "area": "Library & CAD", "group": "2 Decisions", "status": "decision", "owner": "", "lead": "", "start": "2027-02-01", "end": "2027-02-05", "deps": "", "note": "gates WP-190, WP-211"},
+{"id": "WP-280", "title": "FRAME base configurations as shipped designs (presets); folds WP-274", "project": "features", "area": "UI/UX (optikit)", "group": "2 Decisions", "status": "later", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "WP-330", "note": ""},
+{"id": "WP-323", "title": "Kits and boxes as a palette category (kit.yml, in/kit/<id> tags, box page)", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "doing", "owner": "Bene", "lead": "Bene", "start": "2026-10-19", "end": "", "deps": "", "note": "part of P17; feat/collections, PLAN-COLLECTIONS.md"},
+{"id": "WP-382", "title": "Collections gallery and collection page", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "doing", "owner": "Bene", "lead": "Bene", "start": "2026-10-19", "end": "", "deps": "WP-323", "note": "feat/collections"},
+{"id": "WP-383", "title": "Kit suggestion on the BOM (cheaper as a collection)", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "doing", "owner": "Bene", "lead": "Bene", "start": "2026-10-19", "end": "", "deps": "WP-323", "note": "prices wait for WP-380"},
+{"id": "WP-384", "title": "Quote with collections; Odoo quotation from the editor BOM", "project": "features", "area": "Pricing & Odoo", "group": "3.1 Records & library", "status": "untested", "owner": "", "lead": "", "start": "2026-11-16", "end": "2026-11-20", "deps": "WP-383, WP-332", "note": "", "tester": "Haiyue"},
+{"id": "WP-385", "title": "Kit members in the library (promote user.*, bind from STEP exports, in/kit tags)", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "open", "owner": "Haiyue", "lead": "Haiyue", "start": "2026-12-01", "end": "2026-12-11", "deps": "WP-323", "note": "needs Bene's decision on user.*"},
+{"id": "WP-386", "title": "Experiments as setups (workbook + OST assemblies)", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "open", "owner": "Bene, Jens", "lead": "Bene", "start": "", "end": "", "deps": "WP-385", "note": "", "tester": ""},
+{"id": "WP-291", "title": "Every cube insert can turn: yaw seats on curated 1×1 modules, group dialog writes rotation", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "open", "owner": "", "lead": "", "start": "2027-01-11", "end": "2027-01-12", "deps": "", "note": "1 day"},
+{"id": "WP-295", "title": "The five objective barrels bound to the exported STEPs", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "open", "owner": "Jens", "lead": "Jens", "start": "2026-12-07", "end": "2026-12-07", "deps": "", "note": "½ day"},
+{"id": "L1", "title": "12-record library roles: migration", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "open", "owner": "", "lead": "", "start": "2027-01-13", "end": "2027-01-14", "deps": "", "note": ""},
+{"id": "WP-222 tail", "title": "Filter CSV as a record asset; multi-band/notch authoring in the parts editor", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "open", "owner": "", "lead": "", "start": "2027-02-08", "end": "2027-02-10", "deps": "", "note": ""},
+{"id": "WP-231 tail", "title": "Re-mesh the shipped assets (needs a paired mesh-pose re-declaration per template)", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "blocked", "owner": "", "lead": "", "start": "2027-03-01", "end": "2027-03-05", "deps": "", "note": ""},
+{"id": "WP-279 tail", "title": "Meshless starter records: a CAD export each, or decide which real part ships", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "decision", "owner": "Jens", "lead": "Jens", "start": "2027-01-11", "end": "2027-01-15", "deps": "", "note": ""},
+{"id": "WP-170…173", "title": "Variants authoring in the editor; meshes for non-module leaves in the nested export", "project": "features", "area": "UI/UX (optikit)", "group": "3.1 Records & library", "status": "open", "owner": "", "lead": "", "start": "2027-03-08", "end": "2027-03-12", "deps": "", "note": ""},
+{"id": "SEC-PAT", "title": "Leaked GitHub PAT still in repo history: revoke it", "project": "features", "area": "Infrastructure", "group": "3.1 Records & library", "status": "done", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": "Revoked 2026-11-04 (PLAN-INVENTOR-TO-ODOO.md §6); the history is not rewritten."},
+{"id": "WP-269 tail", "title": "Objective slide single/2-position as declared variants; arm bay seats 3.9 mm off the lattice", "project": "features", "area": "Library & CAD", "group": "3.2 FRAME", "status": "decision", "owner": "", "lead": "", "start": "2026-11-30", "end": "2026-12-04", "deps": "", "note": ""},
+{"id": "WP-273 tail", "title": "Autofocus group's seat is a placeholder", "project": "features", "area": "Library & CAD", "group": "3.2 FRAME", "status": "untested", "owner": "", "lead": "", "start": "2026-11-11", "end": "2026-11-20", "deps": "", "note": "2026-11-04: autofocus docks the focus lock (FRAME - 6212) on the FRAME's focus_lock mount (CHANGELOG).", "tester": "Stephan"},
+{"id": "WP-271 tail", "title": "miniframe_fluo transcribed, not measured", "project": "features", "area": "Library & CAD", "group": "3.2 FRAME", "status": "untested", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "waits on a fluorescence OPM export", "tester": "Christine"},
+{"id": "WP-285", "title": "Cube record round: part numbers on BUY optics, batch STEP export (PyInventor), import glb", "project": "features", "area": "Library & CAD", "group": "3.2 FRAME", "status": "blocked", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "Windows"},
+{"id": "WP-290", "title": "FRAME stage moves", "project": "features", "area": "Library & CAD", "group": "3.2 FRAME", "status": "blocked", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "waits on the moving-node names in the #0008 export"},
+{"id": "WP-329", "title": "Three reference OPMs: widefield, fluorescence, FLIM 488", "project": "features", "area": "Library & CAD", "group": "3.2 FRAME", "status": "blocked", "owner": "", "lead": "", "start": "2027-01-25", "end": "2027-02-05", "deps": "WP-285", "note": ""},
+{"id": "WP-330", "title": "As-sold FRAME: workbook rows without a record (overview camera, joystick, fiber lasers, …)", "project": "features", "area": "Library & CAD", "group": "3.2 FRAME", "status": "blocked", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "needs a record per row of PLAN-FRAME-QUOTES-ODOO.md section 4.3"},
+{"id": "WP-362", "title": "Laser fluorescence OPM in the configurator's Laser card", "project": "features", "area": "UI/UX (optikit)", "group": "3.2 FRAME", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": "later (Bene 2026-10-08)"},
+{"id": "WP-363", "title": "CAD for the cloned parts: LED stars, single objective mount, sled thread", "project": "features", "area": "Library & CAD", "group": "3.2 FRAME", "status": "open", "owner": "Jens, Bene", "lead": "Jens", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-331", "title": "Odoo read only: `optikit-core odoo check` (Referenz = record id) against the library index", "project": "features", "area": "Pricing & Odoo", "group": "3.2 FRAME", "status": "done", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "WP-381", "note": "landed 2026-11-01 as the report of odoo sync (WP-399)"},
+{"id": "WP-332", "title": "Odoo quotation from a design (staff only): product lines by Referenz, note lines for missing ones, no labour line", "project": "features", "area": "Pricing & Odoo", "group": "3.2 FRAME", "status": "untested", "owner": "", "lead": "", "start": "2026-11-16", "end": "2026-11-27", "deps": "WP-381, WP-299", "note": "part of P19; built on feat/odoolookup 2026-10-16", "tester": "Haiyue"},
+{"id": "WP-380", "title": "Odoo products: the list (49) and the one-time CSV import, test database first", "project": "features", "area": "Pricing & Odoo", "group": "3.2 FRAME", "status": "open", "owner": "Sebastian, Bene, Dirk", "lead": "Sebastian", "start": "", "end": "", "deps": "WP-377", "note": "scripts/odoo_items.py -> DOCS/roadmap/odoo-items.csv; imported into openuc2-test 2026-10-16; names, prices, lead times, then production", "tester": ""},
+{"id": "WP-381", "title": "Odoo prices in the FRAME configurator and the quote sheet (POST /v1/odoo/prices)", "project": "features", "area": "Pricing & Odoo", "group": "3.2 FRAME", "status": "untested", "owner": "", "lead": "", "start": "2026-11-11", "end": "2026-11-20", "deps": "WP-380", "note": "built on feat/odoolookup 2026-10-16; missing in Odoo flagged; hardware included; part of P19", "tester": "Haoran"},
+{"id": "WP-356", "title": "Go reads our stored poses as we do (rotation.kind everywhere, residual spelling)", "project": "features", "area": "DSN & Go sync", "group": "3.3 DSN & engine", "status": "decision", "owner": "Ethan, Bene", "lead": "Ethan", "start": "", "end": "", "deps": "", "note": "the spelling, then open (GO-SYNC G1, G2)"},
+{"id": "WP-357", "title": "Go draws what we export: placeholders, record meshes in static-models, metres", "project": "features", "area": "DSN & Go sync", "group": "3.3 DSN & engine", "status": "open", "owner": "Ethan", "lead": "Ethan", "start": "2027-01-18", "end": "2027-01-22", "deps": "", "note": "GO-SYNC G3–G6"},
+{"id": "WP-358", "title": "Re-vendor Go's 48 examples at e333f8d", "project": "features", "area": "DSN & Go sync", "group": "3.3 DSN & engine", "status": "done", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": "folded into WP-400a (re-vendor at eea159e) Folded into WP-400a (re-vendored at eea159e); GO-SYNC now pins 839b79a."},
+{"id": "WP-325", "title": "Retire the template class, round 2; Ethan's tags for actuation", "project": "features", "area": "DSN & Go sync", "group": "3.3 DSN & engine", "status": "decision", "owner": "Ethan", "lead": "Ethan", "start": "2027-01-25", "end": "2027-01-29", "deps": "", "note": ""},
+{"id": "WP-220b", "title": "Aplanatic objective surface as a dialect entry", "project": "features", "area": "Optical design", "group": "3.3 DSN & engine", "status": "open", "owner": "", "lead": "", "start": "2027-02-01", "end": "2027-02-05", "deps": "", "note": ""},
+{"id": "WP-210", "title": "Cylindrical lenses", "project": "features", "area": "Optical design", "group": "3.3 DSN & engine", "status": "open", "owner": "", "lead": "", "start": "2027-01-11", "end": "2027-01-20", "deps": "", "note": ""},
+{"id": "WP-205", "title": "Multi-DOF parts: kinematic mirror = push + tip + tilt", "project": "features", "area": "DSN & Go sync", "group": "3.3 DSN & engine", "status": "open", "owner": "", "lead": "", "start": "2027-03-01", "end": "2027-03-05", "deps": "", "note": ""},
+{"id": "WP-206", "title": "Moving parts on T2 (mostly verification)", "project": "features", "area": "DSN & Go sync", "group": "3.3 DSN & engine", "status": "open", "owner": "", "lead": "", "start": "2027-03-08", "end": "2027-03-09", "deps": "", "note": ""},
+{"id": "WP-203c", "title": "motion.py {0,1,2} blind spot", "project": "features", "area": "DSN & Go sync", "group": "3.3 DSN & engine", "status": "open", "owner": "", "lead": "", "start": "2027-01-25", "end": "2027-01-26", "deps": "", "note": "small"},
+{"id": "WP-209", "title": "90° retro mirror draws like a 45° fold", "project": "features", "area": "UI/UX (optikit)", "group": "3.3 DSN & engine", "status": "open", "owner": "", "lead": "", "start": "2027-01-27", "end": "2027-01-27", "deps": "", "note": "small"},
+{"id": "AUDIT", "title": "Audit carry-overs: θ-vs-2θ, per-hop cs, semi_aperture, rotatePart on tipped parts, …", "project": "features", "area": "Optical design", "group": "3.3 DSN & engine", "status": "open", "owner": "Manuel", "lead": "Manuel", "start": "2027-02-15", "end": "2027-02-26", "deps": "", "note": ""},
+{"id": "WP-207", "title": "Samples as parts: slide, coverslip, flow cell, 96-well, bead slide", "project": "features", "area": "Library & CAD", "group": "3.4 CAD", "status": "open", "owner": "Haiyue", "lead": "Haiyue", "start": "2026-11-30", "end": "2026-12-04", "deps": "", "note": ""},
+{"id": "WP-245 tail", "title": "Wizard's free pose onto the record's insert-pose", "project": "features", "area": "Library & CAD", "group": "3.4 CAD", "status": "open", "owner": "", "lead": "", "start": "2027-02-15", "end": "2027-02-16", "deps": "", "note": ""},
+{"id": "WP-248 frame", "title": "Wizard passes cube-axis δ as the generator's optical-axis position", "project": "features", "area": "Library & CAD", "group": "3.4 CAD", "status": "open", "owner": "", "lead": "", "start": "2027-02-17", "end": "2027-02-18", "deps": "", "note": ""},
+{"id": "WP-249", "title": "Cube skeleton split into lower/upper half (Ethan's nested cube-skeleton.dsn)", "project": "features", "area": "DSN & Go sync", "group": "3.4 CAD", "status": "decision", "owner": "Ethan", "lead": "Ethan", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-243", "title": "Cubify follow-ups: T2/adaptive case, optiland sidecar in the bundle", "project": "features", "area": "Library & CAD", "group": "3.4 CAD", "status": "open", "owner": "", "lead": "", "start": "2027-02-22", "end": "2027-02-26", "deps": "", "note": ""},
+{"id": "WP-258 tail", "title": "Orientation offered as the subdesign's variants", "project": "features", "area": "Library & CAD", "group": "3.4 CAD", "status": "open", "owner": "", "lead": "", "start": "2027-03-01", "end": "2027-03-03", "deps": "", "note": ""},
+{"id": "WP-241 UI tail", "title": "Offer \"lens cartridge\" in GenerateHolderDialog", "project": "features", "area": "Library & CAD", "group": "3.4 CAD", "status": "open", "owner": "", "lead": "", "start": "2027-02-19", "end": "2027-02-19", "deps": "", "note": "small"},
+{"id": "WP-190", "title": "T2 machinable-insert road on CadQuery (recover the groove-pair decomposition)", "project": "features", "area": "Library & CAD", "group": "3.4 CAD", "status": "open", "owner": "", "lead": "", "start": "2027-03-15", "end": "2027-03-26", "deps": "WP-191", "note": ""},
+{"id": "WP-211", "title": "CadQuery closes the loop: optimize → back-annotate → regenerate the holder", "project": "features", "area": "Library & CAD", "group": "3.4 CAD", "status": "open", "owner": "", "lead": "", "start": "2027-04-05", "end": "2027-04-16", "deps": "WP-190", "note": ""},
+{"id": "WP-213", "title": "Optics-only STEP export: wrong orientation, no beam", "project": "features", "area": "File I/O", "group": "3.4 CAD", "status": "open", "owner": "Manuel", "lead": "Manuel", "start": "2027-01-25", "end": "2027-01-29", "deps": "", "note": ""},
+{"id": "WP-224", "title": "Draco/meshopt + fps bench", "project": "features", "area": "File I/O", "group": "3.5 Library & perf", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": "postponed (Bene 2026-09-15)"},
+{"id": "WP-223", "title": "Vendor STEP → mesh: offline, content-hash dedupe, lazy fetch", "project": "features", "area": "Library & CAD", "group": "3.5 Library & perf", "status": "open", "owner": "", "lead": "", "start": "2027-03-29", "end": "2027-04-02", "deps": "", "note": ""},
+{"id": "WP-215", "title": "Stable instance id: uuid in provenance, /v1/lookup/<uuid>", "project": "features", "area": "Infrastructure", "group": "3.5 Library & perf", "status": "open", "owner": "", "lead": "", "start": "2027-03-08", "end": "2027-03-12", "deps": "", "note": ""},
+{"id": "WP-214", "title": "Usage telemetry (anon, env-var off switch)", "project": "features", "area": "Infrastructure", "group": "3.5 Library & perf", "status": "open", "owner": "", "lead": "", "start": "2027-04-12", "end": "2027-04-14", "deps": "", "note": ""},
+{"id": "WP-216 tail", "title": "README's stale \"coming next\"", "project": "features", "area": "Infrastructure", "group": "3.5 Library & perf", "status": "open", "owner": "", "lead": "", "start": "2026-11-24", "end": "2026-11-24", "deps": "", "note": "small"},
+{"id": "θ-vs-2θ", "title": "Rotation DOF finding", "project": "features", "area": "Optical design", "group": "3.6 Simulation", "status": "open", "owner": "Manuel", "lead": "Manuel", "start": "2027-01-18", "end": "2027-01-22", "deps": "", "note": "blocks WP-95's confocal"},
+{"id": "WP-153", "title": "Sequential projection phase 3: unfolded 2D sketch beside the table", "project": "features", "area": "Optical design", "group": "3.6 Simulation", "status": "open", "owner": "", "lead": "", "start": "2027-03-15", "end": "2027-03-26", "deps": "", "note": ""},
+{"id": "WP-221", "title": "Image on the detector: forward irradiance readout first", "project": "features", "area": "Optical design", "group": "3.6 Simulation", "status": "open", "owner": "", "lead": "", "start": "2027-03-29", "end": "2027-04-09", "deps": "", "note": ""},
+{"id": "WP-93+151", "title": "Optimizer as a design tool (free pose variables = air gaps)", "project": "features", "area": "Optical design", "group": "3.6 Simulation", "status": "open", "owner": "", "lead": "", "start": "2027-05-03", "end": "2027-05-28", "deps": "", "note": ""},
+{"id": "WP-94", "title": "Virtual detectors / probes (irradiance, power, D86)", "project": "features", "area": "Optical design", "group": "3.6 Simulation", "status": "open", "owner": "", "lead": "", "start": "2027-04-12", "end": "2027-04-23", "deps": "", "note": ""},
+{"id": "A3", "title": "Ghost tracing", "project": "features", "area": "Optical design", "group": "3.6 Simulation", "status": "open", "owner": "", "lead": "", "start": "2027-06-01", "end": "2027-06-15", "deps": "", "note": ""},
+{"id": "A1c", "title": "Pin keyed (variant_id, path_name, band)", "project": "features", "area": "Optical design", "group": "3.6 Simulation", "status": "open", "owner": "", "lead": "", "start": "2027-06-16", "end": "2027-06-18", "deps": "", "note": ""},
+{"id": "WP-95", "title": "Benchmark suite / MVP gate: fluo scope, light sheet, confocal", "project": "features", "area": "Optical design", "group": "3.6 Simulation", "status": "blocked", "owner": "", "lead": "", "start": "2027-02-01", "end": "2027-02-19", "deps": "θ-vs-2θ", "note": ""},
+{"id": "WP-88", "title": "The DSL as textual serialization of the table", "project": "features", "area": "File I/O", "group": "3.6 Simulation", "status": "open", "owner": "", "lead": "", "start": "2027-06-21", "end": "2027-07-02", "deps": "", "note": ""},
+{"id": "L2-L4", "title": "RaySketch.tsx caller, trace-sourced path adoption, Go conformance drift", "project": "features", "area": "Optical design", "group": "3.6 Simulation", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": "low"},
+{"id": "WP-217", "title": "A second optical model (BPM): ADR + one worked example", "project": "features", "area": "Optical design", "group": "6 Vision", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": "Phase E"},
+{"id": "WP-324", "title": "Placement locks, then freeze (holder at the current pose)", "project": "features", "area": "UI/UX (optikit)", "group": "4 Usability", "status": "open", "owner": "", "lead": "", "start": "2027-03-15", "end": "2027-03-26", "deps": "", "note": ""},
+{"id": "WP-297a", "title": "Filter-set wizard: the filter-cube diagram highlighting the slot", "project": "features", "area": "UI/UX (optikit)", "group": "4 Usability", "status": "untested", "owner": "Haoran", "lead": "Haoran", "start": "2026-11-11", "end": "2026-11-20", "deps": "", "note": "", "tester": "Christine"},
+{"id": "WP-299", "title": "The quote carries a share link", "project": "features", "area": "Pricing & Odoo", "group": "4 Usability", "status": "untested", "owner": "", "lead": "", "start": "2026-11-16", "end": "2026-11-20", "deps": "", "note": "½ day", "tester": "Haiyue"},
+{"id": "WP-298", "title": "Record docs: docs.md beside a record, rendered in PartInfo", "project": "features", "area": "Library & CAD", "group": "4 Usability", "status": "open", "owner": "", "lead": "", "start": "2027-04-05", "end": "2027-04-09", "deps": "", "note": ""},
+{"id": "WP-283", "title": "FRAME documentation for users and developers", "project": "features", "area": "UI/UX (optikit)", "group": "4 Usability", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": "postponed (Bene 2026-09-15)"},
+{"id": "WP-286 tails", "title": "3D preview of the converted barrel; catalog pick for objective facts", "project": "features", "area": "UI/UX (optikit)", "group": "4 Usability", "status": "open", "owner": "", "lead": "", "start": "2027-02-22", "end": "2027-02-24", "deps": "", "note": ""},
+{"id": "WP-281 tails", "title": "Fiber coupler mesh; catalog row into a cube from the filter dialog", "project": "features", "area": "Library & CAD", "group": "4 Usability", "status": "open", "owner": "Jens", "lead": "Jens", "start": "2027-02-25", "end": "2027-02-26", "deps": "", "note": ""},
+{"id": "WP-277", "title": "Order this setup: shop SKUs, cart split", "project": "features", "area": "Pricing & Odoo", "group": "4 Usability", "status": "blocked", "owner": "", "lead": "", "start": "2027-04-05", "end": "2027-04-23", "deps": "WP-331", "note": "Odoo decisions first"},
+{"id": "WP-287", "title": "Set OPTIKIT_SMTP_* / OPTIKIT_QUOTE_TO on the deployment", "project": "features", "area": "Pricing & Odoo", "group": "4 Usability", "status": "untested", "owner": "", "lead": "", "start": "2026-11-16", "end": "2026-11-20", "deps": "", "note": "ops", "tester": "Christine"},
+{"id": "WP-156", "title": "±1-cell translation buttons", "project": "features", "area": "UI/UX (optikit)", "group": "4 Usability", "status": "open", "owner": "", "lead": "", "start": "2027-02-08", "end": "2027-02-09", "deps": "", "note": ""},
+{"id": "WP-157a", "title": "Fibers first-class; the empty-paths state says why", "project": "features", "area": "Optical design", "group": "4 Usability", "status": "open", "owner": "", "lead": "", "start": "2027-02-10", "end": "2027-02-12", "deps": "", "note": ""},
+{"id": "WP-308", "title": "Two tabs, one autosave key: last writer wins", "project": "features", "area": "UI/UX (optikit)", "group": "5 UI", "status": "open", "owner": "", "lead": "", "start": "2026-11-23", "end": "2026-11-24", "deps": "", "note": "bug, small"},
+{"id": "WP-303", "title": "Palette hygiene: groups listed twice, FRAME housings as \"f…\" cards", "project": "features", "area": "UI/UX (optikit)", "group": "5 UI", "status": "open", "owner": "", "lead": "", "start": "2026-11-26", "end": "2026-11-26", "deps": "", "note": "bug, ½ day"},
+{"id": "WP-304", "title": "\"glass span has non-positive axial thickness\" in the FRAME preview", "project": "features", "area": "Library & CAD", "group": "5 UI", "status": "open", "owner": "", "lead": "", "start": "2026-11-25", "end": "2026-11-25", "deps": "", "note": "bug, small"},
+{"id": "WP-73", "title": "UX overhaul", "project": "features", "area": "UI/UX (optikit)", "group": "5 UI", "status": "doing", "owner": "Manuel", "lead": "Manuel", "start": "", "end": "", "deps": "", "note": "Phase E; see P16", "tester": ""},
+{"id": "WP-70", "title": "Publish loop", "project": "features", "area": "Accounts & projects", "group": "6 Vision", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-56", "title": "Embedded viewer v2", "project": "features", "area": "UI/UX (optikit)", "group": "6 Vision", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-305", "title": "Accounts, service half: modes, roles, invitations, user root, publish requests", "project": "features", "area": "Accounts & projects", "group": "3.7 Accounts", "status": "untested", "owner": "Florian", "lead": "Florian", "start": "", "end": "", "deps": "", "note": "merged PR #30/#32", "tester": "Christine"},
+{"id": "WP-306", "title": "Accounts, editor half: login chip, account and admin pages, sign in to save", "project": "features", "area": "Accounts & projects", "group": "3.7 Accounts", "status": "untested", "owner": "Florian", "lead": "Florian", "start": "", "end": "", "deps": "", "note": "merged PR #30/#32", "tester": "Christine"},
+{"id": "WP-326…328", "title": "OPM wizard on the V04 plate generator", "project": "features", "area": "UI/UX (optikit)", "group": "3.2 FRAME", "status": "untested", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "tail: FLIM extra unit outside the bay; .bom.yml sidecar ask", "tester": "Dirk, Haiyue"},
+{"id": "WP-333", "title": "Readable names and search tags on library records", "project": "features", "area": "Library & CAD", "group": "3.1 Records & library", "status": "done", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-334", "title": "Schematic move/turn gizmo", "project": "features", "area": "UI/UX (optikit)", "group": "5 UI", "status": "untested", "owner": "", "lead": "", "start": "2026-11-16", "end": "2026-11-20", "deps": "", "note": "", "tester": "Christine"},
+{"id": "WP-335…344", "title": "Generic holder generators (contract, clamps, adapters, cradle, cartridge, plate, beam solid, vials, cover)", "project": "features", "area": "Library & CAD", "group": "1b Design → cubes", "status": "done", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-346…353", "title": "Import with poses → compare → gaps → fit → apply → solid checks (service)", "project": "features", "area": "Optical design", "group": "1b Design → cubes", "status": "done", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "tails wait on WP-345"},
+{"id": "WP-354", "title": "Optiland editor in the browser (Simulate)", "project": "features", "area": "Optical design", "group": "1b Design → cubes", "status": "untested", "owner": "Manuel", "lead": "Manuel", "start": "2026-11-23", "end": "2026-11-27", "deps": "", "note": "", "tester": "Haoran"},
+{"id": "WP-355", "title": "Import and fit in the editor (Cubes tab)", "project": "features", "area": "Optical design", "group": "1b Design → cubes", "status": "done", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-154", "title": "Reflective plane gratings through kernel and emitter", "project": "features", "area": "Optical design", "group": "3.3 DSN & engine", "status": "untested", "owner": "Manuel", "lead": "Manuel", "start": "", "end": "", "deps": "", "note": "", "tester": "Christine"},
+{"id": "WP-359", "title": "FRAME configurator as sold: prices, OPM by mode and camera", "project": "features", "area": "UI/UX (optikit)", "group": "3.2 FRAME", "status": "done", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-360", "title": "Objective wizard from a drawing's numbers", "project": "features", "area": "UI/UX (optikit)", "group": "3.2 FRAME", "status": "untested", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "", "tester": "Haoran"},
+{"id": "WP-361", "title": "Sample holder inserts (FRAME)", "project": "features", "area": "Library & CAD", "group": "3.2 FRAME", "status": "untested", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "", "tester": "Christine"},
+{"id": "WP-364", "title": "Tiers: what is free, what is paid, who has access to what", "project": "features", "area": "Accounts & projects", "group": "1c Team meeting", "status": "decision", "owner": "Sebastian", "lead": "Sebastian", "start": "", "end": "", "deps": "", "note": "one access matrix: anonymous, free, paid, collaborator, curator/admin, education vs private projects, quota, libraries, compute, exports, Commercial tab; feeds M3"},
+{"id": "WP-365", "title": "Where simulation and optimization run: browser (WebAssembly) vs local Computer/hetzner", "project": "features", "area": "Optical design", "group": "1c Team meeting", "status": "decision", "owner": "Manuel, Ethan", "lead": "Manuel", "start": "", "end": "", "deps": "", "note": "own compute needs billing + job queue; direction: client-side, paid optimization service later; WP-354/P18 run on the service today"},
+{"id": "WP-366", "title": "Pricing model: one default factor, bundle discounts, visible breakdown", "project": "features", "area": "Pricing & Odoo", "group": "1c Team meeting", "status": "decision", "owner": "Sebastian, Bene, Dirk", "lead": "Sebastian", "start": "", "end": "", "deps": "", "note": "price = sum of part prices x factor (today 3.3, covers working hours); presets get a predefined discount; customer sees the end price; part of P17; Bene 2026-10-15: labour is inside each element's Odoo price, OPM = sum of members, discount by hand in Odoo; open is the preset bundle discount", "tester": ""},
+{"id": "WP-367", "title": "Licence per design: which licences the File tab offers", "project": "features", "area": "Accounts & projects", "group": "1c Team meeting", "status": "decision", "owner": "Manuel", "lead": "Manuel", "start": "", "end": "", "deps": "", "note": "Manuel asked for input; list, fork inheritance, where it is stored"},
+{"id": "WP-368", "title": "Single sign-on route across Optikit, NewSwitch, Architect (re-opens D-L1): ADR", "project": "features", "area": "Accounts & projects", "group": "1c Team meeting", "status": "doing", "owner": "Florian, Johannes", "lead": "Florian", "start": "", "end": "", "deps": "", "note": "Ory vs fastapi-users; offline-first local users + later online link (Bambu Lab style); no accounts in the DSN; raise at the Friday demo (P23) 2026-11-10 (Florian): comparing Johannes' auth, Keycloak and alternatives for the SSO design note (shared accounts across openUC2 apps, offline, device roles)."},
+{"id": "WP-369", "title": "Instrument access in NewSwitch: one user at a time, laser rights, imaging rights", "project": "features", "area": "Accounts & projects", "group": "1c Team meeting", "status": "doing", "owner": "Florian, Johannes", "lead": "Florian", "start": "", "end": "", "deps": "WP-368", "note": "authorization on the instrument, identity from WP-368", "tester": ""},
+{"id": "WP-370", "title": "Libraries as iser spaces: composable sources, openUC2 \"cloud\" as default, bring-your-own via Github => organize user space libraries", "project": "features", "area": "Accounts & projects", "group": "1c Team meeting", "status": "decision", "owner": "Ethan, Manuel", "lead": "Ethan", "start": "2026-11-02", "end": "2027-01-02", "deps": "", "note": "not one giant library; community template + PLAN-USER-ACCOUNTS 1.2 are the start; sit down first; gates WP-371", "tester": ""},
+{"id": "WP-371", "title": "Projects back end: versions with restore, share links with permissions, collaborative lists", "project": "features", "area": "Accounts & projects", "group": "1c Team meeting", "status": "open", "owner": "Ethan, Manuel", "lead": "Ethan", "start": "", "end": "", "deps": "WP-370, WP-305", "note": "what the v5 prototype shows, none of it behind the service yet", "tester": ""},
+{"id": "WP-372", "title": "Wire UI v5 to the service in a sibling repo (shell, editor, library, BOM, Simulate)", "project": "features", "area": "UI/UX (optikit)", "group": "1c Team meeting", "status": "open", "owner": "Manuel, Bene", "lead": "Manuel", "start": "", "end": "", "deps": "P16", "note": "after next week's UI round; carry over layers overlay, command palette, BOM warnings, trackpad move hint; optiland-canvas and Ethan's schema not wired yet"},
+{"id": "WP-373", "title": "User test round for UI v5: two optics people in Manuel's group, Jan (PPE)", "project": "features", "area": "UI/UX (optikit)", "group": "1c Team meeting", "status": "open", "owner": "Manuel, Bene", "lead": "Manuel", "start": "", "end": "", "deps": "", "note": "ahead of P16's three-testers acceptance"},
+{"id": "WP-374", "title": "Schematic symbols render the Optiland prescription; mechanical diameter survives", "project": "features", "area": "Optical design", "group": "1c Team meeting", "status": "decision", "owner": "Manuel, Haiyue", "lead": "Manuel", "start": "", "end": "", "deps": "", "note": "diameter 25 prints back as ~24.95; semi_aperture never emitted (AUDIT); compact symbol stays the fallback"},
+{"id": "WP-375", "title": "Objective models: ideal stand-in, expired-patent prescription or black box", "project": "features", "area": "Optical design", "group": "1c Team meeting", "status": "open", "owner": "", "lead": "", "start": "2027-01-25", "end": "2027-02-05", "deps": "WP-345", "note": "master's student on the FRAME test (name not in the transcript); Optiland refuses BLACKBOX; feeds WP-220b, WP-295"},
+{"id": "WP-376", "title": "Ideal design to real catalog parts, and a per-component page (cube, optimized position, generate holder)", "project": "features", "area": "Optical design", "group": "1c Team meeting", "status": "open", "owner": "Manuel, Bene", "lead": "Manuel", "start": "", "end": "", "deps": "", "note": "related WP-349/350, WP-241 UI tail, WP-286 tails"},
+{"id": "WP-377", "title": "Odoo price lookup by id; test database", "project": "features", "area": "Pricing & Odoo", "group": "1c Team meeting", "status": "open", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "answered 2026-10-15: search_read by default_code, no custom code; test database openuc2-test since 2026-10-16"},
+{"id": "WP-378", "title": "Wiring view: controller, motor driver, actuated part, CAN id; exported to NewSwitch", "project": "features", "area": "Hardware integration", "group": "1c Team meeting", "status": "open", "owner": "Bene, Manuel", "lead": "Bene", "start": "", "end": "", "deps": "P3, P6", "note": "M2; vendor-agnostic, no PCB layout; needs Ethan's connections work", "tester": ""},
+{"id": "WP-379", "title": "Setups from the parts I own (inventory to buildable setups)", "project": "features", "area": "Library & CAD", "group": "6 Vision", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "WP-323", "note": "year two; collect for the next proposal"},
+{"id": "WP-400", "title": "Merge Ethan's group/assembly DSN formalism", "project": "migration", "area": "DSN & Go sync", "group": "1d Go assemblies", "status": "doing", "owner": "Bene, Ethan", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "Go #32 (eea159e); parts WP-400a…e, BACKLOG §1d; D-A1…A3 first 2026-11-10: a–d on main (PR #35); open: WP-400e (D-A2), 400f mates, 400g adapters, D-A5, D-A6."},
+{"id": "WP-400a", "title": "Read and evaluate assemblies exactly as Go does: schema, tree flatten, checks, assembly report, parity at eea159e", "project": "migration", "area": "DSN & Go sync", "group": "1d Go assemblies", "status": "done", "owner": "", "lead": "", "start": "", "end": "", "deps": "D-A1, D-A3", "note": "3 days; folds WP-358; branch feat/go-assemblies 2026-11-10: on main through PR #35 (feat/go-assemblies, merged 2026-11-01); HANDOVER-WP400.md §0."},
+{"id": "WP-400b", "title": "Every writer places assembly nodes; none writes pose on a component (seats as assemblies)", "project": "migration", "area": "DSN & Go sync", "group": "1d Go assemblies", "status": "done", "owner": "", "lead": "", "start": "", "end": "", "deps": "WP-400a", "note": "2 days 2026-11-10: on main through PR #35 (feat/go-assemblies, merged 2026-11-01); HANDOVER-WP400.md §0."},
+{"id": "WP-400c", "title": "library migrate step assemblies over library, golden, fixtures, community template, user roots", "project": "migration", "area": "DSN & Go sync", "group": "1d Go assemblies", "status": "done", "owner": "", "lead": "", "start": "", "end": "", "deps": "WP-400a", "note": "1 day; the library PR merges with the branch 2026-11-10: on main through PR #35 (feat/go-assemblies, merged 2026-11-01); HANDOVER-WP400.md §0."},
+{"id": "WP-400d", "title": "Editor reads and writes the '' assembly: parent nodes, seats as assemblies, autosave v2", "project": "migration", "area": "DSN & Go sync", "group": "1d Go assemblies", "status": "done", "owner": "", "lead": "", "start": "", "end": "", "deps": "WP-400b", "note": "3 days; the branch merges into main when this passes 2026-11-10: on main through PR #35 (feat/go-assemblies, merged 2026-11-01); HANDOVER-WP400.md §0."},
+{"id": "WP-400e", "title": "Groups are location parts tagged subkind/group", "project": "migration", "area": "DSN & Go sync", "group": "1d Go assemblies", "status": "decision", "owner": "Ethan", "lead": "Ethan", "start": "2026-12-07", "end": "2026-12-11", "deps": "D-A2, WP-400d", "note": "1 day"},
+{"id": "WP-401", "title": "From the design to a NewSwitch config file the user downloads", "project": "migration", "area": "Hardware integration", "group": "1e NewSwitch config", "status": "doing", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "WP-400", "note": "parts WP-401a…e, BACKLOG §1e; D-N1…N3 first; re-cuts P2, P3, P6's first step 2026-11-10: 401b/c landed, 401a's library half landed with WP-402/403; open: 401d, 401e; D-N3 (camera controller) with Christian."},
+{"id": "WP-401a", "title": "Boards and devices in the library: Standalone v4, FRAME HAT+, device files on the M1 parts, the wire design", "project": "migration", "area": "Hardware integration", "group": "1e NewSwitch config", "status": "untested", "owner": "", "lead": "", "start": "2026-11-16", "end": "2026-11-27", "deps": "D-N1, D-N2, D-N3, WP-400c", "note": "2 days; = P3, folds WP-315; Florian for the facts 2026-11-10: boards and devices are in the library (main 26f9bba, WP-403); open: D-N3, Bene's facts list in BACKLOG §1e.", "tester": "Christine"},
+{"id": "WP-401b", "title": "Device ids, bindings and wires in the editor: a Wiring table, the wiring assembly written on save", "project": "migration", "area": "Hardware integration", "group": "1e NewSwitch config", "status": "untested", "owner": "Bene", "lead": "Bene", "start": "2026-10-23", "end": "2026-11-06", "deps": "WP-400d, WP-401a", "note": "2 days; P6's first step. 2026-11-08: landed with WP-402/403 on feat/newswitch-connections (18 commits, no PR yet)", "tester": "Ethan, Florian"},
+{"id": "WP-401c", "title": "NewSwitch config and wiring report as downloads (results, export/newswitch.py, endpoints, File menu)", "project": "migration", "area": "Hardware integration", "group": "1e NewSwitch config", "status": "done", "owner": "Bene", "lead": "Bene", "start": "2026-10-23", "end": "2026-11-01", "deps": "WP-400a", "note": "1–2 days; = P2, folds WP-314; parity with Ethan's v0.1.0-alpha.2, valid against NewSwitch's schema. 2026-11-08: landed (PR #36, WP-402 re-pinned at 839b79a); open tail: valid against NewSwitch's schema waits for NewSwitch to take #37"},
+{"id": "WP-401d", "title": "Checks before the download: what NewSwitch's loader refuses, unwired devices, undriven inputs", "project": "migration", "area": "Hardware integration", "group": "1e NewSwitch config", "status": "open", "owner": "", "lead": "", "start": "2026-11-17", "end": "2026-11-18", "deps": "WP-401c", "note": "½ day"},
+{"id": "WP-401e", "title": "The FRAME config on the bench: validated by config_io, NewSwitch boots from it", "project": "migration", "area": "Hardware integration", "group": "1e NewSwitch config", "status": "blocked", "owner": "Christian, Bene, Florian", "lead": "Christian", "start": "", "end": "", "deps": "D-N1, D-N2, D-N3, WP-401b", "note": "1 day; motors/LED/camera wait for NewSwitch's runtime to read mapping", "tester": ""},
+{"id": "WP-387", "title": "Odoo behind a guard: a proxy that holds the key and passes only product reads and draft quotations; secret scanning before commits", "project": "features", "area": "Pricing & Odoo", "group": "1f Team meeting 10-21", "status": "doing", "owner": "Bene", "lead": "Bene", "start": "", "end": "", "deps": "", "note": "built 2026-11-01: secret check (.githooks/pre-commit) and the proxy `odoo guard`; open: run it beside the service, before WP-332/381 go public"},
+{"id": "WP-388", "title": "How the editor shows Ethan's assembly tree: several assemblies per design, dependencies, mate connectors (UI v5)", "project": "features", "area": "UI/UX (optikit)", "group": "1f Team meeting 10-21", "status": "decision", "owner": "Manuel, Ethan", "lead": "Manuel", "start": "", "end": "", "deps": "WP-400d", "note": "", "tester": ""},
+{"id": "WP-389", "title": "Terms of use for uploaded designs: the uploader guarantees the rights, a takedown path; read OSH Park, Aisler, JLCPCB", "project": "features", "area": "Accounts & projects", "group": "1f Team meeting 10-21", "status": "open", "owner": "", "lead": "", "start": "2027-03-01", "end": "2027-03-31", "deps": "", "note": "owner to confirm; before public accounts (M3); lawyer before launch"},
+{"id": "WP-390", "title": "Designs from other repositories: design: by Git URL and version (Ethan's Go step), our loader follows", "project": "features", "area": "DSN & Go sync", "group": "1f Team meeting 10-21", "status": "open", "owner": "Ethan, Bene", "lead": "Ethan", "start": "", "end": "", "deps": "", "note": "after Ethan's Go change; needed before WP-370"},
+{"id": "WP-391", "title": "The library restart as a team hackathon: clean catalog (Thorlabs first), M1 modules with devices, kit members", "project": "features", "area": "Library & CAD", "group": "1f Team meeting 10-21", "status": "done", "owner": "Bene, team, Sebastian, Dirk", "lead": "Bene", "start": "", "end": "", "deps": "WP-400", "note": "dropped 2026-11-01 (Bene: no library restart needed)", "tester": ""},
+{"id": "WP-392", "title": "One configurator for FRAME and miniFRAME: choose frame, validated presets, simple and advanced mode", "project": "features", "area": "UI/UX (optikit)", "group": "1g Inventor to Odoo 11-01", "status": "untested", "owner": "", "lead": "", "start": "2026-11-11", "end": "2026-11-20", "deps": "WP-393, WP-394", "note": "built 2026-11-01 on feat/odoo-sync: FRAME or miniFRAME, simple or advanced, stepsFor, the layer editor step; presets wait for WP-394 2026-11-10: Haiyue deployed both versions and meets Dirk on the FRAME configurator 2026-11-11; UI fixes go as PRs to optikit-app-v1.", "tester": "Haiyue"},
+{"id": "WP-393", "title": "OPM renamed miniFRAME in the UI and docs (ids, tags, CAD names unchanged)", "project": "features", "area": "UI/UX (optikit)", "group": "1g Inventor to Odoo 11-01", "status": "untested", "owner": "", "lead": "", "start": "2026-11-11", "end": "2026-11-20", "deps": "", "note": "built 2026-11-01 on feat/odoo-sync; D-I1 taken", "tester": "Haiyue"},
+{"id": "WP-394", "title": "Validated presets as shipped setups with a CI check per preset (folds WP-280, 274, 329, 362)", "project": "features", "area": "UI/UX (optikit)", "group": "1g Inventor to Odoo 11-01", "status": "open", "owner": "", "lead": "", "start": "2027-01-11", "end": "2027-01-22", "deps": "", "note": "decision D-I5"},
+{"id": "WP-395", "title": "Spectral checklist per line in advanced mode; a library laser picks its filters (folds WP-297a)", "project": "features", "area": "UI/UX (optikit)", "group": "1g Inventor to Odoo 11-01", "status": "untested", "owner": "", "lead": "", "start": "2026-11-11", "end": "2026-11-20", "deps": "WP-392", "note": "built 2026-11-01 on feat/odoo-sync: spectralChecklist + SpectralChecklist.tsx in the fluorescence step; not seen in the app (no fluorescence miniFRAME in this library)", "tester": "Haiyue"},
+{"id": "WP-396", "title": "Quote from any page: one quote panel and /configurator/quote (folds WP-299, WP-384 UI)", "project": "features", "area": "Pricing & Odoo", "group": "1g Inventor to Odoo 11-01", "status": "untested", "owner": "", "lead": "", "start": "2026-11-11", "end": "2026-11-20", "deps": "WP-381", "note": "built 2026-11-01 on feat/odoo-sync: components/quote, /configurator/quote (open design, ?collection=, ?design=), Quote buttons; open: kit suggestion as a section", "tester": "Haiyue"},
+{"id": "WP-397", "title": "Quote request lands in Odoo: mail to the sales alias now, crm.lead through the guard later (folds WP-287)", "project": "features", "area": "Pricing & Odoo", "group": "1g Inventor to Odoo 11-01", "status": "untested", "owner": "", "lead": "", "start": "2026-11-16", "end": "2026-11-27", "deps": "WP-387", "note": "built 2026-11-01 on feat/odoo-sync: POST /v1/quote/request (crm.lead with the files, else mail) and the contact form in the FRAME summary; open: one request against openuc2-test, the privacy text, WP-396's other pages", "tester": "Haiyue"},
+{"id": "WP-398", "title": "Inventor to library in one run: datum check, export, manifest with part numbers and BoMs, import onto existing ids", "project": "features", "area": "Library & CAD", "group": "1g Inventor to Odoo 11-01", "status": "untested", "owner": "", "lead": "", "start": "2026-11-23", "end": "2026-12-04", "deps": "", "note": "built 2026-11-01 on feat/odoo-sync: assembly_manifest.py (PyInventor) + import manifest; dry run over the 58 kit modules; run with --export 2026-11-03: 3 re-bound (not committed in optikit-library), 12 held back; open: the cable footprints, five changed CAD files, the FRAME parts", "tester": "Christine"},
+{"id": "WP-399", "title": "One sync command optikit <-> Odoo: import CSVs incl. BoMs, two-way report, --pull-prices (folds WP-331)", "project": "features", "area": "Pricing & Odoo", "group": "1g Inventor to Odoo 11-01", "status": "untested", "owner": "", "lead": "", "start": "2026-11-23", "end": "2026-12-04", "deps": "WP-398", "note": "built 2026-11-01 on feat/odoo-sync: sync, push with backup + journal, odoo undo, --bom (Inventor assemblies, the FRAME electronics), --pull-prices, odoo-sync.yml on tags; read against the new openuc2-test; open: the first push, the WP-398 manifest", "tester": "Haoran"},
+{"id": "WP-402", "title": "Go's NewSwitch connections: the corpus at 839b79a, wires place the connection designs, boards and cameras connect to root", "project": "migration", "area": "Hardware integration", "group": "1e NewSwitch config", "status": "untested", "owner": "", "lead": "", "start": "2026-11-11", "end": "2026-11-20", "deps": "WP-401", "note": "on feat/newswitch-connections; NewSwitch reads no connections yet, GO-SYNC.md", "tester": "Christine"},
+{"id": "WP-403", "title": "The HAT, CAN and the three wiring diagrams in the Wiring tab: outputs per connection, boards' defaults in their records, the Electronics group", "project": "migration", "area": "Hardware integration", "group": "1e NewSwitch config", "status": "untested", "owner": "", "lead": "", "start": "2026-11-11", "end": "2026-11-20", "deps": "WP-402", "note": "on feat/newswitch-connections; FRAME histology, light-sheet and 3-channel fluorescence export as drawn; not on hardware; the boards' CAD in HANDOVER-INVENTOR-ELECTRONICS.md", "tester": "Christine"},
+{"id": "WP-59", "title": "OSHWLab for optics: a public gallery, featured by openUC2, ranked by orders", "project": "features", "area": "Accounts & projects", "group": "6 Vision", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "WP-371, WP-389", "note": "meeting 2026-10-21"},
+{"id": "V1", "title": "A sketch from a photo becomes ideal elements on the canvas", "project": "features", "area": "UI/UX (optikit)", "group": "6 Vision", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": "meeting 2026-10-21"},
+{"id": "V2", "title": "The library ecosystem: anyone publishes, a registry, pull requests, vendor and lab libraries", "project": "features", "area": "Library & CAD", "group": "6 Vision", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "WP-370, WP-390", "note": "meeting 2026-10-21"},
+{"id": "WP-55", "title": "GitHub docs sideload", "project": "features", "area": "File I/O", "group": "6 Vision", "status": "later", "owner": "", "lead": "", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "296379d0-cd34-4a33-9bec-b2aa9c2b6eb3", "title": "Roundtrip Odoo pricing through optikit", "project": "features", "area": "Pricing & Odoo", "group": "", "status": "open", "owner": "Bene, Marius, Sebastian, Dirk", "lead": "Bene", "tester": "Dirk", "start": "", "end": "", "deps": "", "note": ""},
+{"id": "WP-404", "title": "The three reference instruments as library setups (FRAME histology, light sheet, 3-channel fluorescence) from Go's examples, with wiring; CI compares each export with Go's _newswitch-config.yml", "project": "migration", "area": "Hardware integration", "group": "1h Roundtrip 2026-11-08", "status": "open", "owner": "Bene, Claude, Manuel, Ethan", "lead": "Bene", "start": "2026-11-09", "end": "2026-11-20", "deps": "WP-405", "note": "M; = step 1 of the year goal (BACKLOG §1h); the FRAME first, the light sheet after WP-405 2026-11-10 (Manuel): a test approach for the three systems discussed on Friday.", "tester": ""},
+{"id": "WP-405", "title": "The light-sheet parts the library lacks: sample chamber, detection objective + tube lens, the laser's cube, devices on each; galvo device type is a Go/NewSwitch schema ask", "project": "migration", "area": "Library & CAD", "group": "1h Roundtrip 2026-11-08", "status": "open", "owner": "Haiyue, Bene, CAD team, Jens", "lead": "Haiyue", "start": "2026-11-09", "end": "2026-11-27", "deps": "", "note": "M; cubglv, cubglvbrd, cublencyl30x32f100, cubcam_mtr3cmos, cublas520, las_cashor exist"},
+{"id": "WP-406", "title": "newswitch reads Go #37's config: connections, root, direct in config_io; pwm_max off the wire; type from device + output; uc2-rest ids above 3", "project": "migration", "area": "Hardware integration", "group": "1h Roundtrip 2026-11-08", "status": "open", "owner": "Christian, Florian, Ethan", "lead": "Christian", "start": "2026-11-09", "end": "2026-11-22", "deps": "", "note": "M; gates P7, P10, WP-401e; acceptance: Go's nine configs and our FRAME export load in python -m newswitch.config_io and boot the runtime; tail: reload a config without a restart; alternative (Bene decides): core writes the pre-#37 shape behind a flag — a variation from Go, not built", "tester": ""},
+{"id": "WP-407", "title": "One newswitch line for M1: merge feat/controller-mapping-runtime into main; new-stack is the M2 base and reads the exported config, not the .dsn", "project": "migration", "area": "ImSwitch migration", "group": "1h Roundtrip 2026-11-08", "status": "decision", "owner": "Bene, Johannes, Christian", "lead": "Bene", "start": "", "end": "2026-11-14", "deps": "", "note": "the two lines are 440 files apart with no PR; output: a line in newswitch's decision log 2026-11-10: Florian merged the hardware runtime into main (d78df7b). Christian will not continue on the newswitch core until responsibilities are clear — this decision includes who owns which part."},
+{"id": "WP-408", "title": "Stage moves, homes and the camera streams on the Pi from the exported FRAME config (= P11 + P21 + WP-401e); uc2_cam_py vs MVS SDK unblocked", "project": "migration", "area": "Hardware drivers", "group": "1h Roundtrip 2026-11-08", "status": "doing", "owner": "Christian, Florian", "lead": "Christian", "start": "2026-11-09", "end": "2026-12-04", "deps": "WP-406, WP-407", "note": "M; Pi 30059 today: serial + LED-off only 2026-11-10 (Florian): axes move on the Pi over serial from the YAML; CAN, homing and the camera still to do."},
+{"id": "WP-409", "title": "Slide scanning in newswitch as ImSwitch has it, with a redesigned UI: tile scan with real FOV, autofocus + focus map, tiles with stage pose, overview, blind-stitched preview; gating per InvariantMatrix", "project": "migration", "area": "ImSwitch migration", "group": "1h Roundtrip 2026-11-08", "status": "open", "owner": "Florian, Johannes, Christian, Bene", "lead": "Florian", "start": "2026-11-16", "end": "2027-01-29", "deps": "WP-408, WP-410", "note": "L–XL; Bene's priority 2026-11-08; pulls REQ-PRC-014's acquisition half into the MVP, OP-007 (registration) stays deferred; reference: ImSwitch ExperimentController, StageMapController, aufgaben/", "tester": ""},
+{"id": "WP-410", "title": "OME-Zarr that Arkitekt's mikro/orkestrator renders: NGFF multiscale per acquisition, channels + stage pose per tile, provenance (design id, config hash, axis→input)", "project": "migration", "area": "File I/O", "group": "1h Roundtrip 2026-11-08", "status": "open", "owner": "Johannes", "lead": "Johannes", "start": "2026-11-16", "end": "2026-12-11", "deps": "", "note": "M; = step 7; start from mikro_export.py (optikit-tests) and ImSwitch aufgaben/storage.py; closes OP-002, OP-018 by decision; open: M1 line or new-stack only (follows WP-407)", "tester": ""},
+{"id": "WP-411", "title": "One home for the service: optikit-app-v1's service/ (git subtree) or optikit-core", "project": "features", "area": "Infrastructure", "group": "1h Roundtrip 2026-11-08", "status": "decision", "owner": "Bene, Manuel", "lead": "Bene", "start": "", "end": "2026-11-14", "deps": "", "note": "2026-11-09, Manuel: app-v1 PR #32 makes service/ = optikit-v2 7586974 (main + feat/newswitch-connections, Go #32 format); PR #34 has electronics.ts read the service's index. Manuel asks Bene to develop new features in app-v1 from about 2026-11-14. Left for Bene: accept app-v1 as the home (then core's code stops changing, and where BACKLOG and this board live follows), or keep core as the home and pull from it. Six app-side fixes live only in app-v1 (SERVICE.md)."},
+{"id": "WP-412", "title": "Accounts live on both sides: WP-307 deployed, app-v1 AuthDialog on /v1/auth/*; newswitch roles enforced beyond admin (T-060, OP-004); lok as a provider after WP-368", "project": "features", "area": "Accounts & projects", "group": "1h Roundtrip 2026-11-08", "status": "open", "owner": "Florian, Manuel, Johannes", "lead": "Florian", "start": "2026-11-16", "end": "2026-12-04", "deps": "WP-368", "note": "S–M; Google/GitHub slots exist in httpx-oauth; Manuel's accounts are localStorage today", "tester": ""},
+{"id": "WP-413", "title": "Designs on the service: /v1/designs CRUD with history on the user root (WP-371's first cut; a project is a git repo, git hidden)", "project": "features", "area": "Accounts & projects", "group": "1h Roundtrip 2026-11-08", "status": "open", "owner": "Ethan, Bene, Manuel", "lead": "Ethan", "start": "", "end": "", "deps": "WP-370, WP-412", "note": "M; Manuel's versions.ts is per browser today"},
+{"id": "WP-414", "title": "The light path from the design for newswitch's metadata: per detector the ordered elements (source, objective, filters, dichroics, tube lens, detector) and the image-to-stage transform, from /v1/sequence, beside the device config", "project": "migration", "area": "Hardware integration", "group": "1h Roundtrip 2026-11-08", "status": "decision", "owner": "Johannes, Bene, Ethan, Christian, Manuel", "lead": "Johannes", "start": "", "end": "", "deps": "", "note": "M; Bene's ask (beam path → metadata), KeyFeatureOverview row 20; newswitch managers/light_path.py invents it today (translate_z(120)); the spelling is a Go question: a config section via newswitch-<section>-id/-config results, or a file of its own"},
+{"id": "WP-415", "title": "CI on main green again: a token for the private optikit-library on the checkout step (.github/workflows/ci.yml:19)", "project": "features", "area": "Infrastructure", "group": "1h Roundtrip 2026-11-08", "status": "open", "owner": "Bene", "lead": "Bene", "start": "2026-11-09", "end": "2026-11-10", "deps": "", "note": "S; red since 2026-11-03 (repository not found); closes D-U5 by the fact"},
+{"id": "WP-416", "title": "The portable ImSwitch pieces into newswitch: model/canbus (scan, id reassignment, OTA, USB flash), the objective model with per-slot offsets, the calibration store with the FRAME calibration's outputs (OP-025, T-053)", "project": "migration", "area": "ImSwitch migration", "group": "1h Roundtrip 2026-11-08", "status": "doing", "owner": "Florian, Christian, Bene", "lead": "Florian", "start": "", "end": "", "deps": "WP-407", "note": "M; beside WP-409/410; not load_uc2_optikit_dict (pre-DSN format)", "tester": ""},
+{"id": "WP-417", "title": "Which way the sample moves when motor x turns: the axis vector (and sign) from schema/motion.py into the axis device", "project": "migration", "area": "Hardware integration", "group": "1h Roundtrip 2026-11-08", "status": "doing", "owner": "Christian, Johannes, Manuel", "lead": "Christian", "start": "2026-11-10", "end": "2026-11-21", "deps": "WP-414", "note": "S; Bene 2026-11-08: not urgent; for automated calibration routines 2026-11-10 (Manuel): working out what newswitch needs for the automatic coordinates.", "tester": ""},
+{"id": "P25", "title": "newswitch GUI requirements: a design note with Dirk's remarks (which controls, which workflow, per InvariantMatrix.md)", "project": "migration", "area": "UI/UX (newswitch)", "group": "C · NewSwitch", "status": "doing", "owner": "Christian", "lead": "Christian", "start": "2026-11-10", "end": "2026-11-21", "deps": "", "note": "Christian's report 2026-11-10; feeds WP-409's scan UI and P13"}
+]
+, roles: [
+{"name": "Bene", "does": ["Project lead of optikit and newswitch"]},
+{"name": "Florian", "does": ["User accounts in newswitch: local and offline", "newswitch sign-in through Arkitekt's lok, with Johannes", "newswitch UI: port features from ImSwitch", "Talk to users (Franzi, Dirk, …) and fix the features they need"]},
+{"name": "Ethan", "does": ["Curate the DSN format (the Go reference)", "Server and cloud infrastructure for newswitch", "User spaces as git repositories"]},
+{"name": "Christian", "does": ["Hardware integration: the camera stack", "Live view"]},
+{"name": "Johannes", "does": ["lok and orkestrator integration, visualisation", "Beam path handling", "Metadata", "File I/O: mikro, Zarr, TIFF, …"]},
+{"name": "Manuel", "does": ["Port Bene's playground (optikit-v2) into the new UI v5", "Optics correct and traceable: the beam path export"]},
+{"name": "Haiyue", "does": ["User testing, e.g. getting quotes internally", "Add new modules to the library"]},
+{"name": "Sebastian", "does": ["Get the prices ready, with Dirk"]},
+{"name": "Dirk", "does": ["Get the prices ready, with Sebastian"]},
+{"name": "Haoran", "does": ["Check hardware and prices"]},
+{"name": "Jens", "does": ["CAD exchange: provide the files for optikit"]},
+{"name": "Christine", "does": ["Testing"]}
+]
+};</script>
+</head>
+<body>
+<header>
+  <h1>Optikit work packages</h1>
+  <button id="vBoard">Board</button><button id="vAreas">Areas</button><button id="vRoles">Roles</button><button id="vPeople">People</button><button id="vGantt">Gantt</button>
+  <select id="fArea"></select>
+  <select id="fProject"><option value="">all projects</option><option value="migration">migration (NewSwitch)</option><option value="features">features (backlog)</option></select>
+  <select id="fOwner"></select>
+  <select id="fStatus"></select>
+  <input id="fText" type="search" placeholder="filter id, title, group, note…">
+  <button id="new">+ New WP</button>
+  <span id="saved"></span>
+</header>
+<main id="board"></main>
+<main id="gantt" hidden></main>
+
+<datalist id="people"></datalist><datalist id="groups"></datalist>
+<dialog id="dlg"><form method="dialog" id="frm">
+  <label>ID <input name="id" readonly placeholder="assigned on save"></label>
+  <label>Title <input name="title" required></label>
+  <label>Project <select name="project"><option>migration</option><option>features</option><option>milestone</option></select></label>
+  <label>Area <select name="area"></select></label>
+  <label>Group <input name="group" list="groups"></label>
+  <label>Status <select name="status"></select></label>
+  <label>Lead <input name="lead" list="people" placeholder="the one main responsible"></label>
+  <label>Owner <input name="owner" list="people" placeholder="Bene, Claude — the lead goes first"></label>
+  <label>Tester <input name="tester" list="people" placeholder="someone other than the owner"></label>
+  <label>Start <input name="start" type="date"></label>
+  <label>End <input name="end" type="date"></label>
+  <label>After <input name="deps" placeholder="titles or ids, comma-separated"></label>
+  <label>Note <textarea name="note" rows="3"></textarea></label>
+  <menu><button id="del" type="button" onclick="dlg.close('del')">Delete</button><button type="button" onclick="dlg.close()">Cancel</button><button value="ok">Save</button></menu>
+</form></dialog>
+
+<script>
+const STATUS = {open: 'Open', doing: 'Doing', blocked: 'Blocked', decision: 'Needs decision', untested: 'Landed · untested', done: 'Done', later: 'Irrelevant / later'};
+const FIELDS = ['id', 'title', 'project', 'area', 'group', 'status', 'lead', 'owner', 'tester', 'start', 'end', 'deps', 'note'];
+const AREAS = ['Hardware integration', 'Hardware drivers', 'ImSwitch migration', 'UI/UX (newswitch)', 'UI/UX (optikit)', 'Optical design',
+  'Library & CAD', 'Pricing & Odoo', 'Accounts & projects', 'File I/O', 'DSN & Go sync', 'Infrastructure'];
+const areaRank = a => { const i = AREAS.indexOf(a); return i < 0 ? AREAS.length : i; };
+const areaHue = a => areaRank(a) * 360 / AREAS.length;
+const DAY = 864e5, PX = 6;  // px per day; .track's grid repeats every 7*PX
+const $ = s => document.querySelector(s);
+const el = n => $('#frm').elements.namedItem(n);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const names = s => (s || '').split(/[,+]/).map(s => s.trim()).filter(Boolean);
+const team = w => [w.lead && `<b title="lead">${esc(w.lead)}</b>`, ...names(w.owner).filter(n => n !== w.lead).map(esc)].filter(Boolean).join(', ');
+const owners = w => names(w.owner), testers = w => names(w.tester), involved = w => [...new Set([...owners(w), ...testers(w)])];
+const fmt = t => t ? new Date(t).toLocaleDateString('en-US', {day: 'numeric', month: 'short', timeZone: 'UTC'}) : '';
+const isoWeek = t => { const d = new Date(t); d.setUTCDate(d.getUTCDate() + 3 - (d.getUTCDay() + 6) % 7); return 1 + Math.floor((d - Date.UTC(d.getUTCFullYear(), 0, 1)) / DAY / 7); };
+const isUuid = id => /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
+const label = w => isUuid(w.id) ? '' : w.id;  // uuid rows are known by their title only
+const depText = w => names(w.deps).map(d => { const t = wps.find(x => x.id === d); return t && isUuid(d) ? t.title : d; }).join(', ');
+const depIds = s => [...wps].sort((a, b) => b.title.length - a.title.length).reduce((r, x) => x.title.length > 3 ? r.split(x.title).join(x.id) : r, s);  // titles typed in deps become ids
+let wps = [], roles = [], editing = null;
+const SNAP = window.SNAPSHOT;  // set by `board.py export`: a read-only page
+
+async function load() {
+  if (SNAP) {
+    wps = SNAP.wps; roles = SNAP.roles; document.body.classList.add('ro'); $('#saved').textContent = `snapshot of ${SNAP.date}, read-only`;
+    for (const f of FIELDS) el(f).tagName === 'SELECT' ? el(f).disabled = true : el(f).readOnly = true;
+    return fillLists(), render();
+  }
+  const r = await fetch('wps.json', {cache: 'no-store'});
+  if (!r.ok) return $('#saved').textContent = 'cannot read wps.json — start board.py';
+  wps = await r.json();
+  roles = await fetch('people.json', {cache: 'no-store'}).then(r => r.ok ? r.json() : []).catch(() => []);
+  fillLists(); render();
+}
+async function save() {
+  try {
+    const r = await fetch('wps.json', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(wps)});
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    $('#saved').textContent = 'saved ' + new Date().toLocaleTimeString();
+  } catch (e) { $('#saved').textContent = 'NOT SAVED: ' + e.message; }
+}
+function fillLists() {
+  const people = [...new Set(wps.flatMap(involved))].sort(), groups = [...new Set(wps.map(w => w.group))].sort();
+  const keep = $('#fOwner').value;
+  $('#fOwner').innerHTML = '<option value="">all people</option><option value="-">unassigned</option>' + people.map(p => `<option>${esc(p)}</option>`).join('');
+  $('#fOwner').value = keep;
+  $('#people').innerHTML = people.map(p => `<option value="${esc(p)}">`).join('');
+  $('#groups').innerHTML = groups.map(g => `<option value="${esc(g)}">`).join('');
+}
+function shown() {
+  const p = $('#fProject').value, o = $('#fOwner').value, q = $('#fText').value.toLowerCase(), st = $('#fStatus').value, ar = $('#fArea').value;
+  return wps.filter(w => w.project !== 'milestone' && (!p || w.project === p) && (!ar || (w.area || '') === ar)
+    && (!st || (st === 'active' ? ['open', 'doing'] : [st]).includes(w.status || 'open'))
+    && (!o || (o === '-' ? !involved(w).length : involved(w).includes(o)))
+    && (!q || FIELDS.some(f => String(w[f] || '').toLowerCase().includes(q))));
+}
+function render() {
+  const v = location.hash.slice(1), gantt = v === 'gantt', people = v === 'people', areas = v === 'areas', rolesV = v === 'roles';
+  $('#board').hidden = gantt; $('#gantt').hidden = !gantt;
+  $('#vRoles').ariaPressed = rolesV; $('#vBoard').ariaPressed = !gantt && !people && !areas && !rolesV; $('#vAreas').ariaPressed = areas; $('#vPeople').ariaPressed = people; $('#vGantt').ariaPressed = gantt;
+  gantt ? renderGantt(shown()) : people ? renderPeople(shown()) : areas ? renderAreas(shown()) : rolesV ? renderRoles(shown()) : renderBoard(shown());
+}
+function renderRoles(list) {  // people.json, plus the areas and open work of each person's rows
+  $('#board').className = 'solo'; $('#board').style.gridTemplateColumns = '1fr';
+  const cards = roles.map(r => {
+    const mine = list.filter(w => involved(w).includes(r.name)), act = mine.filter(w => ['open', 'doing', 'blocked', 'decision'].includes(w.status));
+    const areas = Object.entries(mine.reduce((m, w) => (w.area && (m[w.area] = (m[w.area] || 0) + 1), m), {})).sort((a, b) => b[1] - a[1]);
+    return `<article class="card role"><div class="top"><b>${esc(r.name)}</b>${mine.length ? `<a href="#people" data-who="${esc(r.name)}">leads ${act.filter(w => w.lead === r.name).length} · ${act.length} active of ${mine.length} rows</a>` : '<span class="mute">no rows yet</span>'}</div>
+      <ul>${r.does.map(d => `<li>${esc(d)}</li>`).join('')}</ul>
+      <div>${areas.map(([a, n]) => `<span class="pill" style="--h:${areaHue(a)}">${esc(a)} ${n}</span>`).join('')}</div></article>`;
+  });
+  $('#board').innerHTML = `<section class="col"><h2>Roles<span class="mute">people.json · pills: the areas of their rows</span></h2>${cards.join('')}</section>`;
+}
+function renderAreas(list) {  // one column per area, active rows first
+  const order = Object.keys(STATUS), cols = [...AREAS, ''].filter(a => a || list.some(w => !w.area));
+  $('#board').className = ''; $('#board').style.gridTemplateColumns = `repeat(${cols.length},minmax(230px,1fr))`;
+  $('#board').innerHTML = cols.map(a => {
+    const cards = list.filter(w => (w.area || '') === a).sort((x, y) => order.indexOf(x.status) - order.indexOf(y.status));
+    return `<section class="col"><h2><span class="pill" style="--h:${areaHue(a)}">${esc(a || 'No area')}</span><span class="mute">${cards.length}</span></h2>${cards.map(w => card(w, true)).join('')}</section>`;
+  }).join('');
+}
+
+function renderBoard(list) {
+  const st = $('#fStatus').value, keep = st === 'active' ? ['open', 'doing'] : st ? [st] : Object.keys(STATUS);
+  $('#board').className = keep.length === 1 ? 'solo' : '';
+  $('#board').style.gridTemplateColumns = keep.length < 4 ? `repeat(${keep.length},1fr)` : '';
+  $('#board').innerHTML = Object.entries(STATUS).filter(([s]) => keep.includes(s)).map(([s, label]) => {
+    const cards = list.filter(w => (w.status || 'open') === s);
+    return `<section class="col" data-s="${s}"><h2>${label}<span class="mute">${cards.length}</span></h2>${cards.map(card).join('')}</section>`;
+  }).join('');
+}
+function renderPeople(list) {
+  const who = [...new Set(list.flatMap(involved))].sort(), cols = [...who, ''];  // '' = unassigned
+  $('#board').className = ''; $('#board').style.gridTemplateColumns = `repeat(${cols.length},minmax(220px,1fr))`;
+  $('#board').innerHTML = cols.map(n => {
+    const cards = list.filter(w => n ? involved(w).includes(n) : !involved(w).length);
+    return `<section class="col"><h2>${esc(n || 'Unassigned')}<span class="mute">${cards.length}</span></h2>${cards.map(w => card(w, true)).join('')}</section>`;
+  }).join('');
+}
+const card = (w, st) => `<article class="card ${esc(w.project)}" draggable="true" tabindex="0" data-id="${esc(w.id)}" title="${esc(w.note)}">
+  <div class="top"><b>${esc(label(w))}</b><span class="pill" style="--h:${areaHue(w.area)}" title="${esc(w.group)}">${esc(w.area || w.group)}</span></div>
+  <div>${esc(w.title)}</div>
+  <div class="mute">${st ? `<b>${esc(STATUS[w.status] || w.status)}</b> · ` : ''}${w.owner || w.lead ? team(w) : '<i>unassigned</i>'}${w.tester ? ` · test: <b>${esc(w.tester)}</b>` : w.status === 'untested' ? ' · <i>no tester</i>' : ''}${w.start ? ` · ${fmt(w.start)} → ${fmt(w.end)}` : ''}${w.deps ? ` · after ${esc(depText(w))}` : ''}</div>
+</article>`;
+
+function renderGantt(list) {
+  const rows = list.filter(w => w.start && w.end).sort((a, b) => areaRank(a.area) - areaRank(b.area) || a.start.localeCompare(b.start));
+  const ms = wps.filter(w => w.project === 'milestone' && w.start);
+  const today = new Date().toISOString().slice(0, 10);
+  const ts = [...rows.flatMap(w => [w.start, w.end]), ...ms.map(m => m.start), today].map(Date.parse);
+  let t0 = Math.min(...ts); t0 -= (new Date(t0).getUTCDay() + 6) % 7 * DAY;  // back to a Monday
+  const t1 = Math.max(...ts) + 14 * DAY, W = (t1 - t0) / DAY * PX, x = s => (Date.parse(s) - t0) / DAY * PX;
+  let weeks = '';
+  for (let t = t0; t < t1; t += 7 * DAY) weeks += `<span style="left:${(t - t0) / DAY * PX}px">W${isoWeek(t)}<br>${fmt(t)}</span>`;
+  let html = `<div class="gr head"><div class="lab mute">${rows.length} scheduled · ${list.length - rows.length} without dates</div><div class="track" style="width:${W}px;height:32px">${weeks}</div></div>`;
+  let group;
+  for (const w of rows) {
+    if ((w.area || '') !== group) {
+      group = w.area || '';
+      html += `<div class="gr gh"><div class="lab"><span class="pill" style="--h:${areaHue(group)}">${esc(group || 'No area')}</span></div><div class="track" style="width:${W}px"></div></div>`;
+    }
+    html += `<div class="gr" data-id="${esc(w.id)}"><div class="lab" title="${esc(w.title)}"><b>${esc(label(w))}</b> ${esc(w.title)}</div>`
+      + `<div class="track" style="width:${W}px"><div class="bar s-${esc(w.status)}" style="--h:${areaHue(w.area)};left:${x(w.start)}px;width:${x(w.end) - x(w.start) + PX}px" title="${esc(STATUS[w.status] || w.status)} · ${fmt(w.start)} → ${fmt(w.end)}">${esc(w.lead || 'unassigned')}</div></div></div>`;
+  }
+  const lab = 340;  // .lab width
+  for (const m of ms) html += `<div class="vl" style="left:${lab + x(m.start)}px" title="${esc(m.title)}"><span>${esc(m.id)} · ${fmt(m.start)}</span></div>`;
+  html += `<div class="vl today" style="left:${lab + x(today)}px"><span>today</span></div>`;
+  $('#gantt').innerHTML = `<div class="gw" style="width:${lab + W}px">${html}</div>`;
+}
+
+function edit(id) {
+  editing = id;
+  const w = wps.find(w => w.id === id) || {status: 'open', project: $('#fProject').value || 'features'};
+  for (const f of FIELDS) el(f).value = w[f] || '';
+  el('end').min = el('start').value;
+  $('#del').hidden = !id;
+  $('#dlg').returnValue = '';
+  $('#dlg').showModal();
+}
+$('#dlg').onclose = () => {
+  const v = $('#dlg').returnValue;
+  if (SNAP) return;
+  if (v === 'del' && confirm(`Delete ${editing}?`)) wps = wps.filter(w => w.id !== editing);
+  else if (v === 'ok') {
+    const w = Object.fromEntries(FIELDS.map(f => [f, el(f).value.trim()]));
+    w.id ||= crypto.randomUUID(); w.deps = depIds(w.deps);
+    w.lead ||= names(w.owner)[0] || ''; if (w.lead) w.owner = [w.lead, ...names(w.owner).filter(n => n !== w.lead)].join(', ');  // the lead is the first owner
+    if (w.id !== editing && wps.some(o => o.id === w.id)) return alert(`${w.id} exists already`);
+    const i = wps.findIndex(o => o.id === editing);
+    i < 0 ? wps.push(w) : wps[i] = {...wps[i], ...w};
+  } else return;
+  save(); fillLists(); render();
+};
+el('start').onchange = () => el('end').min = el('start').value;
+el('status').innerHTML = Object.entries(STATUS).map(([s, l]) => `<option value="${s}">${l}</option>`).join('');
+el('area').innerHTML = '<option value=""></option>' + AREAS.map(a => `<option>${esc(a)}</option>`).join('');
+$('#fArea').innerHTML = '<option value="">all areas</option>' + AREAS.map(a => `<option>${esc(a)}</option>`).join('');
+
+// board: click/Enter edits, drag moves between columns
+const cardId = e => e.target.closest('[data-id]')?.dataset.id;
+$('#board').onclick = $('#gantt').onclick = e => { const who = e.target.closest('[data-who]'); if (who) $('#fOwner').value = who.dataset.who; else if (cardId(e)) edit(cardId(e)); };
+$('#board').onkeydown = e => e.key === 'Enter' && cardId(e) && edit(cardId(e));
+$('#board').ondragstart = e => SNAP ? e.preventDefault() : e.dataTransfer.setData('text/plain', cardId(e));
+$('#board').ondragover = e => { const c = e.target.closest('.col'); if (c) { e.preventDefault(); c.classList.add('over'); } };
+$('#board').ondragleave = e => e.target.closest('.col')?.classList.remove('over');
+$('#board').ondrop = e => {
+  const c = e.target.closest('.col'), w = wps.find(w => w.id === e.dataTransfer.getData('text/plain'));
+  e.preventDefault();
+  if (!c || !w || !c.dataset.s || w.status === c.dataset.s) return render();
+  w.status = c.dataset.s; save(); render();
+};
+
+$('#vBoard').onclick = () => { location.hash = ''; };
+$('#vAreas').onclick = () => { location.hash = 'areas'; };
+$('#vRoles').onclick = () => { location.hash = 'roles'; };
+$('#vPeople').onclick = () => { location.hash = 'people'; };
+$('#vGantt').onclick = () => { location.hash = 'gantt'; };
+$('#new').onclick = () => edit(null);
+onhashchange = render;
+$('#fStatus').innerHTML = '<option value="">all statuses</option><option value="active">open + doing</option>' + Object.entries(STATUS).map(([s, l]) => `<option value="${s}">${l}</option>`).join('');
+$('#fStatus').value = new URLSearchParams(location.search).get('status') || '';
+for (const f of ['#fArea', '#fProject', '#fOwner', '#fText', '#fStatus']) $(f).oninput = render;
+$('#fStatus').addEventListener('input', e => history.replaceState(null, '', (e.target.value ? '?status=' + e.target.value : location.pathname) + location.hash));
+load();
+</script>
+</body>
+</html>
