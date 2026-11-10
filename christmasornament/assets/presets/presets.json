@@ -1,0 +1,41 @@
+[
+ {
+  "id": "jena-skyline-1",
+  "title": "Jena skyline I",
+  "source": "cad",
+  "face": "-Y"
+ },
+ {
+  "id": "jena-skyline-2",
+  "title": "Jena skyline II",
+  "source": "cad",
+  "face": "+Y"
+ },
+ {
+  "id": "openuc2-frame",
+  "title": "openUC2 FRAME",
+  "source": "cad",
+  "face": "+X"
+ },
+ {
+  "id": "smartphone-microscope",
+  "title": "Smartphone microscope",
+  "source": "cad",
+  "face": "-X"
+ },
+ {
+  "id": "snowflake",
+  "title": "Snowflake",
+  "source": "motif"
+ },
+ {
+  "id": "fir-tree",
+  "title": "Fir tree",
+  "source": "motif"
+ },
+ {
+  "id": "starry-night",
+  "title": "Starry night",
+  "source": "motif"
+ }
+]

@@ -1,8 +1,7 @@
 /* ===========================================================================
  * openUC2 ODMR — WebSerial app controller
  * Wires the tabbed UI (sweep, live monitor, ratio/B-field, alignment) to the
- * SerialDevice. Also runs inside the Android app "UC2 Control" (ODMR tab), which
- * provides navigator.serial over USB-OTG and turns downloads into saved files.
+ * SerialDevice. The Android app "UC2 Control" has the same tools natively (ODMR tab).
  * =========================================================================== */
 import { SerialDevice } from "./serial.js";
 import { LinePlot } from "./plot.js";
@@ -49,7 +48,7 @@ const I18N = {
     range_hint: "Hängt von Verstärkung und Integrationszeit ab.", saturated: "Übersteuert – Gain senken",
     tutorial_title: "Aufbau Schritt für Schritt (10 Schritte)", prev: "← Zurück", next: "Weiter →",
     android_title: "Android:", android_link: "App herunterladen",
-    android_text: "Dieselbe Oberfläche steckt im ODMR-Tab der App „UC2 Control“: Board per USB-OTG anschließen, Messungen landen als Dateien auf dem Handy und lassen sich teilen.",
+    android_text: "Dieselben Messungen gibt es im ODMR-Tab der App „UC2 Control“: Board per USB-OTG anschließen, Messungen landen als Dateien auf dem Handy und lassen sich teilen.",
   },
   en: {
     connect: "Connect device", disconnect: "Disconnect", not_connected: "Not connected",
@@ -86,7 +85,7 @@ const I18N = {
     range_hint: "Depends on gain and integration time.", saturated: "Saturated – lower the gain",
     tutorial_title: "Setup step by step (10 steps)", prev: "← Back", next: "Next →",
     android_title: "Android:", android_link: "Download the app",
-    android_text: "The same interface is in the ODMR tab of the \"UC2 Control\" app: connect the board via USB-OTG; measurements are saved as files on the phone and can be shared.",
+    android_text: "The same measurements are in the ODMR tab of the \"UC2 Control\" app: connect the board via USB-OTG; measurements are saved as files on the phone and can be shared.",
   },
 };
 let lang = localStorage.getItem("language") || "de";
@@ -331,7 +330,7 @@ $("sweepCsv").addEventListener("click", () => {
   downloadCSV(csv, "sweep");
 });
 $("sweepPng").addEventListener("click", () => $("sweepCanvas").toBlob((b) => saveBlob(b, "sweep", "png")));
-// Web Share with files (Chrome on Android/Windows/ChromeOS); the Android app offers sharing after saving instead.
+// Web Share with files (Chrome on Android/Windows/ChromeOS).
 if (navigator.canShare && navigator.canShare({ files: [new File([""], "x.csv", { type: "text/csv" })] })) {
   $("sweepShare").classList.remove("d-none");
 }
@@ -717,8 +716,7 @@ function saveBlob(blob, prefix, ext) {
   a.href = URL.createObjectURL(blob);
   a.download = fileName(prefix, ext);
   a.click();
-  // Revoke later, not at once: a host that saves downloads itself (the Android
-  // app) reads the blob asynchronously.
+  // Revoke later, not at once: the download may read the blob after click() returns.
   setTimeout(() => URL.revokeObjectURL(a.href), 60000);
 }
 function downloadCSV(text, prefix) {

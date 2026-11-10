@@ -1,0 +1,16 @@
+{
+  "name": "openuc2-light-cube",
+  "private": true,
+  "description": "Design the faces of an openUC2 light cube in the browser and download print files.",
+  "type": "module",
+  "scripts": {
+    "vendor": "node tools/vendor.mjs",
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "serve": "npx --yes http-server@14.1.1 -p 8642 -c-1 ."
+  },
+  "devDependencies": {
+    "fflate": "0.8.3",
+    "manifold-3d": "3.5.4",
+    "three": "0.186.0"
+  }
+}

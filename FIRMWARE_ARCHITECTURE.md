@@ -74,7 +74,7 @@ git push origin v2026.01.15
 2. Write `odmr-xiao-esp32{s3,c3}-manifest.json` (`chipFamily` `ESP32-S3` / `ESP32-C3`)
 3. Commit images, manifests and `odmr/` here
 
-The same WebSerial app runs in the ODMR tab of the UC2 Control Android app (https://github.com/youseetoo/UC2Control).
+The UC2 Control Android app (https://github.com/youseetoo/UC2Control) has the same tools natively in its ODMR tab.
 
 ## Manifest Format
 

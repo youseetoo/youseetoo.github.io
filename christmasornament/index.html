@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Light cube designer · openUC2</title>
+  <meta name="description" content="Put your own pictures on the four sides of an openUC2 light cube and download the files for your 3D printer.">
+  <meta name="theme-color" content="#023773">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/Objectivity-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/Objectivity-Light.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="https://openuc2.com" aria-label="openUC2 website">
+      <img src="assets/logo/openuc2-logo.svg" alt="openUC2" width="146" height="50">
+    </a>
+    <nav class="site-nav" aria-label="Page">
+      <a href="#designer">Designer</a>
+      <a href="#print">Print files</a>
+      <a href="#build">How to build</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <p class="kicker">Christmas 2026 &middot; light cube</p>
+      <h1 id="title">Your pictures on an openUC2 light&nbsp;cube</h1>
+      <p class="lead">Choose a picture for each side of the cube, decide how the light comes through, and download the files for your 3D printer. Everything runs in your browser; your pictures are not uploaded anywhere.</p>
+    </section>
+
+    <section class="bench" id="designer" aria-label="Designer">
+      <div class="stage">
+        <div class="viewer" id="viewer">
+          <div class="viewer-tools">
+            <div class="seg seg-small" role="group" aria-label="Lighting">
+              <button type="button" data-light="night" aria-pressed="true">Light on</button>
+              <button type="button" data-light="day" aria-pressed="false">Daylight</button>
+            </div>
+            <button type="button" class="chip" id="spin" aria-pressed="false">Spin</button>
+          </div>
+          <p class="viewer-hint">Drag to turn &middot; scroll to zoom &middot; click a side to edit it</p>
+          <p class="viewer-busy" id="busy" hidden>Building&hellip;</p>
+        </div>
+        <ol class="sides" id="sides" aria-label="Sides of the cube"></ol>
+      </div>
+
+      <div class="editor" aria-labelledby="sideTitle">
+        <div class="editor-head">
+          <p class="kicker" id="sideKicker">Side 1 of 4</p>
+          <h2 id="sideTitle">Front</h2>
+        </div>
+
+        <fieldset class="block">
+          <legend class="label">Picture</legend>
+          <div class="presets" id="presets"></div>
+          <label class="upload" id="drop">
+            <input type="file" id="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/bmp">
+            <span class="upload-title">Use your own picture</span>
+            <span class="upload-note">PNG, JPG, WebP or SVG &middot; drop it here or choose a file</span>
+          </label>
+        </fieldset>
+
+        <div class="block drawing">
+          <div class="drawing-head">
+            <span class="label">Side seen from outside</span>
+            <div class="seg seg-small" role="group" aria-label="Drawing shows">
+              <button type="button" data-view="lit" aria-pressed="true">Lit</button>
+              <button type="button" data-view="picture" aria-pressed="false">Picture</button>
+            </div>
+          </div>
+          <canvas id="drawing" aria-label="Drawing of the side; drag to move the picture, scroll to zoom"></canvas>
+          <div class="place">
+            <label class="slider"><span>Zoom</span><input type="range" id="zoom" min="0" max="1" step="0.001" aria-label="Zoom"></label>
+            <label class="slider"><span>Rotate</span><input type="range" data-bind="place.rot" min="-180" max="180" step="1"><output data-for="place.rot" data-unit="°"></output></label>
+            <div class="buttons">
+              <button type="button" class="btn-line" data-place="fit" title="Show the whole picture">Fit</button>
+              <button type="button" class="btn-line" data-place="fill" title="Fill the window">Fill</button>
+              <button type="button" class="btn-line" data-place="flip" title="Mirror the picture">Mirror</button>
+              <button type="button" class="btn-line" data-place="center" title="Centre the picture">Centre</button>
+            </div>
+          </div>
+        </div>
+
+        <fieldset class="block">
+          <legend class="label">Look</legend>
+          <div class="seg seg-wide" role="group" aria-label="Look">
+            <button type="button" data-style="cutout" aria-pressed="true">Cut-out</button>
+            <button type="button" data-style="shadow" aria-pressed="false">Shadow</button>
+            <button type="button" data-style="litho" aria-pressed="false">Lithophane</button>
+          </div>
+          <p class="style-note" data-show="cutout">Light shines through openings. Print the side in dark filament and put a white sheet behind it.</p>
+          <p class="style-note" data-show="shadow">One white part with two thicknesses. By day it looks almost plain; when the tealight is on, your picture appears.</p>
+          <p class="style-note" data-show="litho">The thickness follows the grey values of a photo: thin is bright, thick is dark. Print in white.</p>
+
+          <label class="slider" data-show="cutout shadow"><span>Threshold</span><input type="range" data-bind="opts.threshold" min="0.05" max="0.95" step="0.01"><output data-for="opts.threshold" data-fmt="pct"></output></label>
+          <label class="slider"><span>Brightness</span><input type="range" data-bind="tone.brightness" min="-0.5" max="0.5" step="0.01"><output data-for="tone.brightness" data-fmt="signed"></output></label>
+          <label class="slider"><span>Contrast</span><input type="range" data-bind="tone.contrast" min="-0.8" max="0.8" step="0.01"><output data-for="tone.contrast" data-fmt="signed"></output></label>
+          <label class="check"><input type="checkbox" data-bind="tone.invert"><span>Swap light and dark</span></label>
+
+          <div class="row" data-show="cutout">
+            <span class="row-label">Floating parts</span>
+            <div class="seg seg-small" role="group" aria-label="Floating parts">
+              <button type="button" data-islands="bridge" aria-pressed="true">Bridge</button>
+              <button type="button" data-islands="keep" aria-pressed="false">Keep</button>
+              <button type="button" data-islands="remove" aria-pressed="false">Remove</button>
+            </div>
+          </div>
+          <label class="slider" data-show="shadow litho"><span>Thin (light)</span><input type="range" data-bind="opts.tLight" min="0.4" max="1.4" step="0.05"><output data-for="opts.tLight" data-unit=" mm"></output></label>
+          <label class="slider" data-show="shadow litho"><span>Thick (dark)</span><input type="range" data-bind="opts.tDark" min="1.6" max="4.0" step="0.1"><output data-for="opts.tDark" data-unit=" mm"></output></label>
+
+          <p class="status" id="status" aria-live="polite"></p>
+        </fieldset>
+
+        <details class="block more">
+          <summary class="label">Fine-tune</summary>
+          <label class="slider" data-show="cutout shadow"><span>Line weight</span><input type="range" data-bind="opts.lineWeight" min="-0.4" max="0.6" step="0.05"><output data-for="opts.lineWeight" data-fmt="signed" data-unit=" mm"></output></label>
+          <label class="slider" data-show="cutout shadow"><span>Smallest detail</span><input type="range" data-bind="opts.detail" min="0" max="2" step="0.1"><output data-for="opts.detail" data-unit=" mm"></output></label>
+          <label class="slider" data-show="cutout shadow"><span>Smooth edges</span><input type="range" data-bind="opts.smooth" min="0" max="0.4" step="0.02"><output data-for="opts.smooth" data-unit=" mm"></output></label>
+          <label class="slider" data-show="cutout"><span>Bridge width</span><input type="range" data-bind="opts.bridgeWidth" min="0.5" max="1.6" step="0.1"><output data-for="opts.bridgeWidth" data-unit=" mm"></output></label>
+          <label class="slider" data-show="litho"><span>Grid</span><input type="range" data-bind="opts.step" min="0.1" max="0.3" step="0.05"><output data-for="opts.step" data-unit=" mm"></output></label>
+          <div class="row" data-show="litho">
+            <span class="row-label">Tone curve</span>
+            <div class="seg seg-small" role="group" aria-label="Tone curve">
+              <button type="button" data-curve="natural" aria-pressed="true">Natural</button>
+              <button type="button" data-curve="linear" aria-pressed="false">Linear</button>
+            </div>
+          </div>
+          <label class="slider"><span>Frame border</span><input type="range" data-bind="opts.border" min="0" max="3" step="0.1"><output data-for="opts.border" data-unit=" mm"></output></label>
+        </details>
+
+        <details class="block more">
+          <summary class="label">Text</summary>
+          <label class="text-input"><span>Text on this side</span><textarea id="text" rows="2" maxlength="60" placeholder="Frohe Weihnachten&#10;2026"></textarea></label>
+          <label class="slider"><span>Size</span><input type="range" data-bind="text.size" min="2" max="12" step="0.1"><output data-for="text.size" data-unit=" mm"></output></label>
+          <label class="slider"><span>Height</span><input type="range" data-bind="text.y" min="-14" max="14" step="0.1"><output data-for="text.y" data-fmt="signed" data-unit=" mm"></output></label>
+          <div class="row">
+            <span class="row-label">Text is</span>
+            <div class="seg seg-small" role="group" aria-label="Text tone">
+              <button type="button" data-texttone="light" aria-pressed="true">Light</button>
+              <button type="button" data-texttone="dark" aria-pressed="false">Dark</button>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="print" id="print" aria-labelledby="printTitle">
+      <div class="section-head">
+        <p class="kicker">Print files</p>
+        <h2 id="printTitle">Download and print</h2>
+      </div>
+      <div class="table-wrap">
+        <table class="parts">
+          <thead>
+            <tr><th scope="col">Side</th><th scope="col">Look</th><th scope="col">Filament</th><th scope="col" class="num">About</th><th scope="col"><span class="sr-only">File</span></th></tr>
+          </thead>
+          <tbody id="partsBody"></tbody>
+        </table>
+      </div>
+      <div class="print-options">
+        <label class="check"><input type="checkbox" id="optSheets" checked><span>White diffuser sheets for the cut-out sides (30.8 &times; 30.8 &times; <span id="sheetT">0.2</span> mm)</span></label>
+        <label class="check"><input type="checkbox" id="optLids" checked><span>Tealight lid set: top lid, bottom lid with tube, tealight ring</span></label>
+      </div>
+      <div class="print-actions">
+        <button type="button" class="btn-primary" id="downloadAll">Download all files (.zip)</button>
+        <p class="note" id="zipNote">STL files, already turned to print: the outer face lies on the bed.</p>
+      </div>
+    </section>
+
+    <section class="howto" id="build" aria-labelledby="buildTitle">
+      <div class="section-head">
+        <p class="kicker">How to build</p>
+        <h2 id="buildTitle">From files to a glowing cube</h2>
+      </div>
+      <ol class="steps">
+        <li>
+          <h3>Print the sides</h3>
+          <p>Each side prints flat with its outer face on the bed and needs no supports. Cut-out sides: dark PLA, 0.2&nbsp;mm layers. Shadow and lithophane sides: white PLA, 0.1&ndash;0.12&nbsp;mm layers and 100&nbsp;% infill, so no infill pattern shows in the light.</p>
+        </li>
+        <li>
+          <h3>Add the diffusers</h3>
+          <p>Cut-out sides need a white sheet behind the design: print the 0.2&nbsp;mm sheet in white PLA or cut tracing paper to 30.8&nbsp;&times;&nbsp;30.8&nbsp;mm. It lies in the pocket on the inside of the side.</p>
+        </li>
+        <li>
+          <h3>Click them into the cube</h3>
+          <p>Press each side into a window of an openUC2 cube from the outside. Small ridges on the inner edge hold it in place; the rim ends flush with the cube.</p>
+        </li>
+        <li>
+          <h3>Light it</h3>
+          <p>Put an LED tealight into the ring on the bottom lid (up to 37.8&nbsp;mm across) and close the cube with the top lid. Use LED tealights only: PLA softens at about 60&nbsp;&deg;C.</p>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Made by <a href="https://openuc2.com">openUC2</a> in Jena. The cube, the sides and the lids come from the openUC2 CAD library.</p>
+    <p class="credits">Built with <a href="https://threejs.org">three.js</a> and <a href="https://github.com/elalish/manifold">Manifold</a>. Type: Objectivity by Alexander Slobzheninov (<a href="assets/fonts/OFL.txt">SIL OFL&nbsp;1.1</a>).</p>
+  </footer>
+
+  <template id="sideTemplate">
+    <li class="side">
+      <button type="button" class="side-btn">
+        <canvas class="side-thumb" width="128" height="128" aria-hidden="true"></canvas>
+        <span class="side-text"><span class="side-num"></span><span class="side-name"></span><span class="side-look"></span></span>
+      </button>
+    </li>
+  </template>
+</body>
+</html>

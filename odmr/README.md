@@ -12,9 +12,9 @@ A self-contained, **WiFi-free** control interface for the openUC2 ODMR device
 | **Justage (Alignment)** | `justage.html` (plot, range hint, tutorial) | `INTENSITY`, `GAIN`, `INTTIME`, `GETTSL` |
 | Connection bar | `/version`, `/tsl/settings` | `VERSION`, `STATUS`, `GETTSL`, `PING` |
 
-Live at **<https://youseetoo.github.io/odmr>** and, unchanged, in the
-**ODMR** tab of the [UC2 Control Android app](https://github.com/youseetoo/UC2Control/releases/latest)
-(USB-C OTG cable to the phone).
+Live at **<https://youseetoo.github.io/odmr>**. On Android phones and tablets
+the [UC2 Control app](https://github.com/youseetoo/UC2Control/releases/latest)
+has the same tools natively in its **ODMR** tab (USB-C OTG cable to the phone).
 
 It is a plain static site (no build step) designed to be hosted on **GitHub
 Pages**. All assets (Bootstrap, the shared `style.css`, the NV-lattice image)
@@ -43,8 +43,7 @@ are bundled locally, so it also works fully offline once loaded.
      alignment tutorial, plus TSL2591 gain / integration-time settings.
 
    Tap or hover a plot for the nearest point (frequency · intensity).
-   Downloads go to the browser's download folder; in the Android app to
-   `Download/UC2 ODMR/`, with a **Share** button.
+   Downloads go to the browser's download folder.
 
 The **„Log anzeigen"** button reveals the raw serial traffic and a box to send
 manual commands (e.g. `PING`, `STATUS`).
@@ -120,8 +119,7 @@ You can also trigger it manually from the **Actions** tab (workflow_dispatch).
 
 [`build_firmware.yaml`](../../../../.github/workflows/build_firmware.yaml) also
 copies this folder to [youseetoo.github.io/odmr](https://youseetoo.github.io/odmr)
-together with the firmware images. The Android app bundles a copy: run
-`tools/sync_odmr_webapp.sh` in the UC2Control repo after changing it.
+together with the firmware images.
 
 ---
 
